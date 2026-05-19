@@ -435,9 +435,11 @@
     margin: 0;
     padding: 5px 0;
   }
-  /* 瑞士風: 學費繳清=紅色強調; 開課=黑色粗體; 續班=灰色 */
+  /* 瑞士風: 學費繳清=紅色強調; 教材費=紅色 italic 區別; 開課=黑色粗體; 續班=灰色 */
   .month-card .m-evt.fee .d { color: var(--accent); }
   .month-card .m-evt.fee .cn { color: var(--accent); font-weight: 700; }
+  .month-card .m-evt.textbook .d { color: var(--accent); }
+  .month-card .m-evt.textbook .cn { color: var(--accent); font-weight: 500; font-style: italic; }
   .month-card .m-evt.start .d { color: var(--ink); }
   .month-card .m-evt.start .cn { color: var(--ink); font-weight: 600; }
   .month-card .m-evt.renewal .d { color: var(--renewal); }
@@ -591,6 +593,7 @@
   }
   .legend .lg-item { display: inline-flex; align-items: center; gap: 4px; }
   .lg-fee { color: var(--accent); font-weight: 600; }
+  .lg-textbook { color: var(--accent); font-weight: 500; font-style: italic; }
   .lg-start { color: var(--ink); font-weight: 700; }
   .lg-cutoff { color: var(--accent); font-weight: 600; }
   .lg-renewal { color: var(--renewal); font-weight: 600; }
@@ -692,6 +695,7 @@
       <label><span>校區</span><input type="text" name="campus" value="高美館校" required></label>
       <label><span>第 1 堂日期</span><input type="date" name="startDate" required></label>
       <label><span>每 10 堂學費</span><input type="number" name="fee" value="3750" min="0" step="50" required></label>
+      <label><span>每 20 堂教材費</span><input type="number" name="textbookFee" value="600" min="0" step="50"></label>
       <label><span>學生人數</span><input type="number" name="studentCount" value="0" min="0" step="1"></label>
       <label><span>期數</span>
         <select name="periodCount">
@@ -724,7 +728,7 @@
 <section class="panel active" id="panel-annual">
   <details class="rules-box">
     <summary><span class="rule-summary-text">收費規則 — 點開展開,文字可直接編輯</span></summary>
-    <div class="rule-body" contenteditable="true" data-rules-key="rules.annual" data-placeholder="（輸入收費規則…）">每期 10 堂;每期第 1 堂 = 學費繳清日(11堂、21堂...);上期第 7 堂發續班通知;第 4 堂起不接受插班,插班必須在第 3 堂前完成;逢國定連假/校內定假日自動跳過順延。</div>
+    <div class="rule-body" contenteditable="true" data-rules-key="rules.annual" data-placeholder="（輸入收費規則…）">每期 10 堂;每期第 1 堂 = 學費繳清日(11堂、21堂...);上期第 7 堂發續班通知;第 4 堂起不接受插班,插班必須在第 3 堂前完成;每 20 堂收一次教材費(第 1、21、41... 堂同日繳清);逢國定連假/校內定假日自動跳過順延。</div>
   </details>
   <div class="toolbar">
     <label>年度：
@@ -751,6 +755,7 @@
       <label class="evt-tog"><input type="checkbox" data-evt="class"> <span style="color:var(--ink-3);">●</span> 上課</label>
       <label class="evt-tog"><input type="checkbox" data-evt="renewal" checked> <span class="lg-renewal">●</span> 續班</label>
       <label class="evt-tog"><input type="checkbox" data-evt="fee" checked> <span class="lg-fee">●</span> 學費繳清</label>
+      <label class="evt-tog"><input type="checkbox" data-evt="textbook" checked> <span class="lg-textbook">●</span> 教材費</label>
     </span>
   </div>
   <div id="highlight-weeks"></div>
@@ -826,6 +831,7 @@
     <label><span>第幾堂收下一期費</span><input type="number" id="rule-fee" min="1" max="50" step="1"></label>
     <label><span>第幾堂為插班最終日</span><input type="number" id="rule-last" min="1" max="50" step="1"></label>
     <label><span>第幾堂起禁止插班</span><input type="number" id="rule-cutoff" min="1" max="50" step="1"></label>
+    <label><span>教材費每 N 堂收一次</span><input type="number" id="rule-textbook-every" min="1" max="200" step="1"></label>
     <div class="full">
       <button type="button" class="btn ghost" id="rule-reset">回預設值</button>
       <button type="button" class="btn" id="rule-save">儲存收費期程</button>
@@ -910,12 +916,13 @@ const DEFAULT_HOLIDAYS = [
 ];
 
 const DEFAULT_RULES = {
-  periodLength: 10,     // 一期幾堂
-  feeDayIndex: 1,       // 第幾堂學費繳清 (每期第 1 堂)
-  renewalWeekStart: 8,  // 續班週起始堂 (該期第 8 堂)
-  renewalWeekEnd: 10,   // 續班週結束堂 (該期第 10 堂)
-  lastIntakeIndex: 3,   // 第幾堂為插班最終日
-  cutoffIndex: 4,       // 第幾堂起禁止插班
+  periodLength: 10,       // 一期幾堂
+  feeDayIndex: 1,         // 第幾堂學費繳清 (每期第 1 堂)
+  renewalWeekStart: 8,    // 續班週起始堂 (該期第 8 堂)
+  renewalWeekEnd: 10,     // 續班週結束堂 (該期第 10 堂)
+  lastIntakeIndex: 3,     // 第幾堂為插班最終日
+  cutoffIndex: 4,         // 第幾堂起禁止插班
+  textbookFeeEvery: 20,   // 教材費每 N 堂收一次 (預設第 1, 21, 41, ... 堂)
 };
 
 // 重點週 (年度行事曆頂部 banner, 使用者手填日期範圍)
@@ -927,22 +934,22 @@ const DEFAULT_HIGHLIGHT_WEEKS = [
 const HIGHLIGHT_KEY = 'k12_highlight_weeks_v2'; // v2: 改瑞士風配色 (舊 v1 是 金/藍/綠)
 
 // 預設顯示哪幾類事件 (年度行事曆 12 月方格用)
-const DEFAULT_EVENT_FILTERS = { start: true, class: false, renewal: true, fee: true };
+const DEFAULT_EVENT_FILTERS = { start: true, class: false, renewal: true, fee: true, textbook: true };
 const EVT_FILTER_KEY = 'k12_fee_evt_filters_v1';
 
 const BASELINE_CLASSES = [
   // 班別 name 採用「開智 L1-下」「啟蒙 L2-上」這類短名 (依使用者偏好)
-  {id: 'jiazhi_l2_fri19', name: '啟蒙 L1-下', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 6, periodCount: 3, memo: 'W五 19:00'},
-  {id: 'jiazhi_l1_sat10', name: '啟蒙 L2-上', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-13', fee: 3750, studentCount: 7, periodCount: 3, memo: 'W六 10:00 ・ 小/中/大班混齡'},
-  {id: 'jiazhi_l1_sat11', name: '啟蒙 L1-下', weekday: 6, time: '11:00-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 5, periodCount: 3, memo: 'W六 11:00'},
-  {id: 'kaizhi_l1_fri20', name: '開智 L2-上', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 10, periodCount: 3, memo: 'W五 20:00'},
-  {id: 'kaizhi_l1_sat10', name: '開智 L2-上', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 14, periodCount: 3, memo: 'W六 10:00'},
-  {id: 'kaizhi_l2_sat11', name: '開智 L2-上', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 7, periodCount: 3, memo: 'W六 11:00'},
-  {id: 'zhiyou_l2_sat19', name: '智優 L1-下', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-06-20', fee: 3750, studentCount: 14, periodCount: 3, memo: 'W六 19:00 ・ 90 分鐘'},
+  {id: 'jiazhi_l2_fri19', name: '啟蒙 L1-下', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 6, periodCount: 3, textbookFee: 600, memo: 'W五 19:00'},
+  {id: 'jiazhi_l1_sat10', name: '啟蒙 L2-上', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-13', fee: 3750, studentCount: 7, periodCount: 3, textbookFee: 600, memo: 'W六 10:00 ・ 小/中/大班混齡'},
+  {id: 'jiazhi_l1_sat11', name: '啟蒙 L1-下', weekday: 6, time: '11:00-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 5, periodCount: 3, textbookFee: 600, memo: 'W六 11:00'},
+  {id: 'kaizhi_l1_fri20', name: '開智 L2-上', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 10, periodCount: 3, textbookFee: 600, memo: 'W五 20:00'},
+  {id: 'kaizhi_l1_sat10', name: '開智 L2-上', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 14, periodCount: 3, textbookFee: 600, memo: 'W六 10:00'},
+  {id: 'kaizhi_l2_sat11', name: '開智 L2-上', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 7, periodCount: 3, textbookFee: 600, memo: 'W六 11:00'},
+  {id: 'zhiyou_l2_sat19', name: '智優 L1-下', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-06-20', fee: 3750, studentCount: 14, periodCount: 3, textbookFee: 600, memo: 'W六 19:00 ・ 90 分鐘'},
   // 對照表未列 (保留通用名)
-  {id: 'kaizhi_l2_wed19', name: '開智 L2', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-04-15', fee: 3750, studentCount: 6, periodCount: 3, memo: 'W三 ・ 對照表未列'},
-  {id: 'steam_l2_sat15', name: 'STEAM-R L2', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-04-11', fee: 3750, studentCount: 7, periodCount: 3, memo: '對照表未列'},
-  {id: 'parents_sun13', name: '家長班', weekday: 0, time: '13:00-17:00', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-22', fee: 3750, studentCount: 10, periodCount: 3, memo: 'W日 4 小時 ・ 對照表未列'},
+  {id: 'kaizhi_l2_wed19', name: '開智 L2', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-04-15', fee: 3750, studentCount: 6, periodCount: 3, textbookFee: 600, memo: 'W三 ・ 對照表未列'},
+  {id: 'steam_l2_sat15', name: 'STEAM-R L2', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-04-11', fee: 3750, studentCount: 7, periodCount: 3, textbookFee: 600, memo: '對照表未列'},
+  {id: 'parents_sun13', name: '家長班', weekday: 0, time: '13:00-17:00', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-22', fee: 3750, studentCount: 10, periodCount: 3, textbookFee: 600, memo: 'W日 4 小時 ・ 對照表未列'},
 ];
 
 let state = {
@@ -980,12 +987,17 @@ function loadState() {
     state.classes = [...BASELINE_CLASSES];
     saveState();
   }
-  // 遷移:舊資料沒有 studentCount 欄位,補上預設值(從 baseline 取或設 0)
+  // 遷移:舊資料沒有 studentCount / textbookFee 欄位,補上預設值(從 baseline 取或設 0)
   let migrated = false;
   for (const c of state.classes) {
     if (c.studentCount === undefined) {
       const baseline = BASELINE_CLASSES.find(b => b.id === c.id);
       c.studentCount = baseline?.studentCount ?? 0;
+      migrated = true;
+    }
+    if (c.textbookFee === undefined) {
+      const baseline = BASELINE_CLASSES.find(b => b.id === c.id);
+      c.textbookFee = baseline?.textbookFee ?? 0;
       migrated = true;
     }
   }
@@ -1202,6 +1214,7 @@ function expandClassSchedule(cls, periodCountOverride) {
       isFeeDay: idxInPeriod === FEE,
       isIntakeCutoff: idxInPeriod === CUT,
       isLastIntake: idxInPeriod === LAST,
+      isTextbookFeeDay: ((idx - 1) % (state.rules.textbookFeeEvery || 20)) === 0,  // 第 1, 21, 41 ... 堂收教材費
     };
   });
 }
@@ -1217,7 +1230,7 @@ function renderClasses() {
     <div class="class-card">
       <div class="info">
         <div class="name">${escapeHtml(c.name)} ・ W${getWeekdayChar(c.weekday)} ${escapeHtml(c.time)}</div>
-        <div class="sub">老師：${escapeHtml(c.teacher)} ｜ 校區：${escapeHtml(c.campus)} ｜ 開課：${c.startDate} ｜ 每 10 堂 $${c.fee.toLocaleString()} ｜ 人數 ${c.studentCount || 0} 位 ｜ 期數 ${c.periodCount || 4} 期</div>
+        <div class="sub">老師：${escapeHtml(c.teacher)} ｜ 校區：${escapeHtml(c.campus)} ｜ 開課：${c.startDate} ｜ 每 10 堂 $${c.fee.toLocaleString()}${(c.textbookFee || 0) > 0 ? ` ｜ 每 20 堂教材費 $${c.textbookFee.toLocaleString()}` : ''} ｜ 人數 ${c.studentCount || 0} 位 ｜ 期數 ${c.periodCount || 4} 期</div>
         ${c.memo ? `<div class="sub" style="margin-top:4px; color:#888;">${escapeHtml(c.memo)}</div>` : ''}
       </div>
       <div class="actions">
@@ -1247,6 +1260,7 @@ function renderClasses() {
     form.campus.value = c.campus;
     form.startDate.value = c.startDate;
     form.fee.value = c.fee;
+    form.textbookFee.value = c.textbookFee || 0;
     form.studentCount.value = c.studentCount || 0;
     form.periodCount.value = c.periodCount || 4;
     form.memo.value = c.memo || '';
@@ -1270,8 +1284,9 @@ function collectYearEvents(year, classFilter) {
       if (s.isIntakeCutoff) events.push({...s, cls, type: 'intake-cutoff'});
       if (s.isRenewalDay) events.push({...s, cls, type: 'renewal-day'});
       if (s.isFeeDay) events.push({...s, cls, type: 'fee-day'});
-      // 一般上課堂 (非開課/續班/收費)
-      if (!s.isPeriodStart && !s.isRenewalDay && !s.isFeeDay) {
+      if (s.isTextbookFeeDay && (cls.textbookFee || 0) > 0) events.push({...s, cls, type: 'textbook-day'});
+      // 一般上課堂 (非開課/續班/收費/教材費)
+      if (!s.isPeriodStart && !s.isRenewalDay && !s.isFeeDay && !s.isTextbookFeeDay) {
         events.push({...s, cls, type: 'regular-class'});
       }
     }
@@ -1310,12 +1325,13 @@ function renderAnnualGrid() {
   const events = collectYearEvents(year, classFilter);
   const F = state.eventFilters;
 
-  // 4 類事件對應 type
+  // 5 類事件對應 type
   const typeToFilter = {
     'period-start': 'start',
     'regular-class': 'class',
     'renewal-day': 'renewal',
     'fee-day': 'fee',
+    'textbook-day': 'textbook',
   };
 
   // Bucket events by month
@@ -1353,9 +1369,12 @@ function renderAnnualGrid() {
       return t && F[t];
     });
     const feeEvents = monthEvents.filter(e => e.type === 'fee-day');
+    const textbookEvents = monthEvents.filter(e => e.type === 'textbook-day');
     const totalFee = feeEvents.reduce((sum, e) => sum + e.cls.fee, 0);
     const totalStudents = feeEvents.reduce((sum, e) => sum + (e.cls.studentCount || 0), 0);
-    const totalIncome = feeEvents.reduce((sum, e) => sum + (e.cls.fee || 0) * (e.cls.studentCount || 0), 0);
+    const tuitionIncome = feeEvents.reduce((sum, e) => sum + (e.cls.fee || 0) * (e.cls.studentCount || 0), 0);
+    const textbookIncome = textbookEvents.reduce((sum, e) => sum + (e.cls.textbookFee || 0) * (e.cls.studentCount || 0), 0);
+    const totalIncome = tuitionIncome + textbookIncome;
 
     const wkRange = monthWeekRange(year, m);
     const isCurrentMonth = (year === todayYear && m === todayMonth);
@@ -1415,6 +1434,12 @@ function renderAnnualGrid() {
           txt = count > 1
             ? `學費繳清 ×${count}: ${classNames}${total > 0 ? ' 合計 $' + total.toLocaleString() : ''}`
             : `${classNames} 學費繳清${total > 0 ? ' $' + total.toLocaleString() : ''}`;
+        } else if (g.type === 'textbook-day') {
+          cls = 'textbook';
+          const total = g.events.reduce((sum, e) => sum + (e.cls.textbookFee || 0) * (e.cls.studentCount || 0), 0);
+          txt = count > 1
+            ? `教材費 ×${count}: ${classNames}${total > 0 ? ' 合計 $' + total.toLocaleString() : ''}`
+            : `${classNames} 教材費${total > 0 ? ' $' + total.toLocaleString() : ''}`;
         }
         // 第一個事件當 override key 載體
         const firstEvt = g.events[0];
@@ -1601,16 +1626,16 @@ function renderMonthly() {
     for (const s of sch) {
       if (s.isFeeDay && s.date.startsWith(month)) {
         const P = state.rules.periodLength || 10;
-        // 學費繳清日 = 該期第 N 堂 (預設 = 第 1 堂)
-        // 該期最後一堂 (期末) = 0-based index s.period * P - 1
         const lastDayOfPeriod = sch[s.period * P - 1]?.date || '?';
-        // 下一期第 1 堂 = 0-based index s.period * P
         const nextPeriodStart = sch[s.period * P]?.date || '?';
         const students = cls.studentCount || 0;
-        const subtotal = cls.fee * students;
+        const tuitionSubtotal = cls.fee * students;
+        // 若該堂同時也是教材費繳費日, 加入教材費
+        const isAlsoTextbook = s.isTextbookFeeDay && (cls.textbookFee || 0) > 0;
+        const textbookSubtotal = isAlsoTextbook ? (cls.textbookFee || 0) * students : 0;
         rows.push({
           feeDate: s.date,
-          deadline: s.date, // 學費繳清日即為繳清截止
+          deadline: s.date,
           cls,
           period: s.period,
           nextPeriod: s.period + 1,
@@ -1618,7 +1643,10 @@ function renderMonthly() {
           nextStart: nextPeriodStart,
           students,
           unitFee: cls.fee,
-          subtotal
+          textbookFee: isAlsoTextbook ? (cls.textbookFee || 0) : 0,
+          tuitionSubtotal,
+          textbookSubtotal,
+          subtotal: tuitionSubtotal + textbookSubtotal
         });
       }
     }
@@ -1643,6 +1671,7 @@ function renderMonthly() {
         <th>老師</th>
         <th style="text-align:right;">人數</th>
         <th style="text-align:right;">每 ${state.rules.periodLength} 堂</th>
+        <th style="text-align:right;">教材費</th>
         <th style="text-align:right;">該班總金額</th>
         <th>該期最後一堂</th>
         <th>下一期第 1 堂</th>
@@ -1651,22 +1680,29 @@ function renderMonthly() {
     const feeWd = getWeekdayChar(parseYmd(r.feeDate).getDay());
     const lastDayWd = getWeekdayChar(parseYmd(r.lastDay).getDay());
     const studentWarn = r.students === 0;
+    const textbookCell = r.textbookFee > 0
+      ? `NT$${r.textbookFee.toLocaleString()}<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;letter-spacing:0.3px;">每 ${state.rules.textbookFeeEvery || 20} 堂 ・ 本期收</span>`
+      : `<span style="color:var(--ink-3);">—</span>`;
     html += `<tr class="fee-row">
       <td>${r.feeDate} (${feeWd})<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;letter-spacing:0.3px;">第 ${r.period} 期 第 ${state.rules.feeDayIndex} 堂 (繳清)</span></td>
       <td><strong>${escapeHtml(r.cls.name)}</strong><br><span style="font-size:10px;color:var(--ink-3);font-weight:400;">W${getWeekdayChar(r.cls.weekday)} ${escapeHtml(r.cls.time)} ・ ${escapeHtml(r.cls.campus)}</span></td>
       <td>${escapeHtml(r.cls.teacher)}</td>
       <td style="text-align:right;font-feature-settings:'tnum';">${studentWarn ? '<span style="color:var(--warn);">未填</span>' : r.students + ' 位'}</td>
       <td style="text-align:right;font-feature-settings:'tnum';">NT$${r.unitFee.toLocaleString()}</td>
+      <td style="text-align:right;font-feature-settings:'tnum';">${textbookCell}</td>
       <td style="text-align:right;font-feature-settings:'tnum';font-weight:600;">${studentWarn ? '—' : 'NT$' + r.subtotal.toLocaleString()}</td>
       <td>${r.lastDay} (${lastDayWd})<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;">第 ${r.period} 期 第 ${state.rules.periodLength} 堂</span></td>
       <td>${r.nextStart}<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;">第 ${r.nextPeriod} 期 第 1 堂</span></td>
     </tr>`;
   }
   // Total row
+  const totalTuition = rows.reduce((s, r) => s + r.tuitionSubtotal, 0);
+  const totalTextbook = rows.reduce((s, r) => s + r.textbookSubtotal, 0);
   html += `<tr style="background:var(--bg-2);border-top:2px solid var(--ink);">
     <td colspan="3" style="font-weight:600;letter-spacing:0.5px;">本月合計</td>
     <td style="text-align:right;font-weight:600;font-feature-settings:'tnum';">${totalStudents} 位</td>
-    <td></td>
+    <td style="text-align:right;font-feature-settings:'tnum';">NT$${totalTuition.toLocaleString()}</td>
+    <td style="text-align:right;font-feature-settings:'tnum';">${totalTextbook > 0 ? 'NT$' + totalTextbook.toLocaleString() : '—'}</td>
     <td style="text-align:right;font-weight:700;color:var(--accent);font-feature-settings:'tnum';font-size:14px;">NT$${totalAmount.toLocaleString()}</td>
     <td colspan="2"></td>
   </tr>`;
@@ -1706,6 +1742,7 @@ function renderSingle() {
     if (s.isLastIntake) badges.push('<span class="badge renew">插班最終日</span>');
     if (s.isIntakeCutoff) { rowClass = 'intake-cutoff'; badges.push('<span class="badge cutoff">禁止插班</span>'); }
     if (s.isFeeDay) { rowClass = 'fee-row'; badges.push(`<span class="badge fee">續班收費 NT$${cls.fee.toLocaleString()}</span>`); }
+    if (s.isTextbookFeeDay && (cls.textbookFee || 0) > 0) { rowClass = 'fee-row'; badges.push(`<span class="badge fee" style="font-style:italic;">教材費 NT$${cls.textbookFee.toLocaleString()}</span>`); }
     html += `<tr class="${rowClass}">
       <td>第 ${s.idx} 堂</td>
       <td>${s.date}</td>
@@ -1745,6 +1782,8 @@ function renderRules() {
   document.getElementById('rule-fee').value = r.feeDayIndex;
   document.getElementById('rule-last').value = r.lastIntakeIndex;
   document.getElementById('rule-cutoff').value = r.cutoffIndex;
+  const tbEveryInput = document.getElementById('rule-textbook-every');
+  if (tbEveryInput) tbEveryInput.value = r.textbookFeeEvery || 20;
   // 同步年度行事曆 toggle 勾選狀態
   document.querySelectorAll('.evt-tog input[data-evt]').forEach(inp => {
     inp.checked = !!state.eventFilters[inp.dataset.evt];
@@ -1813,6 +1852,7 @@ document.getElementById('class-form').addEventListener('submit', e => {
     campus: form.campus.value.trim(),
     startDate: form.startDate.value,
     fee: parseInt(form.fee.value) || 0,
+    textbookFee: parseInt(form.textbookFee.value) || 0,
     studentCount: parseInt(form.studentCount.value) || 0,
     periodCount: parseInt(form.periodCount.value) || 4,
     memo: form.memo.value.trim()
@@ -1898,7 +1938,8 @@ document.getElementById('rule-save').addEventListener('click', () => {
     alert('「收費堂」不能超過「每期堂數」');
     return;
   }
-  state.rules = {periodLength: period, renewalDayIndex: renewal, feeDayIndex: fee, lastIntakeIndex: last, cutoffIndex: cutoff};
+  const textbookEvery = Math.max(1, parseInt(document.getElementById('rule-textbook-every').value) || 20);
+  state.rules = {...state.rules, periodLength: period, renewalDayIndex: renewal, feeDayIndex: fee, lastIntakeIndex: last, cutoffIndex: cutoff, textbookFeeEvery: textbookEvery};
   saveState();
   renderAll();
   autoSyncIfCloud('saveRules');
