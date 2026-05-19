@@ -853,7 +853,7 @@
 
 <header>
   <h1>K12 收費行事曆<small>高美館校</small></h1>
-  <div class="meta" id="cloud-status">本機 localStorage</div>
+  <div class="meta" id="cloud-status"><span style="color: var(--warn);">● 雲端讀取中…</span></div>
 </header>
 
 <nav class="tabs">
@@ -1417,16 +1417,16 @@ function setCloudMsg(msg, type) {
 }
 
 function updateCloudStatusBar() {
-  const url = localStorage.getItem(CLOUD_URL_KEY);
+  const url = getCloudUrl(); // 用 helper, 預設 URL 也算
   const fetched = localStorage.getItem(CLOUD_FETCHED_KEY);
   const el = document.getElementById('cloud-status');
   if (!el) return;
   if (url && fetched) {
-    el.textContent = `雲端同步 ・ 最後讀取 ${new Date(fetched).toLocaleString('zh-TW')}`;
+    el.innerHTML = `<span style="color: var(--accent); font-weight: 500;">● 雲端同步</span> ・ 最後讀取 ${new Date(fetched).toLocaleString('zh-TW')}`;
   } else if (url) {
-    el.textContent = '雲端網址已設,尚未讀取';
+    el.innerHTML = `<span style="color: var(--warn);">● 雲端讀取中…</span>`;
   } else {
-    el.textContent = '資料來源:本機 localStorage(尚未連雲端)';
+    el.innerHTML = `<span style="color: var(--ink-3);">● 本機 (未連雲端)</span>`;
   }
 }
 
@@ -2988,8 +2988,10 @@ if (initActive && initActive.dataset.tab === 'annual') {
   if (cloudUrlInput) cloudUrlInput.value = url;
   updateCloudStatusBar();
   if (url) {
-    const ok = await fetchFromCloud(false);
+    // showMsg=true: 讓使用者看到「讀取中…」+「✓ 已從雲端讀取 N 個班別」訊息
+    const ok = await fetchFromCloud(true);
     if (ok) renderAll();
+    updateCloudStatusBar(); // 不論成功失敗都重 render 狀態列
   }
 })();
 </script>
