@@ -614,6 +614,15 @@
   .month-card .m-half-label.m-half-label-h2-only {
     margin-top: 0;
   }
+  /* 下半月-only: 上半月顯示「— 無 —」placeholder, 讓下半月內容對齊到卡片下方 */
+  .month-card .m-half-empty {
+    font-size: 11px;
+    color: var(--ink-3);
+    opacity: 0.55;
+    padding: 4px 0 6px;
+    font-style: italic;
+    letter-spacing: 0.5px;
+  }
   .month-card .m-evt {
     display: flex;
     gap: 10px;
@@ -701,6 +710,20 @@
   #annual-table table tr.is-this-week-row td:first-child {
     border-left: 3px solid var(--warn);
   }
+  /* 列表 view 事件類型 左邊條 (3px 顏色標籤, 一目了然) */
+  #annual-table table tr.row-type-start    td:first-child { border-left: 3px solid var(--accent); }
+  #annual-table table tr.row-type-class    td:first-child { border-left: 3px solid var(--ink-3); }
+  #annual-table table tr.row-type-fee      td:first-child { border-left: 3px solid var(--warn); }
+  #annual-table table tr.row-type-renewal  td:first-child { border-left: 3px solid #d4361a; }
+  #annual-table table tr.row-type-intake   td:first-child { border-left: 3px solid #c2410c; }
+  #annual-table table tr.row-type-cutoff   td:first-child { border-left: 3px solid #b91c1c; }
+  /* badge 圓潤化 */
+  #annual-table .badge { border-radius: 999px; padding: 2px 9px; font-size: 11px; font-weight: 500; letter-spacing: 0.3px; }
+  #annual-table .badge.start { background: #e3f2fd; color: var(--accent); }
+  #annual-table .badge.class-evt-badge { background: #f3f4f6; color: var(--ink-2); }
+  #annual-table .badge.fee { background: #fff7ed; color: var(--warn); }
+  #annual-table .badge.renew { background: #fef2f2; color: #d4361a; }
+  #annual-table .badge.cutoff { background: #fef2f2; color: #b91c1c; }
   .month-card .m-evt.renewal .d { color: #d4361a; }
   .month-card .m-evt.renewal .cn { color: #d4361a; font-weight: 600; }
   .month-card .m-evt.class-evt .d { color: var(--ink-3); font-size: 9.5px; }
@@ -2119,15 +2142,17 @@ function renderAnnualGrid() {
         const curHalf = day <= 15 ? 1 : 2;
         // 切到下半月時, 插入分隔線
         if (curHalf !== prevHalf) {
-          if (prevHalf === 0 && curHalf === 1 && h1Count > 0 && h2Count > 0) {
-            // 月初, 有上下半月 → 顯示 H1 label
+          if (prevHalf === 0 && curHalf === 1) {
+            // 月初, 顯示上半月 label
             html += `<div class="m-half-label">上半月 (1-15)</div>`;
           } else if (curHalf === 2 && prevHalf === 1) {
             // 跨到下半月: 畫分隔線 + label
             html += `<div class="m-half-divider"></div><div class="m-half-label">下半月 (16-31)</div>`;
           } else if (prevHalf === 0 && curHalf === 2 && h2Count > 0) {
-            // 月初沒有上半月事件, 直接到下半月
-            html += `<div class="m-half-label m-half-label-h2-only">下半月 (16-31)</div>`;
+            // 月初沒有上半月事件, 直接到下半月: 加空白「上半月」placeholder + 虛線, 讓下半月在卡片下方對齊
+            html += `<div class="m-half-label">上半月 (1-15)</div>`;
+            html += `<div class="m-half-empty">— 無 —</div>`;
+            html += `<div class="m-half-divider"></div><div class="m-half-label">下半月 (16-31)</div>`;
           }
           prevHalf = curHalf;
         }
@@ -2285,26 +2310,33 @@ function renderAnnualList() {
     let badge = '';
     let desc = '';
     if (e.type === 'period-start') {
-      badge = '<span class="badge start">期初開課</span>';
+      rowClass = (rowClass + ' row-type-start').trim();
+      badge = '<span class="badge start">▶ 開課</span>';
       desc = `第 ${e.period} 期第 1 堂`;
+    } else if (e.type === 'regular-class') {
+      rowClass = (rowClass + ' row-type-class').trim();
+      badge = '<span class="badge class-evt-badge">· 上課</span>';
+      desc = `第 ${e.period} 期 第 ${e.idxInPeriod} 堂`;
     } else if (e.type === 'last-intake') {
-      badge = '<span class="badge renew">插班最終日</span>';
+      rowClass = (rowClass + ' row-type-intake').trim();
+      badge = '<span class="badge renew">⚠ 插班最終日</span>';
       desc = `第 ${state.rules.lastIntakeIndex} 堂,本期最後可插班`;
     } else if (e.type === 'intake-cutoff') {
-      rowClass = (rowClass + ' intake-cutoff').trim();
-      badge = '<span class="badge cutoff">禁止插班</span>';
+      rowClass = (rowClass + ' intake-cutoff row-type-cutoff').trim();
+      badge = '<span class="badge cutoff">✕ 禁止插班</span>';
       desc = `第 ${state.rules.cutoffIndex} 堂起禁止插班`;
     } else if (e.type === 'fee-day') {
-      rowClass = (rowClass + ' fee-row').trim();
+      rowClass = (rowClass + ' fee-row row-type-fee').trim();
       const hasTextbook = e.isTextbookFeeDay && (e.cls.textbookFee || 0) > 0;
-      badge = `<span class="badge fee">學費繳清${hasTextbook ? ' (含教材)' : ''}</span>`;
+      badge = `<span class="badge fee">$ 學費繳清${hasTextbook ? ' (含教材)' : ''}</span>`;
       const tuition = e.cls.fee;
       const tb = hasTextbook ? e.cls.textbookFee : 0;
       desc = `第 ${e.period} 期學費 NT$${tuition.toLocaleString()}${hasTextbook ? ' + 教材 NT$' + tb.toLocaleString() : ''}`;
     } else if (e.type === 'renewal-day') {
-      rowClass = (rowClass + ' renewal-row').trim();
-      badge = '<span class="badge renew">續班週起</span>';
-      desc = `第 ${state.rules.renewalWeekStart || 8} 堂起續班通知`;
+      rowClass = (rowClass + ' renewal-row row-type-renewal').trim();
+      const endStr = e.renewalEndDate ? ` ~ ${fmtShort(e.renewalEndDate)}` : '';
+      badge = '<span class="badge renew">↻ 續班週起</span>';
+      desc = `第 ${state.rules.renewalWeekStart || 8}-${state.rules.renewalWeekEnd || 10} 堂 ・ ${fmtShort(e.date)}${endStr}`;
     }
     html += `<tr class="${rowClass}">
       <td>${e.date}</td>
