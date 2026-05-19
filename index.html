@@ -285,10 +285,62 @@
   .class-section[data-status="ongoing"] .class-card { border-left-color: var(--warn); }
   .class-section[data-status="upcoming"] .class-card { border-left-color: var(--accent); }
   .class-section[data-status="ended"] .class-card { border-left-color: var(--ink-3); }
-  .class-card .info { flex: 1; }
+  .class-card .info { flex: 1; min-width: 0; }
   .class-card .name { font-weight: 600; color: var(--ink); margin-bottom: 4px; letter-spacing: 0.3px; }
-  .class-card .sub { font-size: 11.5px; color: var(--ink-3); }
+  .class-card .sub { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; line-height: 1.7; }
   .class-card .actions button { font-size: 11px; padding: 5px 12px; }
+  /* === 班別管理 inline edit 視覺 === */
+  .cls-fld {
+    display: inline-block;
+    min-width: 1em;
+    padding: 1px 4px;
+    border-radius: 3px;
+    cursor: text;
+    transition: background 0.12s, box-shadow 0.12s;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .cls-fld:hover {
+    background: var(--bg-2);
+    box-shadow: inset 0 -1px 0 var(--accent-light);
+  }
+  .cls-fld:focus {
+    outline: none;
+    background: var(--bg-3);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+  .cls-fld-num { font-feature-settings: "tnum"; }
+  .cls-fld-hint { color: var(--ink-3); font-style: italic; font-size: 10.5px; }
+  /* 日期 input */
+  .cls-fld-date {
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0 2px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-feature-settings: "tnum";
+  }
+  .cls-fld-date:hover { background: var(--bg-2); box-shadow: inset 0 -1px 0 var(--accent-light); }
+  .cls-fld-date:focus { outline: none; background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--accent); }
+  /* select (週幾 / 期數) */
+  .cls-fld-sel {
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0 2px;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .cls-fld-sel:hover { background: var(--bg-2); box-shadow: inset 0 -1px 0 var(--accent-light); }
+  .cls-fld-sel:focus { outline: none; background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--accent); }
+  /* 視覺分隔點 */
+  .cls-sep, .cls-meta-sep { color: var(--ink-3); margin: 0 2px; user-select: none; }
+  .cls-memo-row { margin-top: 4px; }
   /* 班別管理: 進行中 / 即將開班 / 已結束 分組 */
   .class-section { margin-bottom: 20px; }
   .class-section-head {
@@ -1456,16 +1508,38 @@ function renderClasses() {
     const s = getClassStatus(c);
     groups[s].push(c);
   }
+  // inline 編輯 helper: 文字/數字欄位用 contenteditable, 日期/枚舉用 input/select
+  const f = (cls, field, val) => `<span class="cls-fld" data-cls="${cls.id}" data-field="${field}" contenteditable="true" spellcheck="false" title="點擊修改">${escapeHtml(String(val))}</span>`;
+  const fNum = (cls, field, val) => `<span class="cls-fld cls-fld-num" data-cls="${cls.id}" data-field="${field}" contenteditable="true" spellcheck="false" inputmode="numeric" title="點擊修改 (數字)">${Number(val).toLocaleString()}</span>`;
+  const fDate = (cls, field, val) => `<input type="date" class="cls-fld-date" data-cls="${cls.id}" data-field="${field}" value="${val}" title="點擊改開課日">`;
+  const fWeekday = (cls) => {
+    const opts = [0,1,2,3,4,5,6].map(w => `<option value="${w}"${w === cls.weekday ? ' selected' : ''}>W${getWeekdayChar(w)}</option>`).join('');
+    return `<select class="cls-fld-sel" data-cls="${cls.id}" data-field="weekday" title="點擊改星期">${opts}</select>`;
+  };
+  const fPeriodCount = (cls) => {
+    const cur = cls.periodCount || 4;
+    const opts = [1,2,3,4].map(n => `<option value="${n}"${n === cur ? ' selected' : ''}>${n} 期</option>`).join('');
+    return `<select class="cls-fld-sel" data-cls="${cls.id}" data-field="periodCount" title="點擊改期數">${opts}</select>`;
+  };
   const renderCard = c => `
-    <div class="class-card">
+    <div class="class-card" data-cls-id="${c.id}">
       <div class="info">
-        <div class="name">${escapeHtml(c.name)} ・ W${getWeekdayChar(c.weekday)} ${escapeHtml(c.time)}</div>
-        <div class="sub">老師：${escapeHtml(c.teacher)} ｜ 校區：${escapeHtml(c.campus)} ｜ 開課：${c.startDate} ｜ 每 10 堂 $${c.fee.toLocaleString()}${(c.textbookFee || 0) > 0 ? ` ｜ 每 20 堂教材費 $${c.textbookFee.toLocaleString()}` : ''} ｜ 人數 ${c.studentCount || 0} 位 ｜ 期數 ${c.periodCount || 4} 期</div>
-        ${c.memo ? `<div class="sub" style="margin-top:4px; color:#888;">${escapeHtml(c.memo)}</div>` : ''}
+        <div class="name">${f(c, 'name', c.name)} <span class="cls-meta-sep">・</span> ${fWeekday(c)} ${f(c, 'time', c.time)}</div>
+        <div class="sub">
+          老師 ${f(c, 'teacher', c.teacher)}
+          <span class="cls-sep">｜</span> 校區 ${f(c, 'campus', c.campus)}
+          <span class="cls-sep">｜</span> 開課 ${fDate(c, 'startDate', c.startDate)}
+          <span class="cls-sep">｜</span> 每 10 堂 $${fNum(c, 'fee', c.fee)}
+          <span class="cls-sep">｜</span> 每 20 堂教材費 $${fNum(c, 'textbookFee', c.textbookFee || 0)}
+          <span class="cls-sep">｜</span> 人數 ${fNum(c, 'studentCount', c.studentCount || 0)} 位
+          <span class="cls-sep">｜</span> 期數 ${fPeriodCount(c)}
+        </div>
+        <div class="sub cls-memo-row">
+          備註 ${f(c, 'memo', c.memo || '')}${!c.memo ? ' <span class="cls-fld-hint">(空白, 點擊輸入)</span>' : ''}
+        </div>
       </div>
       <div class="actions">
-        <button class="btn ghost" data-edit="${c.id}">編輯</button>
-        <button class="btn danger" data-delete="${c.id}">刪除</button>
+        <button class="btn danger" data-delete="${c.id}" title="刪除這個班別">刪除</button>
       </div>
     </div>
   `;
@@ -1504,26 +1578,63 @@ function renderClasses() {
       autoSyncIfCloud('saveClasses');
     }
   }));
-  list.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', e => {
-    const id = e.target.dataset.edit;
-    const c = state.classes.find(x => x.id === id);
-    if (!c) return;
-    const form = document.getElementById('class-form');
-    form.name.value = c.name;
-    form.weekday.value = c.weekday;
-    form.time.value = c.time;
-    form.teacher.value = c.teacher;
-    form.campus.value = c.campus;
-    form.startDate.value = c.startDate;
-    form.fee.value = c.fee;
-    form.textbookFee.value = c.textbookFee || 0;
-    form.studentCount.value = c.studentCount || 0;
-    form.periodCount.value = c.periodCount || 4;
-    form.memo.value = c.memo || '';
-    form.dataset.editingId = id;
-    form.closest('details').open = true;
-    form.scrollIntoView({behavior: 'smooth'});
-  }));
+
+  // ====== Inline edit: contenteditable 欄位 (name/teacher/campus/time/memo/fee/textbookFee/studentCount) ======
+  const NUM_FIELDS = new Set(['fee', 'textbookFee', 'studentCount']);
+  list.querySelectorAll('.cls-fld').forEach(el => {
+    el.dataset.orig = el.textContent;
+    el.addEventListener('focus', () => { el.dataset.orig = el.textContent; });
+    el.addEventListener('blur', () => {
+      const id = el.dataset.cls;
+      const field = el.dataset.field;
+      const cls = state.classes.find(c => c.id === id);
+      if (!cls) return;
+      let raw = el.textContent.trim();
+      let newVal;
+      if (NUM_FIELDS.has(field)) {
+        newVal = parseInt(raw.replace(/[^\d]/g, '')) || 0;
+        el.textContent = newVal.toLocaleString(); // 重 format 顯示
+      } else {
+        newVal = raw;
+      }
+      if (String(cls[field] || '') !== String(newVal)) {
+        cls[field] = newVal;
+        saveState();
+        // 重 render 全部 (狀態可能變動: 改 startDate 等)
+        renderAll();
+        autoSyncIfCloud('saveClasses');
+      }
+    });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+      if (e.key === 'Escape') { e.preventDefault(); el.textContent = el.dataset.orig; el.blur(); }
+    });
+  });
+  // ====== Inline edit: input[type=date] (startDate) ======
+  list.querySelectorAll('.cls-fld-date').forEach(el => {
+    el.addEventListener('change', () => {
+      const id = el.dataset.cls;
+      const cls = state.classes.find(c => c.id === id);
+      if (!cls) return;
+      cls.startDate = el.value;
+      saveState();
+      renderAll();
+      autoSyncIfCloud('saveClasses');
+    });
+  });
+  // ====== Inline edit: select (weekday/periodCount) ======
+  list.querySelectorAll('.cls-fld-sel').forEach(el => {
+    el.addEventListener('change', () => {
+      const id = el.dataset.cls;
+      const field = el.dataset.field;
+      const cls = state.classes.find(c => c.id === id);
+      if (!cls) return;
+      cls[field] = parseInt(el.value) || 0;
+      saveState();
+      renderAll();
+      autoSyncIfCloud('saveClasses');
+    });
+  });
 }
 
 function collectYearEvents(year, classFilter) {
