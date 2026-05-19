@@ -517,6 +517,40 @@
     margin: 0;
     padding: 5px 0;
   }
+  /* 多班同日: 數字 badge pill (取代 ×N 文字) */
+  .month-card .m-evt .evt-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px; height: 18px;
+    padding: 0 6px;
+    border-radius: 9px;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0 5px 0 4px;
+    letter-spacing: 0;
+    font-feature-settings: "tnum";
+    vertical-align: 1px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+  }
+  /* 各事件類型 badge 配色 (顯式設定, 不用 currentColor 避免被內部 color 蓋過) */
+  .month-card .m-evt.fee .evt-count   { background: var(--warn); }
+  .month-card .m-evt.start .evt-count { background: var(--accent); }
+  .month-card .m-evt.renewal .evt-count { background: var(--renewal); }
+  /* 班別名稱: 比 label 略輕 */
+  .month-card .m-evt .evt-names { font-weight: 500; }
+  /* 事件型 label: 與 currentColor 同色 + 粗體 */
+  .month-card .m-evt .evt-label { font-weight: 700; }
+  /* 金額: tabular-nums, 略小 */
+  .month-card .m-evt .evt-amount {
+    margin-left: 6px;
+    font-feature-settings: "tnum";
+    font-weight: 600;
+    font-size: 0.95em;
+    opacity: 0.85;
+  }
   /* 白底+藍橙漸層: 學費繳清=橙色 (付款警示); 開課=藍色 (主要事件); 續班=藍灰 */
   .month-card .m-evt.fee .d { color: var(--warn); }
   .month-card .m-evt.fee .cn { color: var(--warn); font-weight: 700; }
@@ -1647,28 +1681,33 @@ function renderAnnualGrid() {
         const count = g.events.length;
         const classNames = g.events.map(e => escapeHtml(e.cls.name)).join('、');
         let cls = '', txt = '';
+        // count > 1 時, 用 evt-count badge 取代 "×N:" 文字, 視覺更專業
+        const countBadge = count > 1 ? `<span class="evt-count" title="共 ${count} 班">${count}</span>` : '';
+        const sep = ' ・ '; // 班別之間的分隔
+        const niceNames = g.events.map(e => escapeHtml(e.cls.name)).join(sep);
         if (g.type === 'period-start') {
           cls = 'start';
-          txt = count > 1 ? `開課 ×${count}: ${classNames}` : `${classNames} 開課`;
+          txt = count > 1
+            ? `<span class="evt-label">開課</span>${countBadge}<span class="evt-names">${niceNames}</span>`
+            : `${niceNames} <span class="evt-label">開課</span>`;
         } else if (g.type === 'renewal-day') {
           cls = 'renewal';
-          // 顯示「續班週 (X/Y-X/Z)」, 跨日範圍
           const endDate = g.events[0].renewalEndDate;
-          const rangeStr = endDate ? ` ${fmtShort(g.date)} ~ ${fmtShort(endDate)}` : '';
+          const rangeStr = endDate ? ` ${fmtShort(g.date)}–${fmtShort(endDate)}` : '';
           txt = count > 1
-            ? `續班週${rangeStr} ×${count}: ${classNames}`
-            : `${classNames} 續班週${rangeStr}`;
+            ? `<span class="evt-label">續班週${rangeStr}</span>${countBadge}<span class="evt-names">${niceNames}</span>`
+            : `${niceNames} <span class="evt-label">續班週${rangeStr}</span>`;
         } else if (g.type === 'fee-day') {
           cls = 'fee';
-          // 學費 + (若同日為教材費日) 教材費, 合併呈現
           const tuition = g.events.reduce((sum, e) => sum + (e.cls.fee || 0) * (e.cls.studentCount || 0), 0);
           const textbook = g.events.reduce((sum, e) => sum + (e.isTextbookFeeDay && e.cls.textbookFee ? (e.cls.textbookFee || 0) * (e.cls.studentCount || 0) : 0), 0);
           const total = tuition + textbook;
           const hasTextbook = textbook > 0;
           const tag = hasTextbook ? ' (含教材)' : '';
+          const totalStr = total > 0 ? `<span class="evt-amount">NT$${total.toLocaleString()}</span>` : '';
           txt = count > 1
-            ? `學費繳清${tag} ×${count}: ${classNames}${total > 0 ? ' 合計 $' + total.toLocaleString() : ''}`
-            : `${classNames} 學費繳清${tag}${total > 0 ? ' $' + total.toLocaleString() : ''}`;
+            ? `<span class="evt-label">學費繳清${tag}</span>${countBadge}<span class="evt-names">${niceNames}</span>${totalStr}`
+            : `${niceNames} <span class="evt-label">學費繳清${tag}</span>${total > 0 ? ' ' + totalStr : ''}`;
         }
         // 第一個事件當 override key 載體
         const firstEvt = g.events[0];
