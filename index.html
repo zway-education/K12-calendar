@@ -446,7 +446,7 @@
   .month-card .m-evt.renewal .cn { color: var(--renewal); }
   .month-card .m-evt.class-evt .d { color: var(--ink-3); font-size: 9.5px; }
   .month-card .m-evt.class-evt .cn { color: var(--ink-3); font-size: 10px; }
-  /* 當週 row 底色 (瑞士風: 紅色實心邊條 + 極淡灰底) */
+  /* 當週 row: 文字底黃色 highlighter (marker pen 風) + 保留紅色邊條 + 極淡灰底 */
   .month-card .m-evt.is-this-week {
     background: var(--bg-2);
     margin: 0 -18px;
@@ -458,6 +458,20 @@
     content: "THIS WEEK";
     position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
     font-size: 9px; color: var(--accent); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  /* 當週 / 今天: .cn 文字底部黃色 highlighter */
+  .month-card .m-evt.is-this-week .cn {
+    background-image: linear-gradient(to top, #ffe066 0%, #ffe066 28%, transparent 28%);
+    padding: 0 2px;
+  }
+  /* 今天: 黃色更飽和 + 粗體, 直接覆寫 is-this-week */
+  .month-card .m-evt.is-today .cn {
+    background-image: linear-gradient(to top, #ffd400 0%, #ffd400 38%, transparent 38%);
+    padding: 0 2px;
+    font-weight: 700;
+  }
+  .month-card .m-evt.is-today::after {
+    content: "TODAY";
   }
   /* 當月格邊框強調 */
   .month-card.is-current-month {
@@ -1449,7 +1463,8 @@ function renderAnnualGrid() {
         const noteText = (ov && ov.note) ? `　<small style="color:var(--ink-3);font-style:italic;">${escapeHtml(ov.note)}</small>` : '';
         const isEdited = (ov && (ov.text != null || ov.note));
         const isThisWeek = (year === todayYear && m === todayMonth && wkNum === todayWeek);
-        html += `<div class="m-evt ${cls}${isEdited ? ' is-edited' : ''}${isThisWeek ? ' is-this-week' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}">
+        const isToday = (year === todayYear && m === todayMonth && day === _today.getDate());
+        html += `<div class="m-evt ${cls}${isEdited ? ' is-edited' : ''}${isThisWeek ? ' is-this-week' : ''}${isToday ? ' is-today' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}">
           <span class="d">${String(day).padStart(2,'0')}・${wd}<small style="color:var(--ink-3);margin-left:3px;font-size:10px;">W${wkNum}</small></span>
           <span class="cn" contenteditable="true" spellcheck="false" data-edit-text="1" title="點擊直接編輯,Enter/點別處存,Esc 取消">${displayText}${noteText}</span>${isEdited ? `<span class="evt-revert" title="還原預設文字" data-revert-key="${ovKey}">↺</span>` : ''}
         </div>`;
