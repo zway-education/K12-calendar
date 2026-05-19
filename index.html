@@ -1878,6 +1878,16 @@ function loadEditableRules() {
   });
 }
 
+// ====== URL ?reset=1 自動清 localStorage (覆蓋本機手動編輯) ======
+if (new URLSearchParams(location.search).has('reset')) {
+  try { localStorage.clear(); } catch(e) {}
+  // 清掉 URL 參數,避免 reload 又觸發
+  const cleanUrl = location.origin + location.pathname;
+  history.replaceState({}, '', cleanUrl);
+  // 顯示一個 toast
+  setTimeout(() => alert('已重置本機編輯,套用最新程式預設值'), 100);
+}
+
 // ====== Init ======
 loadState();
 loadEventOverrides();
