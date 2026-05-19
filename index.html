@@ -1096,6 +1096,11 @@ const STORAGE_KEY = 'k12_fee_calendar_v1';
 const HOLIDAYS_KEY = 'k12_fee_holidays_v2'; // v2: 修端午為 6/19-6/21 (舊 v1 是 6/10-6/12)
 const RULES_KEY = 'k12_fee_rules_v1';
 const CLOUD_URL_KEY = 'k12_fee_cloud_url_v1';
+// 預設 Apps Script Web App 網址 (使用者不用再每次貼)
+const DEFAULT_CLOUD_URL = 'https://script.google.com/macros/s/AKfycbynNdXV3lhp_OV_UJU0ywTOPXYuyN_FL9bBredZL5Ab5XwKDAkXqsdgKOBFQpQ6gW6Abg/exec';
+function getCloudUrl() {
+  return localStorage.getItem(CLOUD_URL_KEY) || DEFAULT_CLOUD_URL;
+}
 const CLOUD_FETCHED_KEY = 'k12_fee_cloud_fetched_v1';
 const EVT_OVERRIDE_KEY = 'k12_fee_evt_overrides_v1';
 // 行事曆事件覆寫 {key: {text?, note?}}, key = classId__idx__type
@@ -1303,7 +1308,7 @@ function fetchViaJSONP(url, timeoutMs = 15000) {
 }
 
 async function fetchFromCloud(showMsg = true) {
-  const url = localStorage.getItem(CLOUD_URL_KEY);
+  const url = getCloudUrl();
   if (!url) return false;
   const isOrgUrl = url.includes('/a/macros/');
   try {
@@ -1336,7 +1341,7 @@ async function fetchFromCloud(showMsg = true) {
 
 // 用 text/plain 避開 CORS 預檢
 async function pushToCloud(action) {
-  const url = localStorage.getItem(CLOUD_URL_KEY);
+  const url = getCloudUrl();
   if (!url) return { ok: false, reason: '未設雲端網址' };
   const payload = {
     action,
@@ -1371,7 +1376,8 @@ async function pushToCloud(action) {
 
 // 班別/規則/連假改完後若有設雲端,自動推上去
 async function autoSyncIfCloud(action = 'saveAll') {
-  if (localStorage.getItem(CLOUD_URL_KEY)) {
+  // 有 default URL, 所以永遠會推 (不再需要 localStorage 才推)
+  if (getCloudUrl()) {
     await pushToCloud(action);
   }
 }
@@ -2729,7 +2735,7 @@ document.getElementById('cloud-save').addEventListener('click', () => {
 });
 
 document.getElementById('cloud-test').addEventListener('click', async () => {
-  const url = document.getElementById('cloud-url').value.trim() || localStorage.getItem(CLOUD_URL_KEY);
+  const url = document.getElementById('cloud-url').value.trim() || getCloudUrl();
   if (!url) { setCloudMsg('請先貼上網址', 'err'); return; }
   const isOrgUrl = url.includes('/a/macros/');
   setCloudMsg(isOrgUrl ? '測試中 (JSONP 模式)…' : '測試中…', 'info');
@@ -2936,11 +2942,11 @@ if (initActive && initActive.dataset.tab === 'annual') {
     document.querySelector('.view-toggle button.active')?.dataset.view === 'grid');
 }
 
-// 開啟時若已設雲端網址,自動從雲端拉一次
+// 開啟時自動從雲端拉一次 (有 DEFAULT_CLOUD_URL 內建)
 (async () => {
-  const url = localStorage.getItem(CLOUD_URL_KEY);
+  const url = getCloudUrl();
   const cloudUrlInput = document.getElementById('cloud-url');
-  if (cloudUrlInput && url) cloudUrlInput.value = url;
+  if (cloudUrlInput) cloudUrlInput.value = url;
   updateCloudStatusBar();
   if (url) {
     const ok = await fetchFromCloud(false);
