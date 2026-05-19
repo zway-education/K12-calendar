@@ -313,8 +313,25 @@
   .hw-chip strong { font-weight: 600; }
   .hw-chip .range { color: var(--ink-2); font-feature-settings: "tnum"; }
   .hw-chip .countdown { color: var(--ink-3); font-size: 10px; margin-left: 4px; }
-  .hw-edit { color: var(--ink-3); font-size: 10px; padding: 3px 8px; background: transparent; border: 1px dashed var(--line); cursor: pointer; }
-  .hw-edit:hover { border-color: var(--ink-2); color: var(--ink-2); }
+  .hw-add { color: var(--ink-3); font-size: 10px; padding: 3px 8px; background: transparent; border: 1px dashed var(--line); cursor: pointer; }
+  .hw-add:hover { border-color: var(--ink-2); color: var(--ink-2); }
+  .hw-chip strong[contenteditable="true"] {
+    outline: none;
+    cursor: text;
+  }
+  .hw-chip strong[contenteditable="true"]:hover { background: var(--bg-2); }
+  .hw-chip strong[contenteditable="true"]:focus { background: #fffaf0; box-shadow: inset 0 0 0 1px currentColor; }
+  .hw-chip .hw-date {
+    border: 1px solid var(--line); background: var(--bg); color: currentColor;
+    padding: 1px 3px; font-size: 10px; font-family: inherit;
+    font-feature-settings: "tnum";
+  }
+  .hw-chip .hw-date:focus { outline: none; border-color: currentColor; }
+  .hw-chip .hw-del {
+    background: transparent; border: none; color: var(--ink-3);
+    font-size: 13px; cursor: pointer; padding: 0 4px; line-height: 1;
+  }
+  .hw-chip .hw-del:hover { color: var(--warn); }
   /* 12-month grid view - 設計成單一畫面顯示 12 格不用滾動 */
   body.compact-grid { overflow: hidden; height: 100vh; }
   body.compact-grid main { height: calc(100vh - 75px); overflow: hidden; padding-bottom: 6px; }
@@ -507,6 +524,31 @@
     letter-spacing: 0.5px;
   }
   .view-toggle button.active { background: var(--ink); color: var(--bg); }
+  /* 上下半年切換 */
+  .half-toggle {
+    display: inline-flex;
+    background: var(--bg);
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    overflow: hidden;
+  }
+  .half-toggle button {
+    background: transparent;
+    border: none;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--ink-2);
+    letter-spacing: 0.5px;
+  }
+  .half-toggle button.active { background: var(--ink); color: var(--bg); }
+  /* 上下半年模式: 6 月格佔滿(2 列 x 3 欄) */
+  .year-grid.half-mode {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+  @media (max-width: 1000px) { .year-grid.half-mode { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); } }
   .legend {
     display: flex;
     gap: 14px;
@@ -663,8 +705,13 @@
       <select id="filter-class"><option value="all">全部班別</option></select>
     </label>
     <span class="view-toggle">
-      <button data-view="grid" class="active">12 月方格</button>
+      <button data-view="grid" class="active">方格</button>
       <button data-view="list">列表</button>
+    </span>
+    <span class="half-toggle">
+      <button data-half="all" class="active">全年</button>
+      <button data-half="h1">上半年</button>
+      <button data-half="h2">下半年</button>
     </span>
     <span class="event-toggles">
       <label class="evt-tog"><input type="checkbox" data-evt="start" checked> <span class="lg-start">●</span> 開課</label>
@@ -814,7 +861,8 @@ const DEFAULT_HOLIDAYS = [
 const DEFAULT_RULES = {
   periodLength: 10,     // 一期幾堂
   feeDayIndex: 1,       // 第幾堂學費繳清 (每期第 1 堂)
-  renewalDayIndex: 7,   // 上一期第幾堂發續班通知
+  renewalWeekStart: 8,  // 續班週起始堂 (該期第 8 堂)
+  renewalWeekEnd: 10,   // 續班週結束堂 (該期第 10 堂)
   lastIntakeIndex: 3,   // 第幾堂為插班最終日
   cutoffIndex: 4,       // 第幾堂起禁止插班
 };
@@ -1010,11 +1058,11 @@ function getMonthWeek(d) {
 function isoWeekOfYmd(ymdStr) {
   return getMonthWeek(parseYmd(ymdStr));
 }
-// 某月週次範圍 (e.g. 6月有 5 週 → M1-M5)
+// 某月週次範圍 (e.g. 6月有 5 週 → W1-W5, W = 該月第幾週)
 function monthWeekRange(year, month) {
   const lastDay = new Date(year, month, 0).getDate();
   const wEnd = Math.ceil(lastDay / 7);
-  return wEnd === 1 ? 'M1' : `M1-M${wEnd}`;
+  return wEnd === 1 ? 'W1' : `W1-W${wEnd}`;
 }
 
 // Generate N class dates starting from startDate, on given weekday, skipping holidays
@@ -1039,24 +1087,27 @@ function generateClassDates(startDate, weekday, count, holidays) {
 // Returns array of {idx (1-based), date, isFeeDay, isIntakeCutoff, isPeriodStart, isRenewalDay, period}
 function expandClassSchedule(cls, periodCountOverride) {
   const P = state.rules.periodLength || 10;
-  const FEE = state.rules.feeDayIndex || 7;
-  const REN = state.rules.renewalDayIndex || state.rules.feeDayIndex || 7;
+  const FEE = state.rules.feeDayIndex || 1;
+  // 續班週: 該期第 8-10 堂 (= 該期最後 3 堂)
+  const REN_START = state.rules.renewalWeekStart || (P - 2);  // 預設第 8 堂
+  const REN_END = state.rules.renewalWeekEnd || P;           // 預設第 10 堂
   const CUT = state.rules.cutoffIndex || 4;
   const LAST = state.rules.lastIntakeIndex || 3;
-  // 每班自己的期數 (1~4), 預設 4 期
   const periodCount = periodCountOverride || cls.periodCount || 4;
   const allDates = generateClassDates(cls.startDate, cls.weekday, P * periodCount, state.holidays);
   return allDates.map((date, i) => {
     const idx = i + 1;
     const period = Math.floor(i / P) + 1;
     const idxInPeriod = (i % P) + 1;
+    const isRenewal = idxInPeriod >= REN_START && idxInPeriod <= REN_END;
     return {
       idx,
       date,
       period,
       idxInPeriod,
       isPeriodStart: idxInPeriod === 1,
-      isRenewalDay: idxInPeriod === REN,
+      isRenewalDay: isRenewal,           // 續班週 (3 堂連續)
+      renewalDayOfWeek: isRenewal ? (idxInPeriod - REN_START + 1) : 0, // 續班週第幾天 (1-3)
       isFeeDay: idxInPeriod === FEE,
       isIntakeCutoff: idxInPeriod === CUT,
       isLastIntake: idxInPeriod === LAST,
@@ -1184,8 +1235,14 @@ function renderAnnualGrid() {
     byMonth[m].push(e);
   }
 
-  let html = '<div class="year-grid">';
-  for (let m = 1; m <= 12; m++) {
+  // 上下半年篩選
+  const half = state.annualHalf || 'all';
+  const mStart = half === 'h2' ? 7 : 1;
+  const mEnd   = half === 'h1' ? 6 : 12;
+  const gridClass = half === 'all' ? 'year-grid' : 'year-grid half-mode';
+
+  let html = `<div class="${gridClass}">`;
+  for (let m = mStart; m <= mEnd; m++) {
     const monthEvents = byMonth[m].sort((a, b) => a.date.localeCompare(b.date));
     // 按 toggle 篩出要顯示的事件
     const showEvents = monthEvents.filter(e => {
@@ -1231,7 +1288,9 @@ function renderAnnualGrid() {
           txt = `${escapeHtml(e.cls.name)} 開課`;
         } else if (e.type === 'renewal-day') {
           cls = 'renewal';
-          txt = `${escapeHtml(e.cls.name)} 續班`;
+          const dw = e.renewalDayOfWeek || 1;
+          const totalDays = (state.rules.renewalWeekEnd || 10) - (state.rules.renewalWeekStart || 8) + 1;
+          txt = `${escapeHtml(e.cls.name)} 續班週 (${dw}/${totalDays})`;
         } else if (e.type === 'fee-day') {
           cls = 'fee';
           const subtotal = (e.cls.fee || 0) * (e.cls.studentCount || 0);
@@ -1246,7 +1305,7 @@ function renderAnnualGrid() {
         const wkNum = isoWeekOfYmd(e.date);
         const isEdited = (ov && (ov.text != null || ov.note));
         html += `<div class="m-evt ${cls}${isEdited ? ' is-edited' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}">
-          <span class="d">${String(day).padStart(2,'0')}・${wd}<small style="color:var(--ink-3);margin-left:3px;font-size:9px;">M${wkNum}</small></span>
+          <span class="d">${String(day).padStart(2,'0')}・${wd}<small style="color:var(--ink-3);margin-left:3px;font-size:9px;">W${wkNum}</small></span>
           <span class="cn" contenteditable="true" spellcheck="false" data-edit-text="1" title="點擊直接編輯,Enter/點別處存,Esc 取消">${displayText.replace(/<small[^>]*>.*?<\/small>/g, '')}</span>${isEdited ? `<span class="evt-revert" title="還原預設文字" data-revert-key="${ovKey}">↺</span>` : ''}
         </div>`;
       }
@@ -1356,29 +1415,33 @@ function renderHighlightWeeks() {
     } else {
       countdown = '(已過)';
     }
-    return `<span class="hw-chip" style="color:${w.color}">
-      <strong>${escapeHtml(w.label)}</strong>
-      <span class="range">${fmtShort(w.start)} - ${fmtShort(w.end)}</span>
+    return `<span class="hw-chip" data-hw-idx="${i}" style="color:${w.color}">
+      <strong contenteditable="true" spellcheck="false" data-hw-field="label" data-hw-idx="${i}" title="點擊改名">${escapeHtml(w.label)}</strong>
+      <input type="date" class="hw-date" data-hw-field="start" data-hw-idx="${i}" value="${w.start}" title="開始日">
+      -
+      <input type="date" class="hw-date" data-hw-field="end" data-hw-idx="${i}" value="${w.end}" title="結束日">
       <span class="countdown">${countdown}</span>
+      <button class="hw-del" data-hw-idx="${i}" title="刪除這個">×</button>
     </span>`;
   }).join('');
-  target.innerHTML = `<div class="hw-banner">${chips}<button class="hw-edit" id="hw-edit-btn">✎ 編輯</button></div>`;
-  document.getElementById('hw-edit-btn')?.addEventListener('click', openHwEdit);
+  target.innerHTML = `<div class="hw-banner">${chips}<button class="hw-add" id="hw-add-btn">＋ 加重點週</button></div>`;
 }
 
-function openHwEdit() {
-  const lines = state.highlightWeeks.map(w => `${w.label}|${w.start}|${w.end}|${w.color}`).join('\n');
-  const input = prompt('編輯重點週 (每行格式: 名稱|開始YYYY-MM-DD|結束YYYY-MM-DD|顏色)', lines);
-  if (input == null) return;
-  const parsed = input.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
-    const [label, start, end, color] = l.split('|').map(s => s.trim());
-    return { label, start, end, color: color || '#888' };
-  }).filter(w => w.label && w.start && w.end);
-  if (parsed.length > 0) {
-    state.highlightWeeks = parsed;
-    saveState();
-    renderHighlightWeeks();
-  }
+function addHighlightWeek() {
+  state.highlightWeeks.push({ label: '新週', start: '2026-01-01', end: '2026-01-07', color: '#888' });
+  saveState();
+  renderHighlightWeeks();
+}
+function deleteHighlightWeek(i) {
+  state.highlightWeeks.splice(i, 1);
+  saveState();
+  renderHighlightWeeks();
+}
+function updateHighlightWeek(i, field, value) {
+  if (!state.highlightWeeks[i]) return;
+  state.highlightWeeks[i][field] = value;
+  saveState();
+  renderHighlightWeeks();
 }
 
 function renderAnnual() {
@@ -1662,8 +1725,34 @@ document.querySelectorAll('.view-toggle button').forEach(btn => {
     const v = btn.dataset.view;
     document.getElementById('annual-grid').style.display = (v === 'grid') ? '' : 'none';
     document.getElementById('annual-table').style.display = (v === 'list') ? '' : 'none';
-    // 切到列表時解鎖 body 滾動
     document.body.classList.toggle('compact-grid', v === 'grid');
+  });
+});
+
+// 重點週 chip 編輯/刪除/新增
+document.getElementById('highlight-weeks').addEventListener('click', e => {
+  if (e.target.id === 'hw-add-btn') return addHighlightWeek();
+  const del = e.target.closest('.hw-del');
+  if (del) return deleteHighlightWeek(parseInt(del.dataset.hwIdx));
+});
+document.getElementById('highlight-weeks').addEventListener('change', e => {
+  const inp = e.target.closest('.hw-date');
+  if (!inp) return;
+  updateHighlightWeek(parseInt(inp.dataset.hwIdx), inp.dataset.hwField, inp.value);
+});
+document.getElementById('highlight-weeks').addEventListener('blur', e => {
+  const ed = e.target.closest('strong[data-hw-field="label"]');
+  if (!ed) return;
+  updateHighlightWeek(parseInt(ed.dataset.hwIdx), 'label', ed.textContent.trim());
+}, true);
+
+// 上下半年切換
+document.querySelectorAll('.half-toggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.half-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.annualHalf = btn.dataset.half;
+    renderAnnualGrid();
   });
 });
 
