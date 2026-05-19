@@ -617,8 +617,10 @@
   details[open] summary { margin-bottom: 8px; }
   .toolbar { margin-bottom: 14px; padding: 10px 14px; background: var(--bg); border-radius: 0; border: 1px solid var(--line); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .toolbar label { font-size: 12px; color: var(--ink-2); }
-  .holiday-list { font-size: 11px; color: var(--ink-3); padding: 8px 0; letter-spacing: 0.3px; }
-  .holiday-list .tag { background: transparent; border: 1px solid var(--line); padding: 2px 8px; border-radius: 0; margin-right: 4px; display: inline-block; margin-bottom: 4px; color: var(--ink-2); font-feature-settings: "tnum"; }
+  .holiday-list { font-size: 12px; color: var(--ink-3); padding: 8px 0; letter-spacing: 0.3px; }
+  .holiday-list .tag { background: transparent; border: 1px solid var(--line); padding: 3px 4px 3px 10px; border-radius: 0; margin: 0 4px 6px 0; display: inline-flex; align-items: center; gap: 4px; color: var(--ink-2); font-feature-settings: "tnum"; }
+  .holiday-list .tag-del { background: transparent; border: none; color: var(--ink-3); cursor: pointer; padding: 0 4px; font-size: 11px; line-height: 1; }
+  .holiday-list .tag-del:hover { color: var(--warn); background: var(--bg-2); }
   textarea { font-family: inherit; font-size: 12px; padding: 8px; border: 1px solid var(--line); border-radius: 0; width: 100%; background: var(--bg); color: var(--ink); }
   textarea:focus { outline: none; border-color: var(--ink); }
 </style>
@@ -809,14 +811,21 @@
   <div id="rule-preview" style="margin-top: 8px; padding: 10px 14px; background: var(--bg-2); font-size: 12px; color: var(--ink-2); line-height: 1.7; letter-spacing: 0.3px;"></div>
 
   <h3 style="font-size: 14px; color: var(--ink); margin: 24px 0 8px; letter-spacing: 0.5px;">跳過日期（國定假日/校內定假日）</h3>
-  <p style="font-size: 11.5px; color: var(--ink-3); margin: 0 0 8px;">每行一個日期,格式 YYYY-MM-DD。例如清明連假 2026-04-04。</p>
-  <textarea id="holidays-area" rows="10" placeholder="2026-04-04&#10;2026-05-02&#10;2026-07-04"></textarea>
-  <div style="margin-top: 8px;">
-    <button class="btn" id="save-holidays">儲存跳過日期</button>
+  <p style="font-size: 11.5px; color: var(--ink-3); margin: 0 0 8px;">點 ✗ 移除某天(該天上課恢復);用 + 加日期。預設為 2026 行政院公告連假。</p>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0;">
+    <input type="date" id="holiday-add-input" style="font-size: 12px; padding: 4px 8px;">
+    <button class="btn" id="holiday-add-btn">＋ 加日期</button>
+    <button class="btn ghost" id="holiday-reset-btn">↺ 回 2026 國定假日預設</button>
+    <button class="btn danger" id="holiday-clear-btn">✗ 全部清空</button>
   </div>
 
-  <h3 style="font-size: 14px; color: var(--ink); margin: 24px 0 8px; letter-spacing: 0.5px;">當前跳過日期</h3>
+  <h3 style="font-size: 14px; color: var(--ink); margin: 16px 0 8px; letter-spacing: 0.5px;">當前跳過日期 <small id="holiday-count" style="color:var(--ink-3);font-weight:400;font-size:11px;"></small></h3>
   <div id="holiday-display" class="holiday-list"></div>
+  <details style="margin-top: 16px;">
+    <summary style="font-size: 11px; color: var(--ink-3); cursor: pointer;">▸ 進階：直接編輯文字 (每行一個日期)</summary>
+    <textarea id="holidays-area" rows="6" placeholder="2026-04-04&#10;2026-05-02" style="margin-top: 6px; font-family: ui-monospace, monospace;"></textarea>
+    <button class="btn" id="save-holidays" style="margin-top: 6px;">儲存跳過日期</button>
+  </details>
 </section>
 
 </main>
@@ -1649,10 +1658,18 @@ function renderSingle() {
 }
 
 function renderHolidays() {
-  document.getElementById('holidays-area').value = state.holidays.join('\n');
-  document.getElementById('holiday-display').innerHTML = state.holidays.length
-    ? state.holidays.map(h => `<span class="tag">${h}</span>`).join('')
-    : '<i>(無)</i>';
+  const area = document.getElementById('holidays-area');
+  if (area) area.value = state.holidays.join('\n');
+  const display = document.getElementById('holiday-display');
+  if (display) {
+    // 排序後顯示, 每個 tag 加 ✗ 可刪除
+    const sorted = [...state.holidays].sort();
+    display.innerHTML = sorted.length
+      ? sorted.map(h => `<span class="tag holiday-tag" data-date="${h}">${h}<button class="tag-del" data-del-date="${h}" title="移除這天 (此天恢復上課)">✗</button></span>`).join('')
+      : '<i>(無)</i>';
+  }
+  const cnt = document.getElementById('holiday-count');
+  if (cnt) cnt.textContent = state.holidays.length ? `(共 ${state.holidays.length} 天)` : '';
 }
 
 function renderRules() {
@@ -1845,6 +1862,47 @@ document.getElementById('save-holidays').addEventListener('click', () => {
   renderAll();
   autoSyncIfCloud('saveHolidays');
   if (!localStorage.getItem(CLOUD_URL_KEY)) alert('已儲存跳過日期');
+});
+
+// 加日期 (date input + 加按鈕)
+document.getElementById('holiday-add-btn')?.addEventListener('click', () => {
+  const inp = document.getElementById('holiday-add-input');
+  const d = inp.value;
+  if (!d) { alert('請先選日期'); return; }
+  if (state.holidays.includes(d)) { alert('這天已在清單中'); return; }
+  state.holidays.push(d);
+  saveState();
+  renderAll();
+  inp.value = '';
+  autoSyncIfCloud('saveHolidays');
+});
+
+// 點 ✗ 移除某天
+document.getElementById('holiday-display')?.addEventListener('click', e => {
+  const del = e.target.closest('.tag-del');
+  if (!del) return;
+  state.holidays = state.holidays.filter(d => d !== del.dataset.delDate);
+  saveState();
+  renderAll();
+  autoSyncIfCloud('saveHolidays');
+});
+
+// ↺ 回 2026 預設
+document.getElementById('holiday-reset-btn')?.addEventListener('click', () => {
+  if (!confirm('回 2026 行政院公告連假預設(共 ' + DEFAULT_HOLIDAYS.length + ' 天)?目前的編輯會被覆蓋')) return;
+  state.holidays = [...DEFAULT_HOLIDAYS];
+  saveState();
+  renderAll();
+  autoSyncIfCloud('saveHolidays');
+});
+
+// ✗ 全部清空
+document.getElementById('holiday-clear-btn')?.addEventListener('click', () => {
+  if (!confirm('全部清空跳過日期?所有班別將不再跳過任何日子')) return;
+  state.holidays = [];
+  saveState();
+  renderAll();
+  autoSyncIfCloud('saveHolidays');
 });
 
 document.getElementById('export-json').addEventListener('click', () => {

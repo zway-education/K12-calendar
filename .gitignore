@@ -4,6 +4,7 @@ Thumbs.db
 *.log
 
 # 排除原型版本檔 (deploy 用 index.html)
+k12年度行事曆.html
 K12_收費行事曆原型_v1.html
 
 # 排除學生名單基準資料 (含個資)
