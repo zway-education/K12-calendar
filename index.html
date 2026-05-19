@@ -6,18 +6,34 @@
 <title>K12 收費行事曆原型 v1</title>
 <style>
   :root {
-    /* 瑞士國際排版風 (Swiss International Typographic Style) */
-    --ink: #1d1d1b;         /* sw-black: 主文字 */
-    --ink-2: #555555;       /* sw-fg-soft: 次文字 */
-    --ink-3: #8a8a8a;       /* 輔助文字 */
-    --line: #e6e6e3;        /* sw-grey-1: 細邊框 */
-    --line-2: #1d1d1b;      /* sw-black: 強邊框/hairline */
-    --bg: #ffffff;          /* sw-white: 純白 */
-    --bg-2: #f5f5f3;        /* 極淺灰: 當週底色 */
-    --accent: #d4361a;      /* sw-red: 單一強調色 (學費繳清/重要事件) */
-    --warn: #d4361a;        /* 統一用瑞士紅 */
-    --ok: #1d1d1b;          /* 簡化:開課用黑色粗體 (不再用綠) */
-    --renewal: #555555;     /* 續班用次文字灰 */
+    /* 白底 + 藍橙漸層 設計系統 */
+    --ink: #0d2e4f;         /* deep navy: 主文字 */
+    --ink-2: #3d5a80;       /* medium navy: 次文字 */
+    --ink-3: #8a9ba8;       /* light slate: 輔助文字 */
+    --line: #dde4ec;        /* light blue-grey: 細邊框 */
+    --line-2: #1976d2;      /* primary blue: 強邊框 */
+    --bg: #ffffff;          /* 純白 */
+    --bg-2: #f5f9ff;        /* very light blue: 區塊底 */
+    --bg-3: #e8f1fb;        /* light blue: 強調區塊 */
+    --accent: #1976d2;      /* primary blue: 開課/重要事件 */
+    --accent-2: #0d47a1;    /* deep blue: 互動元素 hover */
+    --accent-light: #42a5f5; /* light blue: 漸層用 */
+    --warn: #ff6d00;        /* orange: 學費繳清/付款警示 */
+    --warn-light: #ffa726;  /* light orange: 漸層用 */
+    --ok: #1976d2;          /* 開課用藍 */
+    --renewal: #5b8db5;     /* renewal: blue-grey */
+    --hl-week: #cfe8ff;     /* 當週底色: 淡藍 */
+    --hl-today: #ffb74d;    /* 今日底色: 暖橙 */
+
+    /* 漸層 token */
+    --grad-primary: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+    --grad-primary-deep: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
+    --grad-warm: linear-gradient(135deg, #ff6d00 0%, #ffa726 100%);
+    --grad-warm-light: linear-gradient(135deg, #ffa726 0%, #ffd180 100%);
+    --grad-soft: linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%);
+    --grad-week-bg: linear-gradient(to top, #cfe8ff 0%, #cfe8ff 28%, transparent 28%);
+    --grad-today-bg: linear-gradient(to top, #ff9800 0%, #ffb74d 40%, transparent 40%);
+    --grad-start-bg: linear-gradient(to top, #bbdefb 0%, #bbdefb 28%, transparent 28%);
 
     /* alias */
     --navy: var(--ink);
@@ -39,17 +55,19 @@
   }
   /* 整合 header + tabs 到單列,大幅壓縮空間 */
   header {
-    background: var(--bg);
+    background: var(--grad-soft);
     color: var(--ink);
     padding: 4px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 3px solid;
+    border-image: var(--grad-primary) 1;
     gap: 16px;
     flex-wrap: wrap;
     min-height: 28px;
   }
+  header h1 { background: var(--grad-primary); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   header h1 {
     margin: 0;
     font-size: 13px;
@@ -87,7 +105,9 @@
     letter-spacing: 0.5px;
   }
   nav.tabs button.active {
-    color: var(--ink);
+    background-image: linear-gradient(180deg, transparent 0%, transparent 85%, var(--accent) 85%, var(--accent) 100%);
+    background-clip: text;
+    color: var(--accent);
     border-bottom-color: var(--ink);
     font-weight: 600;
   }
@@ -190,30 +210,32 @@
     top: 0;
   }
   tbody tr:hover { background: var(--bg-2); }
-  tbody tr.fee-row td { color: var(--accent); font-weight: 600; }
+  tbody tr.fee-row td { color: var(--warn); font-weight: 600; }
   tbody tr.intake-cutoff td { color: var(--warn); }
   .controls { margin-bottom: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   button.btn {
-    background: var(--ink);
-    color: var(--bg);
-    border: 1px solid var(--ink);
+    background: var(--grad-primary);
+    color: #fff;
+    border: 1px solid transparent;
     padding: 7px 16px;
-    border-radius: 2px;
+    border-radius: 6px;
     cursor: pointer;
     font-family: inherit;
     font-size: 12px;
     letter-spacing: 0.5px;
-    transition: all 0.15s;
+    transition: all 0.18s;
+    box-shadow: 0 1px 3px rgba(25, 118, 210, 0.18);
   }
-  button.btn:hover { background: var(--ink-2); border-color: var(--ink-2); }
+  button.btn:hover { background: var(--grad-primary-deep); box-shadow: 0 2px 8px rgba(25, 118, 210, 0.28); transform: translateY(-1px); }
   button.btn.ghost {
     background: var(--bg);
-    color: var(--ink);
-    border: 1px solid var(--ink);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    box-shadow: none;
   }
-  button.btn.ghost:hover { background: var(--bg-2); }
-  button.btn.danger { background: var(--bg); border-color: var(--warn); color: var(--warn); }
-  button.btn.danger:hover { background: var(--warn); color: var(--bg); }
+  button.btn.ghost:hover { background: var(--bg-3); color: var(--accent-2); border-color: var(--accent-2); transform: none; }
+  button.btn.danger { background: var(--bg); border: 1px solid var(--warn); color: var(--warn); box-shadow: none; }
+  button.btn.danger:hover { background: var(--grad-warm); color: #fff; border-color: transparent; transform: translateY(-1px); }
   .input, select, input[type="date"], input[type="text"], input[type="number"] {
     border: 1px solid var(--line);
     background: var(--bg);
@@ -246,17 +268,19 @@
   .form-grid label input, .form-grid label select { width: 100%; background: var(--bg); }
   .form-grid .full { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end; }
   .class-card {
-    background: var(--bg);
+    background: var(--grad-soft);
     border: 1px solid var(--line);
-    border-left: 3px solid var(--ink);
-    border-radius: 0;
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
     padding: 12px 16px;
     margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 14px;
+    transition: box-shadow 0.18s, transform 0.18s;
   }
+  .class-card:hover { box-shadow: 0 2px 10px rgba(13, 46, 79, 0.08); transform: translateY(-1px); }
   .class-card .info { flex: 1; }
   .class-card .name { font-weight: 600; color: var(--ink); margin-bottom: 4px; letter-spacing: 0.3px; }
   .class-card .sub { font-size: 11.5px; color: var(--ink-3); }
@@ -273,8 +297,8 @@
   .class-section-head .status-dot {
     display: inline-block; width: 8px; height: 8px; border-radius: 50%;
   }
-  .class-section-head .status-dot.ongoing { background: var(--accent); box-shadow: 0 0 0 2px rgba(212,54,26,0.18); }
-  .class-section-head .status-dot.upcoming { background: var(--ink); }
+  .class-section-head .status-dot.ongoing { background: var(--grad-warm); box-shadow: 0 0 0 3px rgba(255, 109, 0, 0.16); }
+  .class-section-head .status-dot.upcoming { background: var(--grad-primary); box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.16); }
   .class-section-head .status-dot.ended { background: var(--ink-3); }
   .class-section-head .status-count {
     font-size: 11px; font-weight: 400; color: var(--ink-3); letter-spacing: 0.3px; margin-left: 4px;
@@ -382,30 +406,36 @@
   @media (max-width: 1000px) { .year-grid { grid-template-columns: repeat(3, 1fr); } body.compact-grid.full-year .year-grid { grid-template-rows: repeat(4, 1fr); } }
   @media (max-width: 700px)  { .year-grid { grid-template-columns: repeat(2, 1fr); } body.compact-grid.full-year .year-grid { grid-template-rows: repeat(6, 1fr); } }
   .month-card {
-    background: var(--bg);
+    background: var(--grad-soft);
     border: 1px solid var(--line);
-    border-radius: 0;
+    border-radius: 8px;
     padding: 14px 18px 12px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     min-height: 0;
     min-width: 0;
-    transition: border-color 0.15s;
+    transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
   }
-  .month-card:hover { border-color: var(--ink-3); }
+  .month-card:hover { border-color: var(--accent-light); box-shadow: 0 4px 14px rgba(25, 118, 210, 0.08); }
   .month-card .m-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     padding-bottom: 8px;
     margin-bottom: 10px;
-    border-bottom: 1px solid var(--ink);
+    border-bottom: 2px solid;
+    border-image: var(--grad-primary) 1;
     flex-shrink: 0;
   }
   .month-card .m-head .m-num {
     font-size: clamp(36px, 4vw, 56px);
     font-weight: 700;
+    background: var(--grad-primary);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--accent); /* fallback */
     color: var(--ink);
     letter-spacing: -0.025em;
     line-height: 0.95;
@@ -420,7 +450,11 @@
   }
   .month-card .m-head .m-sum {
     font-size: 18px;
-    color: var(--accent);
+    color: var(--warn);
+    background: var(--grad-warm);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     font-weight: 700;
     letter-spacing: -0.01em;
     font-feature-settings: "tnum";
@@ -460,21 +494,21 @@
     margin: 0;
     padding: 5px 0;
   }
-  /* 瑞士風: 學費繳清=紅色強調; 教材費=紅色 italic 區別; 開課=黑色粗體; 續班=灰色 */
-  .month-card .m-evt.fee .d { color: var(--accent); }
-  .month-card .m-evt.fee .cn { color: var(--accent); font-weight: 700; }
-  .month-card .m-evt.textbook .d { color: var(--accent); }
-  .month-card .m-evt.textbook .cn { color: var(--accent); font-weight: 500; font-style: italic; }
-  .month-card .m-evt.start .d { color: var(--ink); }
-  .month-card .m-evt.start .cn { color: var(--ink); font-weight: 600; }
-  /* 開課黃色 highlighter 只套用在「當月」與「下個月」的開課事件 (近期將開課的提醒) */
+  /* 白底+藍橙漸層: 學費繳清=橙色 (付款警示); 開課=藍色 (主要事件); 續班=藍灰 */
+  .month-card .m-evt.fee .d { color: var(--warn); }
+  .month-card .m-evt.fee .cn { color: var(--warn); font-weight: 700; }
+  .month-card .m-evt.textbook .d { color: var(--warn); }
+  .month-card .m-evt.textbook .cn { color: var(--warn); font-weight: 500; font-style: italic; }
+  .month-card .m-evt.start .d { color: var(--accent); }
+  .month-card .m-evt.start .cn { color: var(--accent); font-weight: 600; }
+  /* 開課藍色 highlighter 只套用在「當月」與「下個月」(近期將開課的提醒) */
   .month-card .m-evt.start.is-near-month .cn {
-    background-image: linear-gradient(to top, #ffe066 0%, #ffe066 28%, transparent 28%);
+    background-image: var(--grad-start-bg);
     padding: 0 2px;
   }
-  /* 列表 view: 當週 row 黃色高亮 + 隱藏過去日期 */
+  /* 列表 view: 當週 row 淡藍高亮 + 隱藏過去日期 */
   #annual-table table tr.is-this-week-row td {
-    background-image: linear-gradient(to top, rgba(255, 224, 102, 0.5) 0%, rgba(255, 224, 102, 0.5) 100%);
+    background: linear-gradient(90deg, var(--bg-3) 0%, var(--bg-2) 100%);
   }
   #annual-table table tr.is-this-week-row td:first-child {
     border-left: 3px solid var(--accent);
@@ -483,9 +517,9 @@
   .month-card .m-evt.renewal .cn { color: var(--renewal); }
   .month-card .m-evt.class-evt .d { color: var(--ink-3); font-size: 9.5px; }
   .month-card .m-evt.class-evt .cn { color: var(--ink-3); font-size: 10px; }
-  /* 當週 row: 文字底黃色 highlighter (marker pen 風) + 保留紅色邊條 + 極淡灰底 */
+  /* 當週 row: 淡藍底 + 藍色邊條 + 漸層 marker */
   .month-card .m-evt.is-this-week {
-    background: var(--bg-2);
+    background: linear-gradient(90deg, var(--bg-3) 0%, var(--bg-2) 100%);
     margin: 0 -18px;
     padding-left: 18px; padding-right: 18px;
     border-left: 3px solid var(--accent);
@@ -496,25 +530,29 @@
     position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
     font-size: 9px; color: var(--accent); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
   }
-  /* 當週 / 今天: .cn 文字底部黃色 highlighter */
+  /* 當週 .cn: 淡藍 highlighter */
   .month-card .m-evt.is-this-week .cn {
-    background-image: linear-gradient(to top, #ffe066 0%, #ffe066 28%, transparent 28%);
+    background-image: var(--grad-week-bg);
     padding: 0 2px;
   }
-  /* 今天: 黃色更飽和 + 粗體, 直接覆寫 is-this-week */
+  /* 今天: 暖橙漸層 highlighter + 粗體, 覆寫 is-this-week */
   .month-card .m-evt.is-today .cn {
-    background-image: linear-gradient(to top, #ffd400 0%, #ffd400 38%, transparent 38%);
+    background-image: var(--grad-today-bg);
     padding: 0 2px;
     font-weight: 700;
   }
+  .month-card .m-evt.is-today {
+    border-left-color: var(--warn);
+  }
   .month-card .m-evt.is-today::after {
     content: "TODAY";
+    color: var(--warn);
   }
-  /* 當月格邊框強調 */
+  /* 當月格邊框強調: 藍色雙線 + 陰影 */
   .month-card.is-current-month {
-    border-color: var(--ink);
+    border-color: var(--accent);
     border-width: 2px;
-    box-shadow: 0 0 0 1px var(--ink);
+    box-shadow: 0 0 0 1px var(--accent), 0 4px 16px rgba(25, 118, 210, 0.18);
   }
   /* Inline-editable cn */
   .month-card .m-evt .cn[data-edit-text] {
@@ -643,10 +681,10 @@
     letter-spacing: 0.5px;
   }
   .legend .lg-item { display: inline-flex; align-items: center; gap: 4px; }
-  .lg-fee { color: var(--accent); font-weight: 600; }
-  .lg-textbook { color: var(--accent); font-weight: 500; font-style: italic; }
-  .lg-start { color: var(--ink); font-weight: 700; }
-  .lg-cutoff { color: var(--accent); font-weight: 600; }
+  .lg-fee { color: var(--warn); font-weight: 600; }
+  .lg-textbook { color: var(--warn); font-weight: 500; font-style: italic; }
+  .lg-start { color: var(--accent); font-weight: 700; }
+  .lg-cutoff { color: var(--warn); font-weight: 600; }
   .lg-renewal { color: var(--renewal); font-weight: 600; }
   /* Event toggles (年度行事曆顯示哪幾類事件) */
   .event-toggles {
@@ -977,11 +1015,11 @@ const DEFAULT_RULES = {
 
 // 重點週 (年度行事曆頂部 banner, 使用者手填日期範圍)
 const DEFAULT_HIGHLIGHT_WEEKS = [
-  { label: '收費週', start: '2026-05-29', end: '2026-06-06', color: '#d4361a' }, // 瑞士紅
-  { label: '插班週', start: '2026-06-06', end: '2026-06-20', color: '#1d1d1b' }, // 主文字黑
-  { label: '開課週', start: '2026-08-28', end: '2026-09-04', color: '#555555' }, // 次文字灰
+  { label: '收費週', start: '2026-05-29', end: '2026-06-06', color: '#ff6d00' }, // orange: 付款警示
+  { label: '插班週', start: '2026-06-06', end: '2026-06-20', color: '#1976d2' }, // primary blue
+  { label: '開課週', start: '2026-08-28', end: '2026-09-04', color: '#0d47a1' }, // deep blue
 ];
-const HIGHLIGHT_KEY = 'k12_highlight_weeks_v2'; // v2: 改瑞士風配色 (舊 v1 是 金/藍/綠)
+const HIGHLIGHT_KEY = 'k12_highlight_weeks_v3'; // v3: 白底藍橙漸層配色 (舊 v2 是瑞士風)
 
 // 預設顯示哪幾類事件 (年度行事曆 12 月方格用)
 const DEFAULT_EVENT_FILTERS = { start: true, class: false, renewal: true, fee: true };
