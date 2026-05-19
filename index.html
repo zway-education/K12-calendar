@@ -795,10 +795,20 @@ function evtOverrideKey(classId, idx, type) { return `${classId}__${idx}__${type
 function loadEventOverrides() { try { eventOverrides = JSON.parse(localStorage.getItem(EVT_OVERRIDE_KEY) || '{}'); } catch(e) { eventOverrides = {}; } }
 function saveEventOverrides() { try { localStorage.setItem(EVT_OVERRIDE_KEY, JSON.stringify(eventOverrides)); } catch(e) {} }
 
+// 2026 (民國 115 年) 行政院公告全年連假
+// 來源: 行政院人事行政總處 / 商周 / 經理人 等
 const DEFAULT_HOLIDAYS = [
-  '2026-04-04', // 清明
-  '2026-05-02',
-  // 7/4 已移除 (依使用者對照表沒跳過)
+  '2026-01-01',                                                                                  // 元旦
+  '2026-02-14', '2026-02-15', '2026-02-16', '2026-02-17', '2026-02-18',                          // 春節 (一)
+  '2026-02-19', '2026-02-20', '2026-02-21', '2026-02-22',                                        // 春節 (二)
+  '2026-02-27', '2026-02-28', '2026-03-01',                                                      // 和平紀念日
+  '2026-04-03', '2026-04-04', '2026-04-05', '2026-04-06',                                        // 兒童+清明
+  '2026-05-01', '2026-05-02', '2026-05-03',                                                      // 勞動節
+  '2026-06-10', '2026-06-11', '2026-06-12',                                                      // 端午
+  '2026-09-25', '2026-09-26', '2026-09-27', '2026-09-28',                                        // 中秋+教師節
+  '2026-10-09', '2026-10-10', '2026-10-11',                                                      // 國慶
+  '2026-10-24', '2026-10-25', '2026-10-26',                                                      // 光復節
+  '2026-12-25', '2026-12-26', '2026-12-27',                                                      // 行憲紀念日
 ];
 
 const DEFAULT_RULES = {
@@ -993,24 +1003,18 @@ function getWeekdayChar(wd) {
   return ['日','一','二','三','四','五','六'][wd];
 }
 
-// ISO 8601 週次 (W1-W53, 週一為一週開始)
-function getISOWeek(d) {
-  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  date.setDate(date.getDate() + 4 - (date.getDay() || 7));
-  const yearStart = new Date(date.getFullYear(), 0, 1);
-  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+// 當月第幾週 (M1-M5, 以日期 / 7 向上取整, 不考慮 weekday 對齊)
+function getMonthWeek(d) {
+  return Math.ceil(d.getDate() / 7);
 }
 function isoWeekOfYmd(ymdStr) {
-  return getISOWeek(parseYmd(ymdStr));
+  return getMonthWeek(parseYmd(ymdStr));
 }
-// 某月 ISO 週次範圍 (e.g. 6月 → W23-W27)
+// 某月週次範圍 (e.g. 6月有 5 週 → M1-M5)
 function monthWeekRange(year, month) {
-  const first = new Date(year, month - 1, 1);
-  const last = new Date(year, month, 0);
-  const wStart = getISOWeek(first);
-  const wEnd = getISOWeek(last);
-  if (wStart === wEnd) return `W${wStart}`;
-  return `W${wStart}-W${wEnd}`;
+  const lastDay = new Date(year, month, 0).getDate();
+  const wEnd = Math.ceil(lastDay / 7);
+  return wEnd === 1 ? 'M1' : `M1-M${wEnd}`;
 }
 
 // Generate N class dates starting from startDate, on given weekday, skipping holidays
@@ -1242,7 +1246,7 @@ function renderAnnualGrid() {
         const wkNum = isoWeekOfYmd(e.date);
         const isEdited = (ov && (ov.text != null || ov.note));
         html += `<div class="m-evt ${cls}${isEdited ? ' is-edited' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}">
-          <span class="d">${String(day).padStart(2,'0')}・${wd}<small style="color:var(--ink-3);margin-left:3px;font-size:9px;">W${wkNum}</small></span>
+          <span class="d">${String(day).padStart(2,'0')}・${wd}<small style="color:var(--ink-3);margin-left:3px;font-size:9px;">M${wkNum}</small></span>
           <span class="cn" contenteditable="true" spellcheck="false" data-edit-text="1" title="點擊直接編輯,Enter/點別處存,Esc 取消">${displayText.replace(/<small[^>]*>.*?<\/small>/g, '')}</span>${isEdited ? `<span class="evt-revert" title="還原預設文字" data-revert-key="${ovKey}">↺</span>` : ''}
         </div>`;
       }
