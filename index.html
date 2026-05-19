@@ -769,7 +769,6 @@
       <label class="evt-tog"><input type="checkbox" data-evt="class"> <span style="color:var(--ink-3);">●</span> 上課</label>
       <label class="evt-tog"><input type="checkbox" data-evt="renewal" checked> <span class="lg-renewal">●</span> 續班</label>
       <label class="evt-tog"><input type="checkbox" data-evt="fee" checked> <span class="lg-fee">●</span> 學費繳清</label>
-      <label class="evt-tog"><input type="checkbox" data-evt="textbook" checked> <span class="lg-textbook">●</span> 教材費</label>
     </span>
   </div>
   <div id="highlight-weeks"></div>
@@ -948,7 +947,7 @@ const DEFAULT_HIGHLIGHT_WEEKS = [
 const HIGHLIGHT_KEY = 'k12_highlight_weeks_v2'; // v2: 改瑞士風配色 (舊 v1 是 金/藍/綠)
 
 // 預設顯示哪幾類事件 (年度行事曆 12 月方格用)
-const DEFAULT_EVENT_FILTERS = { start: true, class: false, renewal: true, fee: true, textbook: true };
+const DEFAULT_EVENT_FILTERS = { start: true, class: false, renewal: true, fee: true };
 const EVT_FILTER_KEY = 'k12_fee_evt_filters_v1';
 
 const BASELINE_CLASSES = [
@@ -1298,9 +1297,9 @@ function collectYearEvents(year, classFilter) {
       if (s.isIntakeCutoff) events.push({...s, cls, type: 'intake-cutoff'});
       if (s.isRenewalDay) events.push({...s, cls, type: 'renewal-day'});
       if (s.isFeeDay) events.push({...s, cls, type: 'fee-day'});
-      if (s.isTextbookFeeDay && (cls.textbookFee || 0) > 0) events.push({...s, cls, type: 'textbook-day'});
-      // 一般上課堂 (非開課/續班/收費/教材費)
-      if (!s.isPeriodStart && !s.isRenewalDay && !s.isFeeDay && !s.isTextbookFeeDay) {
+      // 教材費不再獨立, 已合併到「學費繳清」事件 (見 isTextbookFeeDay flag 在 fee-day 渲染時加總)
+      // 一般上課堂 (非開課/續班/學費繳清)
+      if (!s.isPeriodStart && !s.isRenewalDay && !s.isFeeDay) {
         events.push({...s, cls, type: 'regular-class'});
       }
     }
@@ -1339,13 +1338,12 @@ function renderAnnualGrid() {
   const events = collectYearEvents(year, classFilter);
   const F = state.eventFilters;
 
-  // 5 類事件對應 type
+  // 4 類事件對應 type (教材費已併入 fee-day, 不再獨立)
   const typeToFilter = {
     'period-start': 'start',
     'regular-class': 'class',
     'renewal-day': 'renewal',
     'fee-day': 'fee',
-    'textbook-day': 'textbook',
   };
 
   // Bucket events by month
@@ -1383,11 +1381,10 @@ function renderAnnualGrid() {
       return t && F[t];
     });
     const feeEvents = monthEvents.filter(e => e.type === 'fee-day');
-    const textbookEvents = monthEvents.filter(e => e.type === 'textbook-day');
     const totalFee = feeEvents.reduce((sum, e) => sum + e.cls.fee, 0);
     const totalStudents = feeEvents.reduce((sum, e) => sum + (e.cls.studentCount || 0), 0);
     const tuitionIncome = feeEvents.reduce((sum, e) => sum + (e.cls.fee || 0) * (e.cls.studentCount || 0), 0);
-    const textbookIncome = textbookEvents.reduce((sum, e) => sum + (e.cls.textbookFee || 0) * (e.cls.studentCount || 0), 0);
+    const textbookIncome = feeEvents.reduce((sum, e) => sum + (e.isTextbookFeeDay && e.cls.textbookFee ? (e.cls.textbookFee || 0) * (e.cls.studentCount || 0) : 0), 0);
     const totalIncome = tuitionIncome + textbookIncome;
 
     const wkRange = monthWeekRange(year, m);
@@ -1444,16 +1441,15 @@ function renderAnnualGrid() {
             : `${classNames} 續班週${rangeStr}`;
         } else if (g.type === 'fee-day') {
           cls = 'fee';
-          const total = g.events.reduce((sum, e) => sum + (e.cls.fee || 0) * (e.cls.studentCount || 0), 0);
+          // 學費 + (若同日為教材費日) 教材費, 合併呈現
+          const tuition = g.events.reduce((sum, e) => sum + (e.cls.fee || 0) * (e.cls.studentCount || 0), 0);
+          const textbook = g.events.reduce((sum, e) => sum + (e.isTextbookFeeDay && e.cls.textbookFee ? (e.cls.textbookFee || 0) * (e.cls.studentCount || 0) : 0), 0);
+          const total = tuition + textbook;
+          const hasTextbook = textbook > 0;
+          const tag = hasTextbook ? ' (含教材)' : '';
           txt = count > 1
-            ? `學費繳清 ×${count}: ${classNames}${total > 0 ? ' 合計 $' + total.toLocaleString() : ''}`
-            : `${classNames} 學費繳清${total > 0 ? ' $' + total.toLocaleString() : ''}`;
-        } else if (g.type === 'textbook-day') {
-          cls = 'textbook';
-          const total = g.events.reduce((sum, e) => sum + (e.cls.textbookFee || 0) * (e.cls.studentCount || 0), 0);
-          txt = count > 1
-            ? `教材費 ×${count}: ${classNames}${total > 0 ? ' 合計 $' + total.toLocaleString() : ''}`
-            : `${classNames} 教材費${total > 0 ? ' $' + total.toLocaleString() : ''}`;
+            ? `學費繳清${tag} ×${count}: ${classNames}${total > 0 ? ' 合計 $' + total.toLocaleString() : ''}`
+            : `${classNames} 學費繳清${tag}${total > 0 ? ' $' + total.toLocaleString() : ''}`;
         }
         // 第一個事件當 override key 載體
         const firstEvt = g.events[0];
