@@ -296,6 +296,25 @@
   .badge.cutoff { color: var(--warn); }
   .badge.holiday { color: var(--ink-3); }
 
+  /* 重點週 banner */
+  .hw-banner {
+    display: flex; gap: 8px; padding: 6px 0;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .hw-chip {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    padding: 3px 10px;
+    border: 1px solid currentColor;
+    background: var(--bg);
+    font-size: 11px; letter-spacing: 0.3px;
+  }
+  .hw-chip strong { font-weight: 600; }
+  .hw-chip .range { color: var(--ink-2); font-feature-settings: "tnum"; }
+  .hw-chip .countdown { color: var(--ink-3); font-size: 10px; margin-left: 4px; }
+  .hw-edit { color: var(--ink-3); font-size: 10px; padding: 3px 8px; background: transparent; border: 1px dashed var(--line); cursor: pointer; }
+  .hw-edit:hover { border-color: var(--ink-2); color: var(--ink-2); }
   /* 12-month grid view - 設計成單一畫面顯示 12 格不用滾動 */
   body.compact-grid { overflow: hidden; height: 100vh; }
   body.compact-grid main { height: calc(100vh - 75px); overflow: hidden; padding-bottom: 6px; }
@@ -369,10 +388,11 @@
   .month-card .m-evt .d {
     color: var(--ink);
     font-weight: 600;
-    min-width: 38px;
+    min-width: 64px;
     flex-shrink: 0;
     font-size: 10.5px;
     font-feature-settings: "tnum";
+    white-space: nowrap;
   }
   .month-card .m-evt .ic {
     display: none; /* 黑白版不用 emoji */
@@ -635,6 +655,7 @@
       <label class="evt-tog"><input type="checkbox" data-evt="fee" checked> <span class="lg-fee">●</span> 學費繳清</label>
     </span>
   </div>
+  <div id="highlight-weeks"></div>
   <div id="annual-grid"></div>
   <div id="annual-table" style="display:none;"></div>
 </section>
@@ -770,33 +791,39 @@ const DEFAULT_RULES = {
   cutoffIndex: 4,       // 第幾堂起禁止插班
 };
 
+// 重點週 (年度行事曆頂部 banner, 使用者手填日期範圍)
+const DEFAULT_HIGHLIGHT_WEEKS = [
+  { label: '收費週', start: '2026-05-29', end: '2026-06-06', color: '#b8860b' },
+  { label: '插班週', start: '2026-06-06', end: '2026-06-20', color: '#3a72b0' },
+  { label: '開課週', start: '2026-08-28', end: '2026-09-04', color: '#2a6c4a' },
+];
+const HIGHLIGHT_KEY = 'k12_highlight_weeks_v1';
+
 // 預設顯示哪幾類事件 (年度行事曆 12 月方格用)
 const DEFAULT_EVENT_FILTERS = { start: true, class: false, renewal: true, fee: true };
 const EVT_FILTER_KEY = 'k12_fee_evt_filters_v1';
 
 const BASELINE_CLASSES = [
-  // 依使用者 2026-05-19 對照表校正:startDate = 該班「下階段第 1 堂」
-  // 幼兒啟蒙班 (對照表稱「啟蒙班」)
-  {id: 'jiazhi_l2_fri19', name: '啟蒙班 1下', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 6, periodCount: 3, memo: 'W五 19:00 ・ 對照表第 1 列'},
-  {id: 'jiazhi_l1_sat10', name: '啟蒙班 2上', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-13', fee: 3750, studentCount: 7, periodCount: 3, memo: 'W六 10:00 ・ 小班/中班/大班混齡'},
-  {id: 'jiazhi_l1_sat11', name: '啟蒙班 1下', weekday: 6, time: '11:00-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 5, periodCount: 3, memo: 'W六 11:00'},
-  // 國小開智班 (對照表稱「開智班」)
-  {id: 'kaizhi_l1_fri20', name: '開智班 2上', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 10, periodCount: 3, memo: 'W五 20:00'},
-  {id: 'kaizhi_l1_sat10', name: '開智班 2上', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 14, periodCount: 3, memo: 'W六 10:00'},
-  {id: 'kaizhi_l2_sat11', name: '開智班 2上', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 7, periodCount: 3, memo: 'W六 11:00'},
-  // 青少年智優班 (對照表稱「智優班」)
-  {id: 'zhiyou_l2_sat19', name: '智優班 1下', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-06-20', fee: 3750, studentCount: 14, periodCount: 3, memo: 'W六 19:00 ・ 90 分鐘'},
-  // 對照表未列 (保留原資料)
-  {id: 'kaizhi_l2_wed19', name: '國小開智班 L2', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-04-15', fee: 3750, studentCount: 6, periodCount: 3, memo: 'W三 ・ 對照表未列'},
-  {id: 'steam_l2_sat15', name: '國小混齡 STEAM-R L2', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-04-11', fee: 3750, studentCount: 7, periodCount: 3, memo: '對照表未列'},
-  {id: 'parents_sun13', name: '家長教養增能班', weekday: 0, time: '13:00-17:00', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-22', fee: 3750, studentCount: 10, periodCount: 3, memo: 'W日 4 小時 ・ 對照表未列'},
+  // 班別 name 採用「開智 L1-下」「啟蒙 L2-上」這類短名 (依使用者偏好)
+  {id: 'jiazhi_l2_fri19', name: '啟蒙 L1-下', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 6, periodCount: 3, memo: 'W五 19:00'},
+  {id: 'jiazhi_l1_sat10', name: '啟蒙 L2-上', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-13', fee: 3750, studentCount: 7, periodCount: 3, memo: 'W六 10:00 ・ 小/中/大班混齡'},
+  {id: 'jiazhi_l1_sat11', name: '啟蒙 L1-下', weekday: 6, time: '11:00-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 5, periodCount: 3, memo: 'W六 11:00'},
+  {id: 'kaizhi_l1_fri20', name: '開智 L2-上', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 10, periodCount: 3, memo: 'W五 20:00'},
+  {id: 'kaizhi_l1_sat10', name: '開智 L2-上', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 14, periodCount: 3, memo: 'W六 10:00'},
+  {id: 'kaizhi_l2_sat11', name: '開智 L2-上', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 7, periodCount: 3, memo: 'W六 11:00'},
+  {id: 'zhiyou_l2_sat19', name: '智優 L1-下', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-06-20', fee: 3750, studentCount: 14, periodCount: 3, memo: 'W六 19:00 ・ 90 分鐘'},
+  // 對照表未列 (保留通用名)
+  {id: 'kaizhi_l2_wed19', name: '開智 L2', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-04-15', fee: 3750, studentCount: 6, periodCount: 3, memo: 'W三 ・ 對照表未列'},
+  {id: 'steam_l2_sat15', name: 'STEAM-R L2', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-04-11', fee: 3750, studentCount: 7, periodCount: 3, memo: '對照表未列'},
+  {id: 'parents_sun13', name: '家長班', weekday: 0, time: '13:00-17:00', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-22', fee: 3750, studentCount: 10, periodCount: 3, memo: 'W日 4 小時 ・ 對照表未列'},
 ];
 
 let state = {
   classes: [],
   holidays: [...DEFAULT_HOLIDAYS],
   rules: {...DEFAULT_RULES},
-  eventFilters: {...DEFAULT_EVENT_FILTERS}
+  eventFilters: {...DEFAULT_EVENT_FILTERS},
+  highlightWeeks: JSON.parse(JSON.stringify(DEFAULT_HIGHLIGHT_WEEKS))
 };
 
 function loadState() {
@@ -815,6 +842,10 @@ function loadState() {
   }
   if (rawF) {
     try { state.eventFilters = {...DEFAULT_EVENT_FILTERS, ...JSON.parse(rawF)}; } catch(e) { state.eventFilters = {...DEFAULT_EVENT_FILTERS}; }
+  }
+  const rawHW = localStorage.getItem(HIGHLIGHT_KEY);
+  if (rawHW) {
+    try { state.highlightWeeks = JSON.parse(rawHW); } catch(e) {}
   }
   if (state.classes.length === 0) {
     state.classes = [...BASELINE_CLASSES];
@@ -919,6 +950,7 @@ function saveState() {
   localStorage.setItem(HOLIDAYS_KEY, JSON.stringify(state.holidays));
   localStorage.setItem(RULES_KEY, JSON.stringify(state.rules));
   localStorage.setItem(EVT_FILTER_KEY, JSON.stringify(state.eventFilters));
+  localStorage.setItem(HIGHLIGHT_KEY, JSON.stringify(state.highlightWeeks));
 }
 
 // ====== Date Helpers ======
@@ -941,6 +973,26 @@ function fmtShort(s) {
 
 function getWeekdayChar(wd) {
   return ['日','一','二','三','四','五','六'][wd];
+}
+
+// ISO 8601 週次 (W1-W53, 週一為一週開始)
+function getISOWeek(d) {
+  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  date.setDate(date.getDate() + 4 - (date.getDay() || 7));
+  const yearStart = new Date(date.getFullYear(), 0, 1);
+  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+}
+function isoWeekOfYmd(ymdStr) {
+  return getISOWeek(parseYmd(ymdStr));
+}
+// 某月 ISO 週次範圍 (e.g. 6月 → W23-W27)
+function monthWeekRange(year, month) {
+  const first = new Date(year, month - 1, 1);
+  const last = new Date(year, month, 0);
+  const wStart = getISOWeek(first);
+  const wEnd = getISOWeek(last);
+  if (wStart === wEnd) return `W${wStart}`;
+  return `W${wStart}-W${wEnd}`;
 }
 
 // Generate N class dates starting from startDate, on given weekday, skipping holidays
@@ -1123,9 +1175,11 @@ function renderAnnualGrid() {
     const totalStudents = feeEvents.reduce((sum, e) => sum + (e.cls.studentCount || 0), 0);
     const totalIncome = feeEvents.reduce((sum, e) => sum + (e.cls.fee || 0) * (e.cls.studentCount || 0), 0);
 
+    const wkRange = monthWeekRange(year, m);
+
     if (monthEvents.length === 0) {
       html += `<div class="month-card empty-month">
-        <div class="m-head"><div class="m-num">${m}<small>MON</small></div></div>
+        <div class="m-head"><div class="m-num">${m}<small>月 ${wkRange}</small></div></div>
         <div class="m-events">無排程</div>
       </div>`;
       continue;
@@ -1133,7 +1187,7 @@ function renderAnnualGrid() {
 
     html += `<div class="month-card">
       <div class="m-head">
-        <div class="m-num">${m}<small>MON</small></div>
+        <div class="m-num">${m}<small>月 ${wkRange}</small></div>
         ${F.fee && totalIncome > 0 ? `<div class="m-sum">NT$${totalIncome.toLocaleString()}</div>` : ''}
       </div>
       <div class="m-events">`;
@@ -1152,14 +1206,14 @@ function renderAnnualGrid() {
         let cls = '', txt = '';
         if (e.type === 'period-start') {
           cls = 'start';
-          txt = `${escapeHtml(e.cls.name)} 第${e.period}期 開課`;
+          txt = `${escapeHtml(e.cls.name)} 開課`;
         } else if (e.type === 'renewal-day') {
           cls = 'renewal';
-          txt = `${escapeHtml(e.cls.name)} 第${e.period}期 續班`;
+          txt = `${escapeHtml(e.cls.name)} 續班`;
         } else if (e.type === 'fee-day') {
           cls = 'fee';
           const subtotal = (e.cls.fee || 0) * (e.cls.studentCount || 0);
-          txt = `${escapeHtml(e.cls.name)} 學費繳清 第${e.period}期 ${subtotal > 0 ? '$' + subtotal.toLocaleString() : ''}`;
+          txt = `${escapeHtml(e.cls.name)} 學費繳清${subtotal > 0 ? ' $' + subtotal.toLocaleString() : ''}`;
         }
         // 套用使用者覆寫 (若有)
         const ovKey = evtOverrideKey(e.cls.id, e.idx, e.type);
@@ -1167,8 +1221,9 @@ function renderAnnualGrid() {
         const displayText = (ov && ov.text != null) ? escapeHtml(ov.text) : txt;
         const noteText = (ov && ov.note) ? `　<small style="color:var(--ink-3);font-style:italic;">${escapeHtml(ov.note)}</small>` : '';
         const editedMark = (ov && (ov.text != null || ov.note)) ? '<span class="evt-edited" title="已編輯">✎</span>' : '';
+        const wkNum = isoWeekOfYmd(e.date);
         html += `<div class="m-evt ${cls}${(ov && (ov.text!=null||ov.note)) ? ' is-edited' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}" title="點擊編輯文字/加備註">
-          <span class="d">${String(day).padStart(2,'0')}・${wd}</span>
+          <span class="d">${String(day).padStart(2,'0')}・${wd}<small style="color:var(--ink-3);margin-left:3px;font-size:9px;">W${wkNum}</small></span>
           <span class="cn">${displayText}${noteText}${editedMark}</span>
         </div>`;
       }
@@ -1262,8 +1317,50 @@ function renderAnnualList() {
   target.innerHTML = html;
 }
 
+function renderHighlightWeeks() {
+  const target = document.getElementById('highlight-weeks');
+  if (!target) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const chips = state.highlightWeeks.map((w, i) => {
+    const start = parseYmd(w.start);
+    const end = parseYmd(w.end);
+    let countdown = '';
+    if (today < start) {
+      const days = Math.ceil((start - today) / 86400000);
+      countdown = `(${days}天後)`;
+    } else if (today >= start && today <= end) {
+      countdown = '(進行中)';
+    } else {
+      countdown = '(已過)';
+    }
+    return `<span class="hw-chip" style="color:${w.color}">
+      <strong>${escapeHtml(w.label)}</strong>
+      <span class="range">${fmtShort(w.start)} - ${fmtShort(w.end)}</span>
+      <span class="countdown">${countdown}</span>
+    </span>`;
+  }).join('');
+  target.innerHTML = `<div class="hw-banner">${chips}<button class="hw-edit" id="hw-edit-btn">✎ 編輯</button></div>`;
+  document.getElementById('hw-edit-btn')?.addEventListener('click', openHwEdit);
+}
+
+function openHwEdit() {
+  const lines = state.highlightWeeks.map(w => `${w.label}|${w.start}|${w.end}|${w.color}`).join('\n');
+  const input = prompt('編輯重點週 (每行格式: 名稱|開始YYYY-MM-DD|結束YYYY-MM-DD|顏色)', lines);
+  if (input == null) return;
+  const parsed = input.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const [label, start, end, color] = l.split('|').map(s => s.trim());
+    return { label, start, end, color: color || '#888' };
+  }).filter(w => w.label && w.start && w.end);
+  if (parsed.length > 0) {
+    state.highlightWeeks = parsed;
+    saveState();
+    renderHighlightWeeks();
+  }
+}
+
 function renderAnnual() {
   renderYearPicker();
+  renderHighlightWeeks();
   renderAnnualGrid();
   renderAnnualList();
 }
