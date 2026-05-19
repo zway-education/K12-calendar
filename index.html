@@ -1310,24 +1310,42 @@ function fetchViaJSONP(url, timeoutMs = 15000) {
 async function fetchFromCloud(showMsg = true) {
   const url = getCloudUrl();
   if (!url) return false;
-  const isOrgUrl = url.includes('/a/macros/');
+  // Apps Script Web App 一律走 JSONP (避開 CORS / 跨域 redirect 問題)
+  const isAppsScript = url.includes('script.google.com') || url.includes('/macros/');
   try {
-    if (showMsg) setCloudMsg(isOrgUrl ? '讀取中 (JSONP 模式)…' : '讀取中…', 'info');
+    if (showMsg) setCloudMsg(isAppsScript ? '讀取中 (JSONP 模式)…' : '讀取中…', 'info');
     let data;
-    if (isOrgUrl) {
-      // 教育版/組織版限定 URL: 用 JSONP 繞過 CORS
+    if (isAppsScript) {
       data = await fetchViaJSONP(url);
     } else {
-      // 一般部署: fetch 即可
       const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       data = await resp.json();
     }
     if (data.error) throw new Error(data.error);
-    if (Array.isArray(data.classes) && data.classes.length > 0) state.classes = data.classes;
-    if (Array.isArray(data.holidays)) state.holidays = data.holidays;
+    // 雲端 startDate 可能是 ISO date string (含時區), 正規化為 yyyy-mm-dd
+    const normDate = d => {
+      if (!d) return '';
+      if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+      const dt = new Date(d);
+      if (isNaN(dt)) return String(d).substring(0, 10);
+      // 用台北時區算 ymd, 避免 UTC midnight 退前一天
+      const tzOffset = 8 * 60 * 60 * 1000;
+      const t = new Date(dt.getTime() + tzOffset);
+      return t.toISOString().substring(0, 10);
+    };
+    if (Array.isArray(data.classes) && data.classes.length > 0) {
+      data.classes.forEach(c => { c.startDate = normDate(c.startDate); });
+      state.classes = data.classes;
+    }
+    if (Array.isArray(data.holidays)) {
+      state.holidays = data.holidays.map(normDate);
+    }
     if (data.rules && typeof data.rules === 'object') state.rules = {...DEFAULT_RULES, ...data.rules};
-    if (Array.isArray(data.highlightWeeks) && data.highlightWeeks.length > 0) state.highlightWeeks = data.highlightWeeks;
+    if (Array.isArray(data.highlightWeeks) && data.highlightWeeks.length > 0) {
+      data.highlightWeeks.forEach(w => { w.start = normDate(w.start); w.end = normDate(w.end); });
+      state.highlightWeeks = data.highlightWeeks;
+    }
     saveState();
     localStorage.setItem(CLOUD_FETCHED_KEY, new Date().toISOString());
     if (showMsg) setCloudMsg(`✓ 已從雲端讀取 ${data.classes?.length || 0} 個班別 ・ ${new Date().toLocaleString('zh-TW')}`, 'ok');
@@ -2737,11 +2755,11 @@ document.getElementById('cloud-save').addEventListener('click', () => {
 document.getElementById('cloud-test').addEventListener('click', async () => {
   const url = document.getElementById('cloud-url').value.trim() || getCloudUrl();
   if (!url) { setCloudMsg('請先貼上網址', 'err'); return; }
-  const isOrgUrl = url.includes('/a/macros/');
-  setCloudMsg(isOrgUrl ? '測試中 (JSONP 模式)…' : '測試中…', 'info');
+  const isAppsScript = url.includes('script.google.com') || url.includes('/macros/');
+  setCloudMsg(isAppsScript ? '測試中 (JSONP 模式)…' : '測試中…', 'info');
   try {
     let data;
-    if (isOrgUrl) {
+    if (isAppsScript) {
       data = await fetchViaJSONP(url);
     } else {
       const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
