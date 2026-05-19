@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>招生發文規劃 ｜ 主檔（編輯自動存回本檔）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f2ea;--card:#fff;--ink:#2b2622;--ink-soft:#5f574d;--ink-faint:#8a8175;
+    --orange:#b85c40;--orange-deep:#9c4730;--gold:#a8895c;--green:#1f8a5c;
+    --line:#e5dccd;--line-soft:#efe8db;
+    --p0:#c9824a;--p1:#b85c40;--p2:#1f8a5c;
+    --shadow:0 1px 3px rgba(43,38,34,.05),0 6px 22px rgba(43,38,34,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans TC',sans-serif;background:var(--paper);color:var(--ink);
+    line-height:1.75;font-weight:400;-webkit-font-smoothing:antialiased;}
+
+  .topbar{position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.16);}
+  .toolbar{background:#3a322b;color:#f3ece0;display:flex;align-items:center;gap:8px;
+    padding:9px 16px;flex-wrap:wrap;}
+  .toolbar .brand{font-family:'Noto Serif TC',serif;font-weight:700;font-size:.95rem;margin-right:auto;}
+  .toolbar .brand small{font-weight:300;color:#b3a892;font-size:.72rem;margin-left:6px;}
+  .btn{font-family:'Noto Sans TC',sans-serif;font-size:.78rem;font-weight:500;
+    border:1px solid #5f5446;background:#4a4034;color:#f3ece0;padding:6px 11px;
+    border-radius:3px;cursor:pointer;transition:.15s;white-space:nowrap;}
+  .btn:hover{background:#5a4f40;}
+  .btn.on{background:var(--green);border-color:var(--green);color:#fff;}
+  .btn.hl{background:var(--orange);border-color:var(--orange);color:#fff;}
+  .filemsg{font-size:.7rem;color:#b3a892;min-width:140px;line-height:1.3;}
+  .editbanner{background:#fef3e2;border-bottom:1px solid #e8c89a;color:#9c4730;
+    text-align:center;font-size:.8rem;padding:6px;display:none;}
+  body.editing .editbanner{display:block;}
+  .tabbar{display:flex;background:#4a4034;padding:0 8px;gap:2px;overflow-x:auto;}
+  .tab{padding:13px 22px;font-size:.98rem;color:#c9bda8;background:transparent;border:none;
+    cursor:pointer;font-family:'Noto Serif TC',serif;font-weight:600;
+    border-bottom:3px solid transparent;white-space:nowrap;}
+  .tab:hover{color:#f3ece0;}
+  .tab.active{color:#fff;border-bottom-color:var(--orange);background:#3a322b;}
+
+  .wrap{max-width:1280px;margin:0 auto;padding:0 18px 60px;}
+  .panel{display:none;padding:30px 0;}
+  .panel.active{display:block;}
+  /* 版滿 panel: 用 fixed 撐到 viewport 邊界 */
+  body.fee-fullbleed{overflow:hidden;}
+  body.fee-fullbleed .wrap{max-width:none;padding:0;}
+  body.fee-fullbleed footer{display:none;}
+  body.fee-fullbleed #panel-fee{
+    position:fixed; left:0; right:0; bottom:0;
+    top:var(--topbar-h, 90px);
+    padding:0; margin:0;
+  }
+  body.fee-fullbleed #panel-fee #feeIframe{
+    width:100%; height:100%; border:none; display:block;
+  }
+  .sec-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line-soft);}
+  .sec-num{font-weight:600;font-size:.92rem;color:var(--ink-faint);}
+  .sec-title{font-family:'Noto Sans TC',sans-serif;font-weight:700;font-size:1.18rem;}
+  .sec-title .en{display:none;}
+  .lead{font-size:1.04rem;color:var(--ink-soft);margin-bottom:16px;}
+  h3{font-family:'Noto Serif TC',serif;font-weight:600;font-size:1.08rem;margin:22px 0 10px;
+    padding-left:12px;border-left:3px solid var(--orange);}
+
+  [data-path]{border-radius:3px;transition:background .12s,box-shadow .12s;}
+  body.editing [data-path]{background:#fffaf0;box-shadow:inset 0 0 0 1px #ecdcc0;
+    cursor:text;min-height:1.6em;}
+  body.editing [data-path]:focus{outline:none;background:#fff;box-shadow:inset 0 0 0 2px var(--orange);}
+  body.editing [data-path]:empty::before{content:"（輸入）";color:#c4b89f;}
+
+  .introgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .ibox{background:var(--card);border:1px solid var(--line);border-radius:3px;
+    padding:14px 18px;}
+  .ibox.goal{border-left:3px solid var(--orange);}
+  .ibox .il{font-size:.84rem;color:var(--ink-faint);margin-bottom:5px;font-weight:600;}
+  .ibox.goal .il{color:var(--orange-deep);}
+  .ibox .iv{font-size:.96rem;line-height:1.7;}
+  .ibox.goal .ig{font-weight:700;font-size:1.1rem;color:var(--orange-deep);}
+  .ibox.goal .ign{font-size:.84rem;color:var(--ink-soft);margin-top:5px;}
+  .framenote{background:#fbf6ee;border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:2px;padding:13px 18px;font-size:.86rem;color:var(--ink-soft);margin-bottom:14px;}
+  .framenote b{color:var(--orange-deep);font-family:'Noto Serif TC',serif;}
+
+  .g2{margin-bottom:6px;}
+  .g2-phases{display:flex;gap:3px;margin-bottom:6px;}
+  .g2-phase{padding:8px 10px;border-radius:3px;color:#fff;text-align:center;
+    font-weight:700;font-size:.9rem;line-height:1.3;}
+  .g2-phase small{display:block;font-weight:400;font-size:.74rem;opacity:.92;margin-top:2px;}
+  .g2-phase.p0{background:var(--p0);} .g2-phase.p1{background:var(--p1);} .g2-phase.p2{background:var(--p2);}
+  .g2-weeks{display:flex;gap:5px;flex-wrap:wrap;}
+  .g2-week{flex:1 1 130px;min-width:130px;background:var(--card);border:1px solid var(--line);
+    border-radius:3px;padding:9px 11px;display:flex;flex-direction:column;gap:5px;}
+  .g2-week.p0{border-top:3px solid var(--p0);}
+  .g2-week.p1{border-top:3px solid var(--p1);}
+  .g2-week.p2{border-top:3px solid var(--p2);}
+  .g2-week.is-today{box-shadow:0 0 0 2px var(--green);}
+  .g2-wlabel{font-weight:700;font-size:.88rem;color:var(--ink);}
+  .g2-wlabel small{font-weight:600;font-size:.72rem;color:var(--green);display:inline-block;margin-left:4px;}
+  .g2-cta{font-size:.84rem;color:var(--orange-deep);font-weight:600;}
+  .g2-empty{font-size:.8rem;color:var(--ink-faint);}
+  .g2-evt{font-size:.8rem;color:var(--orange-deep);background:#fef3e2;
+    padding:3px 7px;border-radius:2px;font-weight:600;line-height:1.4;}
+  .g2-legend{font-size:.84rem;color:var(--ink-soft);margin:10px 0 12px;
+    padding:8px 12px;background:#fbf6ee;border-radius:3px;border-left:3px solid var(--gold);}
+  .events{background:#fbf6ee;border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:2px;padding:12px 18px;}
+  .events .el{font-family:'Noto Serif TC',serif;font-weight:700;font-size:.8rem;
+    color:var(--gold);letter-spacing:.05em;margin-bottom:6px;}
+  .events ul{list-style:none;}
+  .events li{font-size:.86rem;margin-bottom:3px;}
+  .events li b{font-family:'Cormorant Garamond',serif;color:var(--orange);font-size:.98rem;margin-right:7px;}
+
+  .tbl-wrap{overflow:auto;max-height:74vh;border:1px solid var(--line);border-radius:3px;margin-bottom:14px;}
+  table{width:100%;border-collapse:collapse;background:var(--card);font-size:.96rem;}
+  th,td{padding:12px 15px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-soft);line-height:1.6;}
+  thead th{background:#3a322b;color:#f7f2ea;font-weight:600;font-family:'Noto Serif TC',serif;
+    font-size:.92rem;position:sticky;top:0;z-index:2;}
+  tbody tr:last-child td{border-bottom:none;}
+  .phase-row td{font-family:'Noto Serif TC',serif;font-weight:700;font-size:1rem;color:#fff;}
+  .phase-row.p0 td{background:var(--p0);}.phase-row.p1 td{background:var(--p1);}.phase-row.p2 td{background:var(--p2);}
+  tr.wk-start td{border-top:2px solid var(--line);}
+  td.date{white-space:nowrap;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.1rem;}
+  td.date small{font-family:'Noto Sans TC';font-size:.8rem;color:var(--ink-faint);font-weight:400;margin-left:3px;}
+  tr.cta-row{background:#fbf3ec;}
+  tr.evt-row{background:#fdeee2;}
+  td.slot{font-weight:600;color:var(--orange-deep);font-size:.9rem;}
+  .wd-sat{color:var(--orange);}.wd-sun{color:var(--ink-faint);}
+  .tag{display:inline-block;font-size:.8rem;padding:3px 10px;border-radius:3px;white-space:nowrap;}
+  .tag.A{background:#f3e0d9;color:var(--orange-deep);}
+  .tag.B{background:#e8e3d3;color:var(--gold);}
+  .tag.X{background:#e6e0ec;color:#7a6a93;}
+  .tag.age{background:#dceee5;color:var(--green);}
+  .rulecell{color:#a85;font-size:.86rem;}
+  .statuscell{font-size:.88rem;color:var(--green);font-weight:500;}
+  .wkcell{text-align:center;font-size:.86rem;color:var(--green);font-weight:600;min-width:56px;}
+  body.editing .wkcell{background:#fffaf0;box-shadow:inset 0 0 0 1px #ecdcc0;}
+  .summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+  .scard{background:var(--card);border:1px solid var(--line);border-radius:3px;
+    padding:10px 16px;box-shadow:var(--shadow);}
+  .scard .sv{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--orange);}
+  .scard .sl{font-size:.72rem;color:var(--ink-faint);}
+  .kpi{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--orange);
+    border-radius:3px;padding:13px 18px;margin-bottom:8px;}
+  .kpi-l{color:var(--ink-faint);font-size:.84rem;margin-bottom:3px;font-weight:600;}
+  .kpi-v{font-weight:700;font-size:1.4rem;color:var(--ink);}
+  .kpi-v .kpi-sep{color:var(--ink-faint);font-weight:400;}
+  .kpi-bar{height:5px;background:#efe8db;border-radius:3px;margin:7px 0 4px;overflow:hidden;}
+  .kpi-fill{height:100%;background:var(--orange);border-radius:3px;transition:width .3s;}
+  .kpi-n{font-size:.82rem;color:var(--ink-soft);}
+  .viewtoggle{display:flex;gap:6px;margin:10px 0 14px;flex-wrap:wrap;}
+  .viewtoggle button{font-family:'Noto Serif TC',serif;font-weight:600;font-size:.92rem;
+    border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+    padding:9px 22px;border-radius:4px;cursor:pointer;}
+  .viewtoggle button.on{background:var(--orange);border-color:var(--orange);color:#fff;}
+  td.ro{background:#faf6ee;color:var(--ink-soft);}
+  tr.today-row td{background:#fff4e0;}
+  tr.today-row td:first-child{box-shadow:inset 4px 0 0 var(--orange);}
+
+  .tpl{background:var(--card);border:1px solid var(--line);border-radius:3px;
+    padding:14px 18px;margin-bottom:11px;box-shadow:var(--shadow);}
+  .tpl .th{display:flex;align-items:baseline;gap:9px;margin-bottom:5px;}
+  .tpl .tl{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--orange);font-weight:600;}
+  .tpl .tn{font-family:'Noto Serif TC',serif;font-weight:700;font-size:.98rem;}
+  .tpl .formula{font-size:.83rem;color:var(--ink-soft);margin:4px 0;}
+  .tpl .formula b{color:var(--orange-deep);font-family:'Noto Serif TC',serif;}
+  .tpl .redline{font-size:.81rem;color:var(--ink-soft);}
+
+  footer{text-align:center;padding:26px 18px 40px;color:var(--ink-faint);font-size:.76rem;}
+  footer .wm{font-family:'Noto Serif TC',serif;font-weight:700;color:var(--ink);font-size:.9rem;margin-bottom:3px;}
+  footer a{color:var(--orange);}
+
+  @media(max-width:760px){.introgrid{grid-template-columns:1fr;}.gantt-scale{display:none;}.tab{padding:9px 11px;font-size:.8rem;}}
+  @media print{.topbar{display:none!important;}.panel{display:block!important;page-break-inside:avoid;}
+    body{background:#fff;}.tbl-wrap{max-height:none;}thead th{position:static;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="toolbar">
+    <div class="brand">招生發文規劃<small>主檔 · 編輯自動存回本檔</small></div>
+    <span class="filemsg" id="fileMsg">啟動中…</span>
+    <button class="btn hl" id="enableBtn" onclick="enableAutoSave()">🔓 啟用自動存檔</button>
+    <button class="btn" id="editBtn" onclick="toggleEdit()">✏️ 編輯模式</button>
+    <button class="btn" onclick="window.print()">🖨 列印</button>
+  </div>
+  <div class="editbanner">編輯模式開啟中 —— 點任何淡黃色區塊即可修改。變更會自動寫回這個 HTML 檔本身（首次需點一次「🔓 啟用自動存檔」並選本檔授權）。</div>
+  <div class="tabbar">
+    <button class="tab active" data-tab="panel-overview" onclick="showTab(this)">🎯 招生目標規劃</button>
+    <button class="tab" data-tab="panel-line" onclick="showTab(this)">📅 6/6 體驗活動</button>
+    <button class="tab" data-tab="panel-email" onclick="showTab(this)">📅 6/13 體驗活動</button>
+    <button class="tab" data-tab="panel-templates" onclick="showTab(this)">🚪 門口曝光</button>
+    <button class="tab" data-tab="panel-social" onclick="showTab(this)">📱 社群曝光</button>
+    <button class="tab" data-tab="panel-tracking" onclick="showTab(this)">📈 成效追蹤</button>
+    <button class="tab" data-tab="panel-fee" onclick="showTab(this)">💰 K12 收費行事曆</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="panel active" id="panel-overview">
+    <div class="sec-head"><div class="sec-num">01</div>
+      <div class="sec-title">招生目標規劃<span class="en">Strategy &amp; Gantt</span></div></div>
+    <div class="introgrid">
+      <div class="ibox"><div class="il">定位</div><div class="iv" data-path="intro.positioning"></div></div>
+      <div class="ibox goal"><div class="il">The Goal</div>
+        <div class="ig" data-path="intro.goal"></div>
+        <div class="ign" data-path="intro.goalNote"></div></div>
+    </div>
+    <div class="framenote"><b>三大區塊：</b><span data-path="intro.frame"></span></div>
+    <h3>甘特圖 ／ 時間軸</h3>
+    <div class="lead">三段期程(階段標題可編輯)。橘點 ＝ 社群媒體招生 CTA 日、▲ ＝ 關鍵事件(來自「社群媒體」表備註欄的「★」)。</div>
+    <div id="gantt"></div>
+    <div class="events" id="eventsBox"></div>
+  </div>
+
+  <div class="panel" id="panel-line">
+    <div class="sec-head"><div class="sec-num">02</div>
+      <div class="sec-title">📅 6/6 體驗活動<span class="en">Experience Class — June 6</span></div></div>
+
+    <div class="introgrid">
+      <div class="ibox">
+        <div class="il">活動資訊</div>
+        <div class="iv">
+          <b>時間：</b>6/6（六）14:00–14:50<br>
+          <b>地點：</b><a href="https://www.google.com/maps/search/?api=1&amp;query=高雄市鼓山區美術東三路86號" style="color:var(--orange-deep);">K12 覺知素養教育學苑（高雄市鼓山區美術東三路 86 號）</a><br>
+          <b>對象：</b>開智班・6–10 歲，親子參加<br>
+          <b>名額：</b>限 10 組<br>
+          <b>主題：</b>目標管理 × 時間專注<br>
+          <b>報名表：</b><a href="https://forms.gle/F8fX4eSxdwxp35Ye9" style="color:var(--orange-deep);">forms.gle/F8fX4eSxdwxp35Ye9</a>
+        </div>
+      </div>
+      <div class="ibox goal">
+        <div class="il">目標</div>
+        <div class="ig">10 組額滿</div>
+        <div class="ign">把 6/6 體驗報名衝到滿、出席率 ≥ 80%，為 6/27 開課累積轉換池。</div>
+      </div>
+    </div>
+
+    <h3>報名追蹤（即時，來自體驗課程進度表）</h3>
+    <div class="lead">即時鏡像 6/6 那列。編輯請到「📈 成效追蹤」分頁的「體驗課程進度追蹤」表。</div>
+    <div class="tbl-wrap" style="max-height:none;">
+      <table><thead><tr>
+        <th>報名</th><th>目標</th><th>名單達成率</th><th>實際出席</th><th>出席率</th><th>成交（轉開課）</th><th>成交率</th>
+      </tr></thead><tbody id="trial66Mirror"></tbody></table>
+    </div>
+
+    <h3>發文素材（已產出）</h3>
+    <div class="lead">這場活動的三種文案已做成獨立檔，點開即用：</div>
+    <ul style="list-style:none;padding:0;font-size:.96rem;line-height:1.95;">
+      <li style="margin:8px 0;">📧 <a href="6-6體驗課_EMAIL_活動邀請版.html" style="color:var(--orange-deep);font-weight:700;">EMAIL 活動邀請版</a> —— 完整 HTML email，一鍵複製貼 Gmail</li>
+      <li style="margin:8px 0;">👥 <a href="6-6體驗課_個人化邀請Email.html" style="color:var(--orange-deep);font-weight:700;">個人化邀請 Email</a> —— 6 個既有家庭（胡／巫／何／張／鄭／張芯），選家庭→自動帶入個人化問候→複製</li>
+      <li style="margin:8px 0;">📱 <a href="6-6體驗課_社群發文範本.html" style="color:var(--orange-deep);font-weight:700;">LINE／FB／IG 社群發文範本</a> —— 三通路文案，各有複製鈕</li>
+      <li style="margin:8px 0;">✓ <a href="報名成功通知_EMAIL範本.html" style="color:var(--orange-deep);font-weight:700;">報名成功通知 Email</a> —— 有人報名後寄回的確認信（6/6、6/13 共用，選場次→複製）</li>
+    </ul>
+
+    <h3>核心訴求角度</h3>
+    <div class="framenote">
+      <b>「把『想做』變成『做到』」</b> —— 不寫棉花糖實驗。<br>
+      痛點開頭：寫作業神遊、講好的事拖到最後一刻 → 不是不認真，是<b>目標管理</b>和<b>時間專注</b>還沒被好好練過。<br>
+      這課做什麼：把大目標拆成小步驟、在該專注時把注意力收回來。
+    </div>
+
+    <h3>執行清單 ／ 備註</h3>
+    <div class="framenote" data-path="event66.checklist" style="white-space:pre-wrap;line-height:1.95;font-size:.94rem;min-height:6em;"></div>
+  </div>
+
+  <div class="panel" id="panel-email">
+    <div class="sec-head"><div class="sec-num">03</div>
+      <div class="sec-title">📅 6/13 體驗活動<span class="en">Experience Class — June 13</span></div></div>
+
+    <div class="introgrid">
+      <div class="ibox">
+        <div class="il">活動資訊</div>
+        <div class="iv">
+          <b>時間：</b>6/13（六）14:00–14:50<br>
+          <b>地點：</b><a href="https://www.google.com/maps/search/?api=1&amp;query=高雄市鼓山區美術東三路86號" style="color:var(--orange-deep);">K12 覺知素養教育學苑（高雄市鼓山區美術東三路 86 號）</a><br>
+          <b>對象：</b>開智班・6–10 歲，親子參加<br>
+          <b>名額：</b>限 10 組<br>
+          <b>主題：</b>目標管理 × 時間專注（與 6/6 同活動）<br>
+          <b>報名表：</b><a href="https://forms.gle/8TjtEUTzjqrZtAaFA" style="color:var(--orange-deep);">forms.gle/8TjtEUTzjqrZtAaFA</a>
+        </div>
+      </div>
+      <div class="ibox goal">
+        <div class="il">目標</div>
+        <div class="ig">10 組額滿</div>
+        <div class="ign">與 6/6 同活動的第二場。把報名衝到滿、出席率 ≥ 80%，為 6/27 開課累積更多轉換池。</div>
+      </div>
+    </div>
+
+    <h3>報名追蹤（即時，來自體驗課程進度表）</h3>
+    <div class="lead">即時鏡像 6/13 那列。編輯請到「📈 成效追蹤」分頁的「體驗課程進度追蹤」表。</div>
+    <div class="tbl-wrap" style="max-height:none;">
+      <table><thead><tr>
+        <th>報名</th><th>目標</th><th>名單達成率</th><th>實際出席</th><th>出席率</th><th>成交（轉開課）</th><th>成交率</th>
+      </tr></thead><tbody id="trial613Mirror"></tbody></table>
+    </div>
+
+    <h3>發文素材（沿用 6/6 範本，已換日期與報名連結）</h3>
+    <ul style="list-style:none;padding:0;font-size:.96rem;line-height:1.95;">
+      <li style="margin:8px 0;">📧 <a href="6-13體驗課_EMAIL_活動邀請版.html" style="color:var(--orange-deep);font-weight:700;">6/13 EMAIL 活動邀請版</a></li>
+      <li style="margin:8px 0;">👥 <a href="6-13體驗課_個人化邀請Email.html" style="color:var(--orange-deep);font-weight:700;">6/13 個人化邀請 Email</a>（家庭名單可沿用 6/6 那 6 家或自行調整）</li>
+      <li style="margin:8px 0;">📱 <a href="6-13體驗課_社群發文範本.html" style="color:var(--orange-deep);font-weight:700;">6/13 LINE／FB／IG 社群發文範本</a></li>
+      <li style="margin:8px 0;">✓ <a href="報名成功通知_EMAIL範本.html" style="color:var(--orange-deep);font-weight:700;">報名成功通知 Email</a> —— 與 6/6 共用，選場次→複製</li>
+    </ul>
+
+    <h3>核心訴求角度</h3>
+    <div class="framenote">
+      <b>與 6/6 同訴求</b>：「把『想做』變成『做到』」── 主打<b>目標管理 × 時間專注</b>，不寫棉花糖實驗。<br>
+      6/13 是第二場，可加用 6/6 的見證／回顧素材做催單。
+    </div>
+
+    <h3>執行清單 ／ 備註</h3>
+    <div class="framenote" data-path="event613.checklist" style="white-space:pre-wrap;line-height:1.95;font-size:.94rem;min-height:6em;"></div>
+  </div>
+
+  <div class="panel" id="panel-templates">
+    <div class="sec-head"><div class="sec-num">04</div>
+      <div class="sec-title">🚪 門口曝光<span class="en">Counter · TV Wall · In-Person</span></div></div>
+
+    <div class="lead">櫃檯與門口的曝光通路 —— 讓路過家長 3–5 秒能停下來，引導加 LINE / 做心智光譜測驗 / 報名活動。</div>
+
+    <h3>現有素材</h3>
+    <ul style="list-style:none;padding:0;font-size:.96rem;line-height:1.95;">
+      <li style="margin:6px 0;">🖥 <b>櫃檯電視牆</b>（已上線）—— 6 張 slide、78 秒輪播。<a href="https://zway-education.github.io/tvwall/" target="_blank" style="color:var(--orange-deep);font-weight:700;">👉 開啟線上電視牆</a><br><small style="color:var(--ink-faint);">原始檔位於 <code>覺知SEL櫃檯介紹本及傳單／電視牆／</code></small></li>
+      <li style="margin:6px 0;">📘 <b>櫃檯介紹本</b>（已上線）—— 路過家長翻閱用。<code>覺知SEL_櫃檯介紹本_終版.html</code></li>
+      <li style="margin:6px 0;">📄 <b>家長介紹本 A4</b> —— <code>覺知SEL_家長介紹本_A4單頁版.pdf</code></li>
+      <li style="margin:6px 0;">📃 <b>班級 EDM</b> —— <code>覺知SEL_班級EDM_終版.html</code></li>
+      <li style="margin:6px 0;">🪧 <b>A3 / A4 印刷版傳單</b> —— 在同資料夾</li>
+    </ul>
+
+    <h3>近期活動門口曝光規劃</h3>
+    <div class="lead">6/6 體驗活動、6/13 說明會在門口要怎麼曝光?（可編輯填入）</div>
+    <div class="framenote" data-path="entrance.plan" style="white-space:pre-wrap;line-height:1.95;font-size:.94rem;min-height:8em;"></div>
+
+    <h3>追蹤建議</h3>
+    <div class="framenote">
+      門口曝光成效難量化，可用<b>代理指標</b>：電視牆 QR 掃描數、櫃檯詢問數、現場加 LINE 數、現場填心智光譜測驗數。記到「📈 成效追蹤」分頁的日記錄備註欄。
+    </div>
+  </div>
+
+  <div class="panel" id="panel-social">
+    <div class="sec-head"><div class="sec-num">05</div>
+      <div class="sec-title">📱 社群曝光 ｜ 文案規劃</div></div>
+    <div class="lead">發文排程、LINE 社群清單、EMAIL 寄送等<b>操作層追蹤</b>已搬到 Google Sheet。這頁專注「<b>文案要寫什麼</b>」。</div>
+
+    <h3>📊 操作層追蹤 ｜ Google Sheet</h3>
+    <div class="framenote">
+      所有通路的發文記錄、LINE 社群分組、EMAIL 排程等操作追蹤，集中在這份試算表：<br>
+      <a href="https://docs.google.com/spreadsheets/d/1qtOrI_XAr56NheysaJopg5mSVFtH1hukeGXG0r1RI7A/edit?gid=321066646#gid=321066646" target="_blank" style="color:var(--orange-deep);font-weight:700;text-decoration:underline;font-size:1rem;">👉 開啟社群追蹤總表（Google Sheet）</a>
+    </div>
+
+    <h3>🎯 核心訴求角度（依事件）</h3>
+    <div class="ibox" style="margin-bottom:10px;">
+      <div class="il">6/6 體驗活動</div>
+      <div class="iv">
+        <b>角度：</b>把「想做」變成「做到」── 不寫棉花糖實驗，主打<b>目標管理 × 時間專注</b>。<br>
+        <b>痛點開頭：</b>寫作業神遊、講好的事拖到最後一刻 → 不是不認真，是這兩個能力沒練過。<br>
+        <b>金句：</b>把「想做」變成「做到」，是孩子可以練出來的能力。
+      </div>
+    </div>
+    <div class="ibox" style="margin-bottom:10px;">
+      <div class="il">6/13 說明會</div>
+      <div class="iv" data-path="event613.angle"></div>
+    </div>
+
+    <h3>📨 各通路文案要點</h3>
+    <div class="ibox" style="margin-bottom:10px;">
+      <div class="il">FB ／ IG</div>
+      <div class="iv">FB 對話感、用問句引留言；IG 視覺優先、短句斷行、標籤收尾。</div>
+    </div>
+    <div class="ibox" style="margin-bottom:10px;">
+      <div class="il">LINE 官方帳號 @931irimh</div>
+      <div class="iv">平常純教育，招生 CTA 只在關鍵週群發；語氣近像「跟你說一聲」；短、一個連結、一個下一步。</div>
+    </div>
+    <div class="ibox" style="margin-bottom:10px;">
+      <div class="il">LINE 社群</div>
+      <div class="iv">⚠ 一次最多 5 群否則停權；特殊規則群（禁推課／潛水／一週一次／低頻）嚴格遵守；開頭用「分享」語氣，不要像廣告。</div>
+    </div>
+    <div class="ibox" style="margin-bottom:10px;">
+      <div class="il">EMAIL ｜ H／A／B</div>
+      <div class="iv">H 每週（熱、活動主推）、A 每兩週（中）、B 每月（冷喚醒）；沿用 4 公版（文章版／活動邀請版／活動回顧版／訂閱通知版），只改文字。</div>
+    </div>
+
+    <h3>📦 已產出的文案檔</h3>
+    <ul style="list-style:none;padding:0;font-size:.96rem;line-height:1.95;">
+      <li>📧 <a href="6-6體驗課_EMAIL_活動邀請版.html" style="color:var(--orange-deep);font-weight:700;">6/6 EMAIL 活動邀請版</a></li>
+      <li>👥 <a href="6-6體驗課_個人化邀請Email.html" style="color:var(--orange-deep);font-weight:700;">6/6 個人化邀請 Email（6 家庭）</a></li>
+      <li>📱 <a href="6-6體驗課_社群發文範本.html" style="color:var(--orange-deep);font-weight:700;">6/6 LINE／FB／IG 社群發文範本</a></li>
+      <li>✓ <a href="報名成功通知_EMAIL範本.html" style="color:var(--orange-deep);font-weight:700;">報名成功通知 Email</a>（6/6、6/13 共用）</li>
+    </ul>
+
+    <h3>📝 共用內容範本</h3>
+    <div class="lead">微改現成內容＋加 CTA 的轉換公式。編輯模式下可修改。</div>
+    <div id="tplBox"></div>
+  </div>
+
+  <div class="panel" id="panel-tracking">
+    <div class="sec-head"><div class="sec-num">06</div>
+      <div class="sec-title">成效追蹤<span class="en">Rolling Performance Tracking</span></div></div>
+    <div class="lead">深度「接到漏斗」—— 從貼文成效一路追到測驗、LINE 名單、最終報名。</div>
+    <div id="kpiBox"></div>
+
+    <h3>成果目標</h3>
+    <div class="lead">每個指標的目標數字、達標標準、檢視節奏。<b>目標數字</b>欄可編輯填入。</div>
+    <div class="tbl-wrap" style="max-height:none;">
+      <table><thead><tr>
+        <th style="width:26%;">指標</th><th style="width:22%;">目標</th>
+        <th style="width:30%;">達標標準</th><th style="width:22%;">檢視節奏</th>
+      </tr></thead><tbody id="goalsBody"></tbody></table>
+    </div>
+
+    <h3>體驗課程進度追蹤</h3>
+    <div class="lead">每場體驗課的漏斗：報名 → 出席 → 成交（轉正式課程報名）。<b>名單達成率／出席率／成交率自動計算</b>；場次、報名、目標、出席、成交可編輯。</div>
+    <div class="tbl-wrap" style="max-height:none;">
+      <table><thead><tr>
+        <th style="width:19%;">體驗課場次</th><th>報名</th><th>目標參加</th>
+        <th>名單達成率</th><th>實際出席</th><th>出席率</th>
+        <th>成交</th><th>成交率</th><th style="width:15%;">備註</th>
+      </tr></thead><tbody id="trialsBody"></tbody></table>
+    </div>
+
+    <h3>說明會進度追蹤</h3>
+    <div class="lead">沿用 5/9 說明會表結構（報名 → 出席 → 成交）。歷史場次已填入做為基準；之後辦的說明會可在編輯模式新增列。</div>
+    <div class="tbl-wrap" style="max-height:none;">
+      <table><thead><tr>
+        <th style="width:19%;">說明會</th><th>報名（學生數）</th><th>目標參加</th>
+        <th>名單達成率</th><th>實際出席</th><th>出席率</th>
+        <th>成交</th><th>成交率</th><th style="width:15%;">備註</th>
+      </tr></thead><tbody id="sessionsBody"></tbody></table>
+    </div>
+
+    <h3>每日記錄 ｜ 日 ／ 週 ／ 月</h3>
+    <div class="lead"><b>固定每天填當天數字</b>（日檢視）。週、月為自動加總，不用重複填。「測驗完成數」是上游主指標、「報名數」是最終主指標。</div>
+    <div class="viewtoggle">
+      <button data-v="day" class="on" onclick="setTrackView('day')">日 ・ 每天填</button>
+      <button data-v="week" onclick="setTrackView('week')">週 ・ 自動加總</button>
+      <button data-v="month" onclick="setTrackView('month')">月 ・ 自動加總</button>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead id="trackHead"></thead><tbody id="trackBody"></tbody></table>
+    </div>
+  </div>
+
+  <div class="panel panel-fullbleed" id="panel-fee">
+    <iframe src="https://zway-education.github.io/K12-calendar/"
+            id="feeIframe"
+            style="width:100%;height:calc(100vh - 92px);border:none;display:block;background:#fff;"
+            title="K12 收費行事曆"></iframe>
+  </div>
+
+  <footer>
+    <div class="wm">K12 覺知素養教育學苑</div>
+    <div>招生發文規劃 · 主檔 ｜ 先懂心，再懂教</div>
+    <div style="margin-top:4px;">完整 12 週招生季策略見 <a href="招生線上曝光計畫_v1.html">招生線上曝光計畫_v1.html</a></div>
+  </footer>
+</div>
+
+<script id="planData" type="application/json">
+{
+  "_ts": 0,
+  "intro": {
+    "positioning": "6 月是一個完整的小漏斗：6/6 體驗活動 → 6/8–6/26 轉換衝刺 → 6/27 SEL 課程開課。社群、LINE、Email 三大區塊都為了推動家長走完這條路。",
+    "goal": "6/27 SEL 課程，衝到 10 人開班。",
+    "goalNote": "社群與 LINE 負責曝光、見證、倒數、撐可信度;真正把人關進來的是 6/6 體驗活動現場 ＋ LINE 1:1 ＋ 致電。",
+    "frame": "📱 社群媒體(FB/IG)＝輕度滲透、週二槽測驗+週五槽重點；💬 LINE＝官方帳號關鍵週群發＋近百個 LINE 社群曝光池(每群一週一則優先)；📧 EMAIL＝H/A/B 分級對齊漏斗。"
+  },
+  "phases": [
+    {"name": "第一段 推 6/6 體驗活動", "note": "5/18 – 6/7 ｜ 填滿體驗活動"},
+    {"name": "第二段 6/6 → 6/27 轉換衝刺", "note": "6/8 – 6/28 ｜ 勝負點"},
+    {"name": "第三段 開課後 ＋ 7 月銜接", "note": "6/29 – 7/5"}
+  ],
+  "socialDays": [
+    {"date":"2026-05-18","wd":"一","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-05-19","wd":"二","phase":0,"slot":"測驗槽","fbig":"🎯 測驗 CTA（範本 A）","note":""},
+    {"date":"2026-05-20","wd":"三","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-05-21","wd":"四","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-05-22","wd":"五","phase":0,"slot":"週五重點","fbig":"🎯 6/6 體驗活動「報名開放」公告（範本 B）","note":""},
+    {"date":"2026-05-23","wd":"六","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-05-24","wd":"日","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-05-25","wd":"一","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-05-26","wd":"二","phase":0,"slot":"測驗槽","fbig":"🎯 測驗 CTA（範本 A）","note":""},
+    {"date":"2026-05-27","wd":"三","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-05-28","wd":"四","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-05-29","wd":"五","phase":0,"slot":"週五重點","fbig":"🎯 6/6「報名倒數」催單（範本 B）","note":""},
+    {"date":"2026-05-30","wd":"六","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-05-31","wd":"日","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-01","wd":"一","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-02","wd":"二","phase":0,"slot":"測驗槽","fbig":"🎯 測驗 CTA（範本 A）","note":""},
+    {"date":"2026-06-03","wd":"三","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-04","wd":"四","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-05","wd":"五","phase":0,"slot":"週五重點","fbig":"🎯 6/6「明天見」最後號召（範本 B）","note":""},
+    {"date":"2026-06-06","wd":"六","phase":0,"slot":"活動日","fbig":"🎯 6/6 體驗活動當天 → 現場花絮限動","note":"★ 6/6 體驗活動"},
+    {"date":"2026-06-07","wd":"日","phase":0,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-08","wd":"一","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-09","wd":"二","phase":1,"slot":"測驗槽","fbig":"🎯 測驗 CTA（範本 A）","note":""},
+    {"date":"2026-06-10","wd":"三","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-11","wd":"四","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-12","wd":"五","phase":1,"slot":"週五重點","fbig":"🎯 6/6 回顧＋見證 → 帶出 6/27 開放報名（範本 C）","note":""},
+    {"date":"2026-06-13","wd":"六","phase":1,"slot":"活動日","fbig":"🎯 6/13 體驗活動當天 → 現場花絮限動","note":"★ 6/13 體驗活動"},
+    {"date":"2026-06-14","wd":"日","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-15","wd":"一","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-16","wd":"二","phase":1,"slot":"測驗槽","fbig":"🎯 測驗 CTA（範本 A）","note":""},
+    {"date":"2026-06-17","wd":"三","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-18","wd":"四","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-19","wd":"五","phase":1,"slot":"週五重點","fbig":"🎯 端午家庭主題 ＋ 軟帶 6/27 報名（範本 E）","note":"端午連假（~6/19，請確認）"},
+    {"date":"2026-06-20","wd":"六","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-21","wd":"日","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-22","wd":"一","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-23","wd":"二","phase":1,"slot":"測驗槽","fbig":"🎯 測驗 CTA（順帶 6/27 倒數）","note":""},
+    {"date":"2026-06-24","wd":"三","phase":1,"slot":"報名截止","fbig":"🎯 6/27 報名最後一天！倒數截止（範本 D）","note":"★ 6/24 報名截止"},
+    {"date":"2026-06-25","wd":"四","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-26","wd":"五","phase":1,"slot":"週五重點","fbig":"🎯 開班確認／開課前最後提醒（視 6/24 報名人數）","note":""},
+    {"date":"2026-06-27","wd":"六","phase":1,"slot":"開課日","fbig":"🎯 6/27 開課當天 → 開課花絮限動","note":"★ 6/27 SEL 課程開課"},
+    {"date":"2026-06-28","wd":"日","phase":1,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-29","wd":"一","phase":2,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-06-30","wd":"二","phase":2,"slot":"測驗槽","fbig":"🎯 測驗 CTA（範本 A）","note":""},
+    {"date":"2026-07-01","wd":"三","phase":2,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-07-02","wd":"四","phase":2,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-07-03","wd":"五","phase":2,"slot":"週五重點","fbig":"🎯 6/27 開課回顧 ＋ 暑期體驗活動／一日大學生預告","note":""},
+    {"date":"2026-07-04","wd":"六","phase":2,"slot":"","fbig":"純教育內容（日更系統）","note":""},
+    {"date":"2026-07-05","wd":"日","phase":2,"slot":"","fbig":"純教育內容（日更系統）","note":""}
+  ],
+  "lineOfficial": [
+    {"week":"5/18 週","content":"🎯 群發：6/6 體驗活動邀請"},
+    {"week":"5/25 週","content":"純教育內容"},
+    {"week":"6/1 週","content":"🎯 群發：6/6 最後提醒"},
+    {"week":"6/8 週","content":"🎯 群發給 6/6 出席者：6/27 開課邀請"},
+    {"week":"6/15 週","content":"純教育內容（端午連假不打擾）"},
+    {"week":"6/22 週","content":"🎯 群發：6/24 報名截止最後提醒"},
+    {"week":"6/29 週","content":"🎯 群發：暑期體驗活動／一日大學生預告"}
+  ],
+  "lineCommunities": [
+    {"name":"國中小筆記分享","size":"4900","age":"國中小","group":"A","rule":"家長人設"},
+    {"name":"鳳山大小事","size":"970","age":"ALL","group":"A","rule":""},
+    {"name":"我是楠梓人","size":"2450","age":"ALL","group":"A","rule":""},
+    {"name":"正興國小交流","size":"170","age":"國小","group":"A","rule":""},
+    {"name":"共學共玩","size":"4300","age":"ALL","group":"A","rule":""},
+    {"name":"廣告區","size":"200","age":"ALL","group":"A","rule":""},
+    {"name":"高雄華頓家長群","size":"250","age":"幼小","group":"A","rule":""},
+    {"name":"親子教育/親師互動","size":"240","age":"ALL","group":"A","rule":""},
+    {"name":"在家教育資源聯盟國小幼兒","size":"2800","age":"幼小","group":"A","rule":""},
+    {"name":"版宣-南高雄國小","size":"2500","age":"國小","group":"A","rule":""},
+    {"name":"版宣-北高雄國小","size":"2800","age":"國小","group":"A","rule":"家長人設"},
+    {"name":"我是高雄人","size":"1800","age":"ALL","group":"A","rule":""},
+    {"name":"補教交流分享群","size":"1300","age":"ALL","group":"A·限頻","rule":"一週一次"},
+    {"name":"全國教育產業交流","size":"1100","age":"ALL","group":"A","rule":""},
+    {"name":"高雄幼兒園托嬰","size":"1800","age":"幼兒","group":"A","rule":""},
+    {"name":"陽明國中家長","size":"900","age":"國中","group":"A","rule":""},
+    {"name":"高雄美術館凹子底","size":"600","age":"ALL","group":"A","rule":""},
+    {"name":"新民國小家長群","size":"330","age":"國小","group":"A","rule":""},
+    {"name":"高雄全區國小家長交流","size":"550","age":"國小","group":"A","rule":"大學孩子家長"},
+    {"name":"民族國小群組","size":"540","age":"國小","group":"A","rule":""},
+    {"name":"復華國中","size":"740","age":"國中","group":"A","rule":""},
+    {"name":"福山國中家長","size":"420","age":"國中","group":"A","rule":""},
+    {"name":"大華家長團","size":"200","age":"國小","group":"A","rule":""},
+    {"name":"110中山國小","size":"300","age":"國小","group":"A","rule":""},
+    {"name":"高雄市家長聯合社團","size":"230","age":"家長","group":"A","rule":""},
+    {"name":"福山國小家長","size":"240","age":"國小","group":"A","rule":""},
+    {"name":"福山國小110年新生","size":"210","age":"國小","group":"A","rule":""},
+    {"name":"北高雄溜兒","size":"157","age":"ALL","group":"A","rule":""},
+    {"name":"鳳西國中","size":"190","age":"國中","group":"A","rule":""},
+    {"name":"112大榮國小","size":"136","age":"國小","group":"A","rule":""},
+    {"name":"高雄鼓山農16","size":"120","age":"ALL","group":"A","rule":""},
+    {"name":"莊敬自強莊敬國小","size":"160","age":"國小","group":"A","rule":""},
+    {"name":"獅湖國小討論區","size":"250","age":"國小","group":"A","rule":""},
+    {"name":"新光國小&左營國中","size":"260","age":"國小·國中","group":"A","rule":""},
+    {"name":"113陽明國小新鮮人","size":"120","age":"國小","group":"A","rule":""},
+    {"name":"高雄台南課程/認證課程","size":"200","age":"ALL","group":"A","rule":""},
+    {"name":"鳳翔國小","size":"170","age":"國小","group":"A","rule":""},
+    {"name":"新莊國小家長群-群組","size":"300","age":"國小","group":"A","rule":""},
+    {"name":"鳳山國小","size":"70","age":"國小","group":"B","rule":""},
+    {"name":"翠屏國小-群組","size":"130","age":"國小","group":"B","rule":""},
+    {"name":"油廠國小-群組","size":"120","age":"國小","group":"B","rule":""},
+    {"name":"陽明國小大群","size":"240","age":"國小","group":"A","rule":""},
+    {"name":"高雄市各級學校家長會長協會","size":"130","age":"ALL","group":"A","rule":""},
+    {"name":"翻轉南台灣教育","size":"370","age":"ALL","group":"A","rule":""},
+    {"name":"三民河堤生活圈","size":"130","age":"ALL","group":"B","rule":""},
+    {"name":"114中山國小","size":"200","age":"國小","group":"A","rule":""},
+    {"name":"112河堤國小","size":"70","age":"國小","group":"B","rule":""},
+    {"name":"高雄信義國小互動群","size":"340","age":"國小","group":"A","rule":""},
+    {"name":"五福國中家長群","size":"600","age":"國中","group":"B·低頻","rule":"免費才能PO·不能太密集"},
+    {"name":"全國教育家長志工聯盟","size":"100","age":"ALL","group":"B","rule":""},
+    {"name":"北高私幼討論","size":"480","age":"幼兒","group":"潛水","rule":"潛水·不主動發"},
+    {"name":"幼兒園小學生家長","size":"2700","age":"幼兒","group":"B·禁推課","rule":"禁推課·只發軟性內容"},
+    {"name":"高中升大學交流","size":"900","age":"國高中","group":"A","rule":""},
+    {"name":"三民區爸媽練肖威","size":"1700","age":"ALL","group":"A","rule":""},
+    {"name":"用愛陪伴青春期的孩子","size":"395","age":"ALL","group":"A","rule":""},
+    {"name":"大榮劍橋國際雙語小學","size":"","age":"國小","group":"A","rule":""},
+    {"name":"111年度七賢國小家長","size":"","age":"國小","group":"A","rule":""},
+    {"name":"高雄市陽明國中家長交流圈","size":"","age":"國中","group":"A","rule":""},
+    {"name":"鳳新高中交流群","size":"","age":"高中","group":"B","rule":""},
+    {"name":"中山附中交流群","size":"","age":"高中","group":"B","rule":""},
+    {"name":"鳳山高中交流群","size":"","age":"高中","group":"B","rule":""},
+    {"name":"私校高中交流群","size":"","age":"高中","group":"B","rule":""},
+    {"name":"高雄女中交流群","size":"","age":"高中","group":"B","rule":""},
+    {"name":"明道群","size":"","age":"私校家長","group":"B","rule":""},
+    {"name":"高雄中學交流群","size":"","age":"中學","group":"B","rule":""},
+    {"name":"國中升學討論區","size":"","age":"國中","group":"A","rule":""},
+    {"name":"台北市國中生家長聊天室","size":"","age":"國中","group":"B","rule":"非高雄"},
+    {"name":"大新竹家長大群","size":"","age":"ALL","group":"B","rule":"非高雄"},
+    {"name":"大新竹課程群-營隊","size":"","age":"ALL","group":"B","rule":"非高雄"},
+    {"name":"竹科家長俱樂部","size":"","age":"ALL","group":"B","rule":"非高雄"},
+    {"name":"凹子底非營利幼兒園討論區","size":"","age":"幼兒","group":"A","rule":""},
+    {"name":"高雄新興區幼兒園大小事","size":"","age":"幼兒","group":"A","rule":""},
+    {"name":"親子育兒討論交流區","size":"","age":"幼兒","group":"B","rule":""},
+    {"name":"公園玩天下","size":"","age":"ALL","group":"B","rule":""},
+    {"name":"找家教老師-找學生","size":"","age":"ALL","group":"B","rule":""},
+    {"name":"家教群-陪玩姊姊","size":"","age":"ALL","group":"B","rule":""},
+    {"name":"高屏科丁免費課程招生","size":"","age":"ALL","group":"A","rule":""},
+    {"name":"高雄河堤世界的住戶們","size":"","age":"ALL","group":"B","rule":""},
+    {"name":"高雄活動通","size":"","age":"ALL","group":"A","rule":""},
+    {"name":"高雄東光國小群組","size":"1100","age":"國小","group":"A","rule":""},
+    {"name":"高中升大學資訊交流區(高雄)","size":"","age":"高中","group":"B","rule":""},
+    {"name":"幼兒園小學生家長親子教育竹科","size":"","age":"幼兒+國小","group":"B","rule":"非高雄"},
+    {"name":"高雄三民區民族國小","size":"","age":"國小","group":"A","rule":""},
+    {"name":"右昌國小分享群","size":"","age":"國小","group":"A","rule":""},
+    {"name":"福山國小114新生","size":"","age":"國小","group":"A","rule":""},
+    {"name":"光武國小家長543聊天室","size":"","age":"國小","group":"A","rule":""},
+    {"name":"中學生家長|國中會考|高中學測","size":"","age":"國中+高中","group":"A","rule":""},
+    {"name":"114年鼓山區中山國小家長交流區","size":"","age":"國小","group":"A","rule":""},
+    {"name":"高雄三民國中家長交流","size":"","age":"國中","group":"A","rule":""},
+    {"name":"兒童發展兒童課程親子旅遊","size":"","age":"幼兒","group":"B","rule":""},
+    {"name":"高雄鳳山國小","size":"","age":"國小","group":"A","rule":""},
+    {"name":"幼小家長同學會","size":"","age":"幼兒+國小","group":"A","rule":""},
+    {"name":"龍華國小114年新生家長交流","size":"","age":"國小","group":"A","rule":""},
+    {"name":"110年鼓山中山國小家長交流群","size":"","age":"國小","group":"A","rule":""},
+    {"name":"112學年河堤國小","size":"","age":"國小","group":"B","rule":""},
+    {"name":"高雄市陽明國小大群","size":"","age":"國小","group":"A","rule":""},
+    {"name":"高雄市資優教育發展協會共學團","size":"","age":"ALL","group":"A","rule":""}
+  ],
+  "emailPlan": [
+    {"week":"5/18 週","level":"H","theme":"6/6 體驗活動邀請","tpl":"活動邀請版","note":"對齊社群 6/6 報名開放"},
+    {"week":"5/25 週","level":"H","theme":"6/6 體驗活動報名提醒","tpl":"活動邀請版","note":""},
+    {"week":"6/1 週","level":"H","theme":"6/6 最後提醒","tpl":"活動邀請版","note":""},
+    {"week":"6/8 週","level":"H","theme":"6/6 回顧 ＋ 6/27 開課邀請","tpl":"文章版","note":"轉換衝刺起點"},
+    {"week":"6/8 週","level":"B","theme":"月信：心智光譜測評者 → 體驗活動／開課","tpl":"文章版","note":"B 級每月 1 封"},
+    {"week":"6/15 週","level":"H","theme":"端午家庭主題 ＋ 6/27 報名","tpl":"文章版","note":""},
+    {"week":"6/22 週","level":"H","theme":"6/27 報名倒數（6/24 截止）","tpl":"活動邀請版","note":"勝負週"},
+    {"week":"6/22 週","level":"A","theme":"一日大學生暑期梯次 ＋ 順帶 6/27","tpl":"活動邀請版","note":"A 級每兩週"},
+    {"week":"6/29 週","level":"H","theme":"6/27 開課回顧 ＋ 暑期預告","tpl":"活動回顧版","note":""}
+  ],
+  "templates": [
+    {"tl":"A","tn":"測驗槽（社群・每週二）","formula":"拿一篇 awareness 文宣／精華教養文的「具體一個瞬間」開頭 → 保留觀點 → 結尾轉測驗。","redline":"CTA：「你看見的孩子，和他自己看見的，是同一個嗎？」紅線：邀請感，不催、不販賣焦慮。"},
+    {"tl":"B","tn":"體驗活動推廣槽（6/6 系列）","formula":"家長有共鳴的現場情境 → 6/6 是什麼、能帶走什麼 → 報名資訊＋CTA。","redline":"三變體：報名開放／倒數／最後號召。紅線：不用「最後機會」，用「我們留了位子給你」。"},
+    {"tl":"C","tn":"回顧／見證槽（6/8–14）","formula":"6/6 當天一個真實畫面或一句家長的話 → 那畫面代表什麼 → 「6/27 開課報名中」。","redline":"素材用 6/6 當天拍的照片／回饋。紅線：真實優先，不演。"},
+    {"tl":"D","tn":"開課報名槽（開放／6/24 倒數）","formula":"這階段的孩子需要什麼 → 課程輪廓（幾堂、給誰、6/27）→ 報名 CTA＋截止。","redline":"倒數用開班人數框架「滿員開班，已 X 位」。紅線：不用補教催單話術。"},
+    {"tl":"E","tn":"節慶／軟槽（端午）","formula":"端午連假的家庭場景 → 連假是「看見孩子」的好時機 → 軟 CTA（測驗）。","redline":"作用是「呼吸」，密集招生中放一個純品牌溫暖點。"},
+    {"tl":"L","tn":"LINE 範本（官方帳號＋社群通用）","formula":"語氣近、像「跟你說一聲」。短、一個連結、一個下一步。社群貼文要符合各群調性，禁推課的群只發軟性內容。","redline":"紅線：一次最多 5 個社群;特殊規則群嚴格遵守;不轟炸。"}
+  ],
+  "event66": {
+    "checklist":"⚠️ 一次性提醒（別忘了！）\n□ 寄出個人化邀請 Email — 開 6-6體驗課_個人化邀請Email.html，6 個家庭一封一封手動複製寄（系統不會自動寄）\n\n📅 活動前每日要做（5/18 → 6/5）\n□ FB／IG 依排程發文（看當週槽位）\n□ LINE 官方／社群 依排程發文\n□ EMAIL 依 H／A／B 排程寄出\n□ 檢查當日 6/6 報名數，落後就加強推廣\n\n🎯 重點推廣節點\n□ 5/18 週：FB／IG 週五槽推「報名開放」公告 ＋ LINE 官方群發\n□ 5/25 週：「報名倒數」催單\n□ 6/1 週：「明天見」最後號召 ＋ LINE 群發\n\n🎬 6/6 當天\n□ 現場花絮拍照、IG／FB 限動發布\n□ 收集家長見證、照片（用於 6/13 與 6/27 推廣）\n\n📈 6/6 之後\n□ 把出席→6/27 開課的轉換顧緊（LINE 1:1 ＋ 致電）\n□ 6/8 起推 6/13 體驗活動（用 6/6 見證做素材）"
+  },
+  "event613": {
+    "time":"14:00–14:50",
+    "location":"K12 覺知素養教育學苑（高雄市鼓山區美術東三路 86 號）",
+    "audience":"開智班・6–10 歲，親子參加",
+    "cap":"限 10 組",
+    "topic":"目標管理 × 時間專注（與 6/6 同活動）",
+    "formUrl":"https://forms.gle/8TjtEUTzjqrZtAaFA",
+    "angle":"與 6/6 同訴求：把「想做」變成「做到」── 主打目標管理 × 時間專注。6/13 是第二場，可加用 6/6 見證做催單。",
+    "goal":"10 組額滿",
+    "goalNote":"與 6/6 同活動的第二場。把報名衝到滿、出席率 ≥ 80%，為 6/27 開課累積更多轉換池。",
+    "checklist":"⚠️ 一次性提醒（別忘了！）\n□ 寄出個人化邀請 Email — 開 6-13體驗課_個人化邀請Email.html，家庭名單可沿用 6/6 那 6 家（沒去 6/6 的可再邀），或自己加新名單\n\n📅 活動前每日要做（6/8 → 6/12）\n□ FB／IG 依排程發文（推 6/13 報名，用 6/6 見證做素材）\n□ LINE 官方／社群 依排程發文\n□ EMAIL 依排程寄出\n□ 檢查當日 6/13 報名數，落後就加強推廣\n\n🎯 重點推廣節點\n□ 6/8 起：FB／IG 推 6/13「報名開放」＋ LINE 官方關鍵週群發\n□ 6/12（五）：「明天見」最後號召\n\n🎬 6/13 當天\n□ 現場花絮拍照、限動發布\n□ 收集家長見證\n\n📈 6/13 之後\n□ 6/15 起回顧 ＋ 推 6/27 開課（同樣的「體驗→1:1→致電」流程）"
+  },
+  "entrance": {
+    "plan":"・電視牆（https://zway-education.github.io/tvwall/）slide 新增「6/6 與 6/13 體驗課」資訊頁\n・櫃檯放 6/6 與 6/13 報名 QR 立牌\n・進門家長口頭邀請話術\n・每週對齊主檔當週重點，更新電視牆 slide 文字"
+  },
+  "tracking": {
+    "goalEnroll": "10",
+    "currentEnroll": "",
+    "goals": [
+      {"metric":"測驗完成數","target":"","criteria":"名單水庫水位","cadence":"每日填／每週看"},
+      {"metric":"LINE 新好友","target":"","criteria":"名單層成長","cadence":"每日填／每週看"},
+      {"metric":"LINE 社群發文數","target":"每日 10–15 個群","criteria":"執行量達標","cadence":"每日"},
+      {"metric":"6/6 體驗活動報名","target":"滿 10 組","criteria":"6/6 前額滿","cadence":"6/6 前每日看"},
+      {"metric":"6/6 體驗活動出席率","target":"≥ 80%","criteria":"報名→實際出席","cadence":"6/6 當天"},
+      {"metric":"6/27 開課報名","target":"10 人","criteria":"達 10 人開班","cadence":"滾動，6/24 截止"}
+    ],
+    "daily": [
+      {"date":"2026-05-11","wd":"一","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-12","wd":"二","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-13","wd":"三","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"1","note":"+1 位 6/6 報名"},
+      {"date":"2026-05-14","wd":"四","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"2","note":"LINE社群來源｜1 組家庭・2 童（6、10 歲）｜ianf1026@gmail.com"},
+      {"date":"2026-05-15","wd":"五","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-16","wd":"六","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-17","wd":"日","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-18","wd":"一","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-19","wd":"二","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-20","wd":"三","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-21","wd":"四","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-22","wd":"五","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-23","wd":"六","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-24","wd":"日","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-25","wd":"一","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-26","wd":"二","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-27","wd":"三","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-28","wd":"四","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-29","wd":"五","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-30","wd":"六","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-05-31","wd":"日","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-01","wd":"一","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-02","wd":"二","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-03","wd":"三","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-04","wd":"四","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-05","wd":"五","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-06","wd":"六","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":"★ 6/6 體驗活動"},
+      {"date":"2026-06-07","wd":"日","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-08","wd":"一","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-09","wd":"二","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-10","wd":"三","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-11","wd":"四","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-12","wd":"五","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-13","wd":"六","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-14","wd":"日","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-15","wd":"一","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-16","wd":"二","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-17","wd":"三","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-18","wd":"四","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-19","wd":"五","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":"端午"},
+      {"date":"2026-06-20","wd":"六","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-21","wd":"日","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-22","wd":"一","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-23","wd":"二","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-24","wd":"三","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":"★ 6/27 報名截止"},
+      {"date":"2026-06-25","wd":"四","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-26","wd":"五","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-27","wd":"六","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":"★ 6/27 SEL 課程開課"},
+      {"date":"2026-06-28","wd":"日","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-29","wd":"一","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-06-30","wd":"二","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-07-01","wd":"三","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-07-02","wd":"四","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-07-03","wd":"五","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-07-04","wd":"六","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""},
+      {"date":"2026-07-05","wd":"日","reach":"","lineComm":"","quizDone":"","lineFriend":"","signup":"","note":""}
+    ],
+    "trials": [
+      {"session":"6/6（六）開智班・6–10 歲","signup":"3","target":"10","attend":"","closed":"","note":"5/13 +1 位 ｜ 5/14 ianf1026 2 位 ｜ 累計 3 位"},
+      {"session":"6/13（六）開智班・6–10 歲","signup":"","target":"10","attend":"","closed":"","note":"與 6/6 同活動，第二場"},
+      {"session":"體驗課・第二梯","signup":"","target":"","attend":"","closed":"","note":""},
+      {"session":"體驗課・加場","signup":"","target":"","attend":"","closed":"","note":""}
+    ],
+    "sessions": [
+      {"session":"5/9（六）啟蒙","signup":"4","target":"8","attend":"4","closed":"0","note":"4/25 通知"},
+      {"session":"5/9（六）開智","signup":"10","target":"12","attend":"10","closed":"5","note":"4/25 通知"}
+    ]
+  }
+}
+</script>
+
+<script>
+const LS_KEY='plan_enrollment_master_v2';
+let DATA, EDITING=false, fileHandle=null, saveTimer=null, trackView='day';
+
+/* ---------- load ---------- */
+function loadData(){
+  let fromBlock=null, fromLS=null;
+  try{
+    const el=document.getElementById('planData');
+    if(el && el.textContent.trim()) fromBlock=JSON.parse(el.textContent);
+  }catch(e){ console.warn('planData parse fail',e); }
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(raw) fromLS=JSON.parse(raw);
+  }catch(e){}
+  if(fromBlock && fromLS) DATA=((fromLS._ts||0)>=(fromBlock._ts||0))?fromLS:fromBlock;
+  else DATA=fromLS||fromBlock;
+  if(!DATA || !DATA.socialDays) DATA=fromBlock||fromLS;
+  if(!DATA) DATA={_ts:0,intro:{},phases:[],socialDays:[],lineOfficial:[],lineCommunities:[],emailPlan:[],templates:[]};
+  if(!DATA.tracking || !Array.isArray(DATA.tracking.daily)) DATA.tracking=(fromBlock&&fromBlock.tracking)?fromBlock.tracking:{goalEnroll:"10",currentEnroll:"",goals:[],daily:[]};
+}
+function saveLocal(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(DATA)); }catch(e){} }
+function setFileMsg(m){ document.getElementById('fileMsg').textContent=m; }
+function setByPath(path,val){ const p=path.split('.'); let o=DATA; for(let i=0;i<p.length-1;i++) o=o[p[i]]; o[p[p.length-1]]=val; }
+function getByPath(path){ const p=path.split('.'); let o=DATA; for(let i=0;i<p.length;i++){ if(o==null) return ''; o=o[p[i]]; } return o==null?'':o; }
+function fmtDate(iso){ const p=iso.split('-'); return (+p[1])+'/'+(+p[2]); }
+
+/* ---------- save flow：編輯 → localStorage 即時備份 ＋ 自動寫回本 HTML 檔 ---------- */
+function save(){
+  DATA._ts=Date.now();
+  saveLocal();
+  scheduleAutoSave();
+}
+function scheduleAutoSave(){
+  if(saveTimer) clearTimeout(saveTimer);
+  setFileMsg('● 變更中…');
+  saveTimer=setTimeout(doAutoSave,800);
+}
+async function doAutoSave(){
+  if(!fileHandle){
+    setFileMsg('⚠ 未啟用自動存檔 —— 點「🔓 啟用自動存檔」（localStorage 已備份）');
+    return;
+  }
+  const ok=await writeHtmlFile();
+  const t=new Date().toLocaleTimeString('zh-Hant',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  setFileMsg(ok?('✓ 已自動存回本檔 '+t):'⚠ 自動存檔失敗（localStorage 有備份）');
+}
+
+/* ---------- IndexedDB：記住檔案授權，下次開啟自動接回 ---------- */
+function idbReq(mode,fn){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open('planFileDB',1);
+    r.onupgradeneeded=()=>r.result.createObjectStore('kv');
+    r.onsuccess=()=>{ const tx=r.result.transaction('kv',mode); const s=tx.objectStore('kv');
+      const out=fn(s); tx.oncomplete=()=>res(out&&out.result!==undefined?out.result:out); tx.onerror=()=>rej(tx.error); };
+    r.onerror=()=>rej(r.error);
+  });
+}
+
+/* ---------- File System Access：把資料寫回「本 HTML 檔」的 planData 區塊 ---------- */
+async function ensurePermission(){
+  if(!fileHandle) return false;
+  if(!fileHandle.queryPermission) return true;
+  let p=await fileHandle.queryPermission({mode:'readwrite'});
+  if(p!=='granted') p=await fileHandle.requestPermission({mode:'readwrite'});
+  return p==='granted';
+}
+async function writeHtmlFile(){
+  if(!fileHandle) return false;
+  try{
+    if(!(await ensurePermission())) return false;
+    const cur=await (await fileHandle.getFile()).text();
+    const startTag='<script id="planData" type="application/json">';
+    const endTag='<\/script>';
+    const i=cur.indexOf(startTag);
+    if(i<0) return false;
+    const j=cur.indexOf(endTag,i);
+    if(j<0) return false;
+    const newHtml=cur.slice(0,i+startTag.length)+'\n'+JSON.stringify(DATA,null,2)+'\n'+cur.slice(j);
+    const w=await fileHandle.createWritable();
+    await w.write(newHtml);
+    await w.close();
+    return true;
+  }catch(e){ console.warn('write fail',e); return false; }
+}
+async function enableAutoSave(){
+  if(!window.showOpenFilePicker){
+    alert('此瀏覽器不支援自動存檔。\n請改用 Chrome 或 Edge 開啟本檔案。');
+    return;
+  }
+  try{
+    const [h]=await window.showOpenFilePicker({
+      types:[{description:'本規劃 HTML 檔',accept:{'text/html':['.html','.htm']}}]
+    });
+    fileHandle=h;
+    const ok=await writeHtmlFile();
+    if(ok){
+      await idbReq('readwrite',s=>s.put(h,'handle'));
+      updateEnableUI(true);
+      setFileMsg('✓ 自動存檔已啟用：'+h.name);
+    }else{
+      fileHandle=null;
+      setFileMsg('⚠ 啟用失敗 —— 請確認你選的是「招生發文規劃_主檔.html」本身，並允許寫入');
+    }
+  }catch(e){ /* 使用者取消 */ }
+}
+function updateEnableUI(on){
+  const b=document.getElementById('enableBtn');
+  b.style.display = on ? 'none' : '';
+}
+async function restoreHandle(){
+  try{
+    const h=await idbReq('readonly',s=>s.get('handle'));
+    if(h){
+      fileHandle=h;
+      let granted=false;
+      if(h.queryPermission) granted=(await h.queryPermission({mode:'readwrite'}))==='granted';
+      if(granted){
+        updateEnableUI(true);
+        setFileMsg('✓ 自動存檔運作中：'+h.name);
+      }else{
+        updateEnableUI(false);
+        document.getElementById('enableBtn').textContent='🔓 重新啟用自動存檔';
+        setFileMsg('自動存檔待重新授權 —— 點「🔓 重新啟用自動存檔」');
+      }
+    }else{
+      updateEnableUI(false);
+      setFileMsg('尚未啟用自動存檔 —— 點「🔓 啟用自動存檔」開始');
+    }
+  }catch(e){ updateEnableUI(false); setFileMsg('尚未啟用自動存檔'); }
+}
+
+/* ---------- render ---------- */
+function render(){
+  document.querySelectorAll('[data-path]').forEach(el=>{
+    if(el.closest('tbody')||el.closest('#tplBox')) return;
+    el.textContent=getByPath(el.dataset.path);
+  });
+  renderGantt(); renderSocial(); renderLineOfficial(); renderLineComm();
+  renderEmail(); renderTemplates(); renderTracking(); applyEditState();
+}
+function renderGantt(){
+  const days=DATA.socialDays;
+  const today=new Date().toISOString().slice(0,10);
+  const counts=[0,0,0];
+  days.forEach(d=>counts[d.phase]=(counts[d.phase]||0)+1);
+  // group by week (7 days each from start)
+  var weeks=[];
+  for(var w=0;w*7<days.length;w++){
+    var rows=days.slice(w*7,w*7+7);
+    if(!rows.length) continue;
+    var ctas=rows.filter(function(d){return (d.slot||'').trim()!=='';}).length;
+    var evts=rows.filter(function(d){return (d.note||'').trim().indexOf('★')===0;})
+      .map(function(d){return {d:d.date,n:d.note.replace(/^★\s*/,'').replace(/^\d+\/\d+\s*/,'').trim()};});
+    weeks.push({label:fmtDate(rows[0].date)+'–'+fmtDate(rows[rows.length-1].date),
+      phase:rows[0].phase, ctas:ctas, evts:evts,
+      hasToday:rows.some(function(d){return d.date===today;})});
+  }
+  let h='<div class="g2"><div class="g2-phases">';
+  DATA.phases.forEach(function(p,i){
+    h+='<div class="g2-phase p'+i+'" style="flex:'+(counts[i]||1)+';">'+
+      '<span data-path="phases.'+i+'.name">'+p.name+'</span>'+
+      '<small data-path="phases.'+i+'.note">'+p.note+'</small></div>';
+  });
+  h+='</div><div class="g2-weeks">';
+  weeks.forEach(function(w){
+    h+='<div class="g2-week p'+w.phase+(w.hasToday?' is-today':'')+'">'+
+      '<div class="g2-wlabel">'+w.label+(w.hasToday?'<small>本週</small>':'')+'</div>'+
+      (w.ctas?'<div class="g2-cta">🎯 '+w.ctas+' 個招生日</div>':'<div class="g2-empty">純教育週</div>');
+    w.evts.forEach(function(e){
+      h+='<div class="g2-evt">▲ '+fmtDate(e.d)+' '+e.n+'</div>';
+    });
+    h+='</div>';
+  });
+  h+='</div></div>';
+  h+='<div class="g2-legend"><b>🎯 N 個招生日</b>＝該週社群有 CTA 的天數　|　<b>▲</b>＝關鍵事件　|　<b>綠框</b>＝今天所在週</div>';
+  document.getElementById('gantt').innerHTML=h;
+  const evs=days.filter(d=>(d.note||'').trim().indexOf('★')===0);
+  let eh='<div class="el">關鍵日期 ｜ KEY DATES</div><ul>';
+  if(!evs.length) eh+='<li style="color:#a89c87;">（社群媒體表備註欄填「★…」即列於此）</li>';
+  evs.forEach(d=>{ eh+='<li><b>'+fmtDate(d.date)+'</b>'+d.note.replace(/^★\s*/,'').replace(/^\d+\/\d+\s*/,'').trim()+'</li>'; });
+  document.getElementById('eventsBox').innerHTML=eh+'</ul>';
+}
+function renderSocial(){
+  const tb=document.getElementById('socialBody'); if(!tb) return; tb.innerHTML='';
+  let lastPhase=-1;
+  DATA.socialDays.forEach((d,i)=>{
+    if(d.phase!==lastPhase){
+      lastPhase=d.phase;
+      const pr=document.createElement('tr'); pr.className='phase-row p'+d.phase;
+      const ph=DATA.phases[d.phase]||{name:'',note:''};
+      pr.innerHTML='<td colspan="5">'+ph.name+'<span style="float:right;font-weight:300;font-size:.74rem;opacity:.85;">'+ph.note+'</span></td>';
+      tb.appendChild(pr);
+    }
+    const tr=document.createElement('tr');
+    const isEvt=(d.note||'').trim().indexOf('★')===0;
+    if(isEvt) tr.className='evt-row'; else if((d.slot||'').trim()) tr.className='cta-row';
+    if(d.wd==='一') tr.classList.add('wk-start');
+    const wc=d.wd==='六'?'wd-sat':(d.wd==='日'?'wd-sun':'');
+    tr.innerHTML='<td class="date">'+fmtDate(d.date)+'<small class="'+wc+'">('+d.wd+')</small></td>'+
+      '<td class="slot" data-path="socialDays.'+i+'.slot">'+(d.slot||'')+'</td>'+
+      '<td data-path="socialDays.'+i+'.fbig">'+(d.fbig||'')+'</td>'+
+      '<td data-path="socialDays.'+i+'.note" style="font-size:.76rem;color:#8a8175;">'+(d.note||'')+'</td>'+
+      '<td class="statuscell" data-path="socialDays.'+i+'.status">'+(d.status||'')+'</td>';
+    tb.appendChild(tr);
+  });
+}
+function renderLineOfficial(){
+  const tb=document.getElementById('lineOfficialBody'); if(!tb) return; tb.innerHTML='';
+  DATA.lineOfficial.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    if((r.content||'').indexOf('🎯')>=0) tr.className='cta-row';
+    tr.innerHTML='<td class="date">'+r.week+'</td>'+
+      '<td data-path="lineOfficial.'+i+'.content">'+(r.content||'')+'</td>'+
+      '<td class="statuscell" data-path="lineOfficial.'+i+'.status">'+(r.status||'')+'</td>';
+    tb.appendChild(tr);
+  });
+}
+function renderLineComm(){
+  const tb=document.getElementById('lineCommBody'); if(!tb) return; tb.innerHTML='';
+  DATA.lineCommunities.forEach((c,i)=>{
+    if(!Array.isArray(c.wk)) c.wk=['','','','','','',''];
+    const tr=document.createElement('tr');
+    let gcls='A';
+    if((c.group||'').indexOf('B')===0) gcls='B';
+    if((c.group||'').indexOf('潛水')>=0) gcls='X';
+    let wkCells='';
+    for(let w=0;w<7;w++){
+      wkCells+='<td class="wkcell" data-path="lineCommunities.'+i+'.wk.'+w+'">'+(c.wk[w]||'')+'</td>';
+    }
+    tr.innerHTML='<td data-path="lineCommunities.'+i+'.name">'+(c.name||'')+'</td>'+
+      '<td data-path="lineCommunities.'+i+'.size" style="font-family:Cormorant Garamond,serif;">'+(c.size||'')+'</td>'+
+      '<td><span class="tag age" data-path="lineCommunities.'+i+'.age">'+(c.age||'')+'</span></td>'+
+      '<td><span class="tag '+gcls+'" data-path="lineCommunities.'+i+'.group">'+(c.group||'')+'</span></td>'+
+      '<td class="rulecell" data-path="lineCommunities.'+i+'.rule">'+(c.rule||'')+'</td>'+
+      wkCells;
+    tb.appendChild(tr);
+  });
+  const all=DATA.lineCommunities;
+  const a=all.filter(c=>(c.group||'').indexOf('A')===0).length;
+  const b=all.filter(c=>(c.group||'').indexOf('B')===0).length;
+  const x=all.filter(c=>(c.group||'').indexOf('潛水')>=0).length;
+  document.getElementById('lineSummary').innerHTML=
+    '<div class="scard"><div class="sv">'+all.length+'</div><div class="sl">社群總數</div></div>'+
+    '<div class="scard"><div class="sv">'+a+'</div><div class="sl">A 組（每週發）</div></div>'+
+    '<div class="scard"><div class="sv">'+b+'</div><div class="sl">B 組（隔週／低頻）</div></div>'+
+    '<div class="scard"><div class="sv">'+x+'</div><div class="sl">潛水（不主動發）</div></div>'+
+    '<div class="scard"><div class="sv">'+Math.ceil(a/5)+'–'+Math.ceil(a/3)+'</div><div class="sl">A 組需發文日（每日 3–5 批×5）</div></div>';
+}
+function renderEmail(){
+  const tb=document.getElementById('emailBody'); if(!tb) return; tb.innerHTML='';
+  DATA.emailPlan.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td class="date">'+r.week+'</td>'+
+      '<td data-path="emailPlan.'+i+'.level" style="font-weight:700;color:var(--orange-deep);">'+(r.level||'')+'</td>'+
+      '<td data-path="emailPlan.'+i+'.theme">'+(r.theme||'')+'</td>'+
+      '<td data-path="emailPlan.'+i+'.tpl" style="font-size:.78rem;">'+(r.tpl||'')+'</td>'+
+      '<td data-path="emailPlan.'+i+'.note" style="font-size:.76rem;color:#8a8175;">'+(r.note||'')+'</td>'+
+      '<td class="statuscell" data-path="emailPlan.'+i+'.status">'+(r.status||'')+'</td>';
+    tb.appendChild(tr);
+  });
+}
+function renderTemplates(){
+  const box=document.getElementById('tplBox'); box.innerHTML='';
+  DATA.templates.forEach((t,i)=>{
+    const d=document.createElement('div'); d.className='tpl';
+    d.innerHTML='<div class="th"><span class="tl">'+t.tl+'</span>'+
+      '<span class="tn" data-path="templates.'+i+'.tn">'+t.tn+'</span></div>'+
+      '<div class="formula"><b>結構：</b><span data-path="templates.'+i+'.formula">'+t.formula+'</span></div>'+
+      '<div class="redline" data-path="templates.'+i+'.redline">'+t.redline+'</div>';
+    box.appendChild(d);
+  });
+}
+function renderTracking(){
+  const tk=DATA.tracking||{goalEnroll:'10',currentEnroll:'',goals:[],daily:[]};
+  if(!Array.isArray(tk.goals)) tk.goals=[];
+  if(!Array.isArray(tk.daily)) tk.daily=[];
+  if(!Array.isArray(tk.trials)) tk.trials=[];
+  if(!Array.isArray(tk.sessions)) tk.sessions=[];
+  const cur=String(tk.currentEnroll||'').trim();
+  const goal=String(tk.goalEnroll||'10').trim();
+  const curN=parseInt(cur)||0, goalN=parseInt(goal)||10;
+  const pct=goalN?Math.min(100,Math.max(0,Math.round(curN/goalN*100))):0;
+  // 體驗課累計報名（即時加總）
+  var t66=parseInt((tk.trials[0]||{}).signup)||0;
+  var t613=parseInt((tk.trials[1]||{}).signup)||0;
+  var trialTotal=t66+t613;
+  var trialGoal=(parseInt((tk.trials[0]||{}).target)||10)+(parseInt((tk.trials[1]||{}).target)||10);
+  var trialPct=trialGoal?Math.min(100,Math.round(trialTotal/trialGoal*100)):0;
+  document.getElementById('kpiBox').innerHTML=
+    '<div class="kpi"><div class="kpi-l">最終主指標 ｜ 6/27 SEL 課程報名</div>'+
+    '<div class="kpi-v"><span data-path="tracking.currentEnroll">'+cur+'</span>'+
+    '<span class="kpi-sep"> / </span><span data-path="tracking.goalEnroll">'+goal+'</span> 人</div>'+
+    '<div class="kpi-bar"><div class="kpi-fill" style="width:'+pct+'%;"></div></div>'+
+    '<div class="kpi-n">'+((curN>=goalN&&curN>0)?'✓ 已達 10 人開班門檻':('距離開班還差 '+Math.max(0,goalN-curN)+' 人'))+'</div></div>'+
+    '<div class="kpi" style="margin-top:10px;background:#fff;border:1px solid var(--line);">'+
+    '<div class="kpi-l" style="color:var(--ink-faint);">上游漏斗 ｜ 6/6 + 6/13 體驗課累計報名（即時自動加總）</div>'+
+    '<div class="kpi-v" style="color:var(--ink);">'+trialTotal+'<span class="kpi-sep" style="color:var(--ink-faint);"> / </span><span style="color:var(--ink-faint);">'+trialGoal+'</span> 人</div>'+
+    '<div class="kpi-bar"><div class="kpi-fill" style="width:'+trialPct+'%;background:#1f8a5c;"></div></div>'+
+    '<div class="kpi-n" style="color:var(--ink-faint);">6/6：<b style="color:var(--orange-deep);">'+t66+'</b> 位　/　6/13：<b style="color:var(--orange-deep);">'+t613+'</b> 位　→ 體驗課程進度追蹤表更新後自動同步</div></div>';
+  let gh='';
+  tk.goals.forEach(function(g,i){
+    gh+='<tr><td data-path="tracking.goals.'+i+'.metric" style="font-weight:600;">'+(g.metric||'')+'</td>'+
+      '<td data-path="tracking.goals.'+i+'.target" style="color:var(--orange-deep);font-weight:700;">'+(g.target||'')+'</td>'+
+      '<td data-path="tracking.goals.'+i+'.criteria">'+(g.criteria||'')+'</td>'+
+      '<td data-path="tracking.goals.'+i+'.cadence" style="color:var(--ink-faint);">'+(g.cadence||'')+'</td></tr>';
+  });
+  document.getElementById('goalsBody').innerHTML=gh;
+  renderTrials();
+  renderSessions();
+  renderTrackTable();
+}
+function pct(a,b){ if(isNaN(a)||isNaN(b)||b===0) return '—'; return (Math.round(a/b*1000)/10)+'%'; }
+function renderTrials(){
+  var trials=(DATA.tracking&&DATA.tracking.trials)||[];
+  var tb=document.getElementById('trialsBody'); if(!tb) return;
+  var html='',tS=0,tT=0,tA=0,tC=0,aS=false,aT=false,aA=false,aC=false;
+  trials.forEach(function(t,i){
+    var s=parseInt(t.signup),tg=parseInt(t.target),a=parseInt(t.attend),c=parseInt(t.closed);
+    if(!isNaN(s)){tS+=s;aS=true;} if(!isNaN(tg)){tT+=tg;aT=true;}
+    if(!isNaN(a)){tA+=a;aA=true;} if(!isNaN(c)){tC+=c;aC=true;}
+    html+='<tr><td data-path="tracking.trials.'+i+'.session" style="font-weight:600;">'+(t.session||'')+'</td>'+
+      '<td data-path="tracking.trials.'+i+'.signup">'+(t.signup||'')+'</td>'+
+      '<td data-path="tracking.trials.'+i+'.target">'+(t.target||'')+'</td>'+
+      '<td class="ro">'+pct(s,tg)+'</td>'+
+      '<td data-path="tracking.trials.'+i+'.attend">'+(t.attend||'')+'</td>'+
+      '<td class="ro">'+pct(a,s)+'</td>'+
+      '<td data-path="tracking.trials.'+i+'.closed" style="font-weight:700;color:var(--orange-deep);">'+(t.closed||'')+'</td>'+
+      '<td class="ro" style="font-weight:700;">'+pct(c,a)+'</td>'+
+      '<td data-path="tracking.trials.'+i+'.note" style="font-size:.84rem;color:var(--ink-faint);">'+(t.note||'')+'</td></tr>';
+  });
+  html+='<tr style="background:#3a322b;">'+
+    '<td style="color:#f3ece0;font-weight:700;">總計</td>'+
+    '<td style="color:#f3ece0;font-weight:700;">'+(aS?tS:'—')+'</td>'+
+    '<td style="color:#f3ece0;font-weight:700;">'+(aT?tT:'—')+'</td>'+
+    '<td style="color:#d8a05a;font-weight:700;">'+pct(tS,tT)+'</td>'+
+    '<td style="color:#f3ece0;font-weight:700;">'+(aA?tA:'—')+'</td>'+
+    '<td style="color:#d8a05a;font-weight:700;">'+pct(tA,tS)+'</td>'+
+    '<td style="color:#f3ece0;font-weight:700;">'+(aC?tC:'—')+'</td>'+
+    '<td style="color:#d8a05a;font-weight:700;">'+pct(tC,tA)+'</td><td></td></tr>';
+  tb.innerHTML=html;
+  renderTrial66Mirror();
+  renderTrial613Mirror();
+}
+function renderSessions(){
+  var sessions=(DATA.tracking&&DATA.tracking.sessions)||[];
+  var tb=document.getElementById('sessionsBody'); if(!tb) return;
+  var html='',tS=0,tT=0,tA=0,tC=0,aS=false,aT=false,aA=false,aC=false;
+  sessions.forEach(function(t,i){
+    var s=parseInt(t.signup),tg=parseInt(t.target),a=parseInt(t.attend),c=parseInt(t.closed);
+    if(!isNaN(s)){tS+=s;aS=true;} if(!isNaN(tg)){tT+=tg;aT=true;}
+    if(!isNaN(a)){tA+=a;aA=true;} if(!isNaN(c)){tC+=c;aC=true;}
+    html+='<tr><td data-path="tracking.sessions.'+i+'.session" style="font-weight:600;">'+(t.session||'')+'</td>'+
+      '<td data-path="tracking.sessions.'+i+'.signup">'+(t.signup||'')+'</td>'+
+      '<td data-path="tracking.sessions.'+i+'.target">'+(t.target||'')+'</td>'+
+      '<td class="ro">'+pct(s,tg)+'</td>'+
+      '<td data-path="tracking.sessions.'+i+'.attend">'+(t.attend||'')+'</td>'+
+      '<td class="ro">'+pct(a,s)+'</td>'+
+      '<td data-path="tracking.sessions.'+i+'.closed" style="font-weight:700;color:var(--orange-deep);">'+(t.closed||'')+'</td>'+
+      '<td class="ro" style="font-weight:700;">'+pct(c,a)+'</td>'+
+      '<td data-path="tracking.sessions.'+i+'.note" style="font-size:.84rem;color:var(--ink-faint);">'+(t.note||'')+'</td></tr>';
+  });
+  html+='<tr style="background:#3a322b;">'+
+    '<td style="color:#f3ece0;font-weight:700;">總計</td>'+
+    '<td style="color:#f3ece0;font-weight:700;">'+(aS?tS:'—')+'</td>'+
+    '<td style="color:#f3ece0;font-weight:700;">'+(aT?tT:'—')+'</td>'+
+    '<td style="color:#d8a05a;font-weight:700;">'+pct(tS,tT)+'</td>'+
+    '<td style="color:#f3ece0;font-weight:700;">'+(aA?tA:'—')+'</td>'+
+    '<td style="color:#d8a05a;font-weight:700;">'+pct(tA,tS)+'</td>'+
+    '<td style="color:#f3ece0;font-weight:700;">'+(aC?tC:'—')+'</td>'+
+    '<td style="color:#d8a05a;font-weight:700;">'+pct(tC,tA)+'</td><td></td></tr>';
+  tb.innerHTML=html;
+}
+function renderTrial613Mirror(){
+  var tb=document.getElementById('trial613Mirror'); if(!tb) return;
+  var t=(DATA.tracking&&DATA.tracking.trials&&DATA.tracking.trials[1])||{};
+  var s=parseInt(t.signup),tg=parseInt(t.target),a=parseInt(t.attend),c=parseInt(t.closed);
+  tb.innerHTML='<tr>'+
+    '<td class="ro" style="font-weight:700;font-size:1.15rem;color:var(--orange-deep);">'+(t.signup||'—')+'</td>'+
+    '<td class="ro">'+(t.target||'—')+'</td>'+
+    '<td class="ro" style="font-weight:700;color:var(--orange-deep);">'+pct(s,tg)+'</td>'+
+    '<td class="ro">'+(t.attend||'—')+'</td>'+
+    '<td class="ro">'+pct(a,s)+'</td>'+
+    '<td class="ro" style="font-weight:700;color:var(--orange-deep);">'+(t.closed||'—')+'</td>'+
+    '<td class="ro" style="font-weight:700;">'+pct(c,a)+'</td></tr>';
+}
+function renderTrial66Mirror(){
+  var tb=document.getElementById('trial66Mirror'); if(!tb) return;
+  var t=(DATA.tracking&&DATA.tracking.trials&&DATA.tracking.trials[0])||{};
+  var s=parseInt(t.signup),tg=parseInt(t.target),a=parseInt(t.attend),c=parseInt(t.closed);
+  tb.innerHTML='<tr>'+
+    '<td class="ro" style="font-weight:700;font-size:1.15rem;color:var(--orange-deep);">'+(t.signup||'—')+'</td>'+
+    '<td class="ro">'+(t.target||'—')+'</td>'+
+    '<td class="ro" style="font-weight:700;color:var(--orange-deep);">'+pct(s,tg)+'</td>'+
+    '<td class="ro">'+(t.attend||'—')+'</td>'+
+    '<td class="ro">'+pct(a,s)+'</td>'+
+    '<td class="ro" style="font-weight:700;color:var(--orange-deep);">'+(t.closed||'—')+'</td>'+
+    '<td class="ro" style="font-weight:700;">'+pct(c,a)+'</td></tr>';
+}
+function sumF(rows,f){ var s=0,any=false; rows.forEach(function(r){ var n=parseInt(r[f]); if(!isNaN(n)){s+=n;any=true;} }); return any?s:'—'; }
+function filledCount(rows){ var c=0; rows.forEach(function(r){ if(((r.reach||'')+(r.lineComm||'')+(r.quizDone||'')+(r.lineFriend||'')+(r.signup||'')).toString().trim()) c++; }); return c; }
+function setTrackView(v){ trackView=v; renderTrackTable(); applyEditState(); }
+function renderTrackTable(){
+  var daily=(DATA.tracking&&DATA.tracking.daily)||[];
+  document.querySelectorAll('.viewtoggle button').forEach(function(b){ b.classList.toggle('on',b.dataset.v===trackView); });
+  var head='',body='';
+  if(trackView==='day'){
+    head='<tr><th style="width:12%;">日期</th><th>社群觸及·互動</th><th>LINE社群發文數</th><th>測驗完成數 ★</th><th>LINE新好友</th><th>報名數 ★</th><th style="width:16%;">備註</th></tr>';
+    var today=new Date().toISOString().slice(0,10);
+    daily.forEach(function(d,i){
+      var cls=((d.wd==='一')?'wk-start':'')+((d.date===today)?' today-row':'');
+      body+='<tr class="'+cls.trim()+'">'+
+        '<td style="white-space:nowrap;font-family:Cormorant Garamond,serif;font-weight:600;color:var(--orange);">'+fmtDate(d.date)+' <small style="font-family:Noto Sans TC;color:var(--ink-faint);font-size:.78rem;">('+d.wd+')</small></td>'+
+        '<td data-path="tracking.daily.'+i+'.reach">'+(d.reach||'')+'</td>'+
+        '<td data-path="tracking.daily.'+i+'.lineComm">'+(d.lineComm||'')+'</td>'+
+        '<td data-path="tracking.daily.'+i+'.quizDone" style="font-weight:700;color:var(--orange-deep);">'+(d.quizDone||'')+'</td>'+
+        '<td data-path="tracking.daily.'+i+'.lineFriend" style="color:var(--green);font-weight:600;">'+(d.lineFriend||'')+'</td>'+
+        '<td data-path="tracking.daily.'+i+'.signup" style="font-weight:700;color:var(--orange-deep);">'+(d.signup||'')+'</td>'+
+        '<td data-path="tracking.daily.'+i+'.note" style="font-size:.84rem;color:var(--ink-faint);">'+(d.note||'')+'</td></tr>';
+    });
+  }else if(trackView==='week'){
+    head='<tr><th style="width:18%;">週</th><th>社群觸及·互動</th><th>LINE社群發文數</th><th>測驗完成數 ★</th><th>LINE新好友</th><th>報名數 ★</th><th>已填天數</th></tr>';
+    for(var w=0;w*7<daily.length;w++){
+      var rows=daily.slice(w*7,w*7+7);
+      if(!rows.length) continue;
+      body+='<tr><td style="font-weight:600;white-space:nowrap;font-family:Cormorant Garamond,serif;color:var(--orange);">'+fmtDate(rows[0].date)+'–'+fmtDate(rows[rows.length-1].date)+'</td>'+
+        '<td class="ro">'+sumF(rows,'reach')+'</td><td class="ro">'+sumF(rows,'lineComm')+'</td>'+
+        '<td class="ro" style="font-weight:700;color:var(--orange-deep);">'+sumF(rows,'quizDone')+'</td>'+
+        '<td class="ro" style="color:var(--green);font-weight:600;">'+sumF(rows,'lineFriend')+'</td>'+
+        '<td class="ro" style="font-weight:700;color:var(--orange-deep);">'+sumF(rows,'signup')+'</td>'+
+        '<td class="ro" style="color:var(--ink-faint);">'+filledCount(rows)+' / '+rows.length+'</td></tr>';
+    }
+  }else{
+    head='<tr><th style="width:18%;">月</th><th>社群觸及·互動</th><th>LINE社群發文數</th><th>測驗完成數 ★</th><th>LINE新好友</th><th>報名數 ★</th><th>已填天數</th></tr>';
+    var months={};
+    daily.forEach(function(d){ var m=d.date.slice(0,7); (months[m]=months[m]||[]).push(d); });
+    Object.keys(months).sort().forEach(function(m){
+      var rows=months[m];
+      body+='<tr><td style="font-weight:600;">'+(+m.slice(5,7))+' 月</td>'+
+        '<td class="ro">'+sumF(rows,'reach')+'</td><td class="ro">'+sumF(rows,'lineComm')+'</td>'+
+        '<td class="ro" style="font-weight:700;color:var(--orange-deep);">'+sumF(rows,'quizDone')+'</td>'+
+        '<td class="ro" style="color:var(--green);font-weight:600;">'+sumF(rows,'lineFriend')+'</td>'+
+        '<td class="ro" style="font-weight:700;color:var(--orange-deep);">'+sumF(rows,'signup')+'</td>'+
+        '<td class="ro" style="color:var(--ink-faint);">'+filledCount(rows)+' / '+rows.length+'</td></tr>';
+    });
+  }
+  document.getElementById('trackHead').innerHTML=head;
+  document.getElementById('trackBody').innerHTML=body;
+}
+
+/* ---------- tabs / edit ---------- */
+function showTab(btn){
+  const id=btn.dataset.tab;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===id));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===btn));
+  // 收費行事曆 tab: 啟用版滿模式 + 動態量測 topbar 高度
+  const isFee = id === 'panel-fee';
+  document.body.classList.toggle('fee-fullbleed', isFee);
+  if (isFee) {
+    const topbar = document.querySelector('.topbar');
+    const h = topbar ? Math.ceil(topbar.getBoundingClientRect().height) : 90;
+    document.documentElement.style.setProperty('--topbar-h', h + 'px');
+  }
+  window.scrollTo({top:0});
+}
+function toggleEdit(){
+  EDITING=!EDITING;
+  document.body.classList.toggle('editing',EDITING);
+  const b=document.getElementById('editBtn');
+  b.classList.toggle('on',EDITING);
+  b.textContent=EDITING?'✓ 完成編輯':'✏️ 編輯模式';
+  applyEditState();
+}
+function applyEditState(){
+  document.querySelectorAll('[data-path]').forEach(el=>{ el.contentEditable=EDITING?'true':'false'; });
+}
+document.addEventListener('focusout',function(e){
+  const el=e.target.closest('[data-path]');
+  if(!el||!EDITING) return;
+  setByPath(el.dataset.path,el.innerText.trim());
+  save();
+  const path=el.dataset.path, f=path.split('.').pop();
+  if(path.indexOf('socialDays.')===0 && (f==='slot'||f==='note')){ renderSocial(); renderGantt(); applyEditState(); }
+  else if(path.indexOf('phases.')===0){ renderGantt(); renderSocial(); applyEditState(); }
+  else if(path.indexOf('lineCommunities.')===0 && f==='group'){ renderLineComm(); applyEditState(); }
+  else if(path.indexOf('lineOfficial.')===0){ renderLineOfficial(); applyEditState(); }
+  else if(path==='tracking.currentEnroll'||path==='tracking.goalEnroll'){ renderTracking(); applyEditState(); }
+  else if(path.indexOf('tracking.trials.')===0){ renderTracking(); applyEditState(); }
+  else if(path.indexOf('tracking.sessions.')===0){ renderSessions(); applyEditState(); }
+});
+
+/* ---------- init ---------- */
+loadData();
+render();
+restoreHandle();
+</script>
+</body>
+</html>

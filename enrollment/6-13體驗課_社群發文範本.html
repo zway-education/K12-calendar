@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6/13 體驗課 ｜ 社群發文範本（LINE／FB／IG）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600&display=swap" rel="stylesheet">
+<!-- ================================================================
+  覺知 SEL ｜ 社群發文範本（LINE / FB / IG）
+  目前內容 = 6/13 體驗課（目標管理 × 時間專注）實例，可直接複製使用。
+  下次換活動：每個區塊下方有「下次換活動改這些」說明，照著換文字即可。
+  搭配檔案：6-6體驗課_EMAIL_活動邀請版.html（email 版）
+================================================================ -->
+<style>
+  :root{
+    --paper:#f7f2ea;--card:#fff;--ink:#2b2622;--ink-soft:#5f574d;--ink-faint:#8a8175;
+    --orange:#b85c40;--orange-deep:#9c4730;--gold:#a8895c;--green:#1f8a5c;
+    --line:#e5dccd;--line-soft:#efe8db;
+    --shadow:0 1px 3px rgba(43,38,34,.05),0 6px 22px rgba(43,38,34,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans TC',sans-serif;background:var(--paper);color:var(--ink);
+    line-height:1.8;font-weight:400;-webkit-font-smoothing:antialiased;padding:0 20px;}
+  .wrap{max-width:880px;margin:0 auto;}
+
+  .cover{padding:64px 0 36px;border-bottom:1px solid var(--line);text-align:center;}
+  .kicker{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.15rem;
+    color:var(--orange);letter-spacing:.04em;margin-bottom:12px;}
+  .cover h1{font-family:'Noto Serif TC',serif;font-weight:900;font-size:2.1rem;
+    line-height:1.4;margin-bottom:8px;}
+  .cover h1 .light{color:var(--orange);}
+  .cover .sub{font-family:'Noto Serif TC',serif;font-size:1rem;color:var(--ink-soft);}
+
+  .infobar{background:var(--card);border:1px solid var(--line);border-radius:4px;
+    padding:16px 22px;margin:26px 0;box-shadow:var(--shadow);font-size:.92rem;color:var(--ink-soft);}
+  .infobar b{color:var(--ink);font-family:'Noto Serif TC',serif;}
+  .angle{background:#3a322b;color:#ece3d3;border-radius:4px;padding:18px 24px;margin:0 0 30px;}
+  .angle .al{font-family:'Cormorant Garamond',serif;font-style:italic;color:#d8a05a;
+    font-size:.95rem;margin-bottom:4px;}
+  .angle .av{font-family:'Noto Serif TC',serif;font-size:1.1rem;line-height:1.7;}
+
+  .block{margin:0 0 34px;}
+  .block-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .badge{font-family:'Noto Serif TC',serif;font-weight:700;font-size:1.15rem;color:#fff;
+    padding:5px 14px;border-radius:4px;}
+  .badge.line{background:var(--green);}
+  .badge.fb{background:#3b5998;}
+  .badge.ig{background:linear-gradient(45deg,#d6695a,#b85c40);}
+  .badge.img{background:var(--gold);}
+  .block-head .bt{font-family:'Noto Serif TC',serif;font-weight:600;font-size:1.05rem;}
+  .block-head .bn{font-size:.84rem;color:var(--ink-faint);margin-left:auto;}
+
+  .copybox{background:var(--card);border:1px solid var(--line);border-radius:4px;
+    box-shadow:var(--shadow);overflow:hidden;}
+  .copybar{display:flex;align-items:center;justify-content:space-between;
+    background:#faf4ea;border-bottom:1px solid var(--line);padding:7px 14px;}
+  .copybar span{font-size:.8rem;color:var(--ink-faint);}
+  .copybtn{font-family:'Noto Sans TC',sans-serif;font-size:.82rem;font-weight:500;
+    background:var(--orange);color:#fff;border:none;padding:6px 16px;border-radius:3px;cursor:pointer;}
+  .copybtn:hover{background:var(--orange-deep);}
+  .copybtn.done{background:var(--green);}
+  pre.copy{margin:0;padding:18px 20px;font-family:'Noto Sans TC',sans-serif;font-size:.95rem;
+    line-height:1.85;color:var(--ink);white-space:pre-wrap;word-break:break-word;}
+
+  .swap{background:#fbf6ee;border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:2px;padding:11px 16px;margin-top:8px;font-size:.84rem;color:var(--ink-soft);}
+  .swap b{color:var(--orange-deep);font-family:'Noto Serif TC',serif;}
+
+  .subnote{font-size:.88rem;color:var(--ink-soft);margin:10px 0 0;padding-left:14px;
+    border-left:3px solid var(--line);}
+
+  .imgcard{background:var(--card);border:1px solid var(--line);border-radius:4px;
+    padding:16px 20px;margin-bottom:12px;box-shadow:var(--shadow);}
+  .imgcard .ic{font-family:'Noto Serif TC',serif;font-weight:700;font-size:1rem;color:var(--orange-deep);margin-bottom:3px;}
+  .imgcard p{font-size:.9rem;color:var(--ink-soft);margin:0;}
+
+  footer{text-align:center;padding:34px 0 60px;color:var(--ink-faint);font-size:.82rem;}
+  footer .wm{font-family:'Noto Serif TC',serif;font-weight:700;color:var(--ink);font-size:.95rem;margin-bottom:4px;}
+
+  @media(max-width:600px){.cover h1{font-size:1.6rem;}.block-head .bn{display:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="cover">
+    <div class="kicker">Social Posting Templates ｜ LINE · FB · IG</div>
+    <h1>6/13 體驗課 ｜ 社群發文<span class="light">範本</span></h1>
+    <div class="sub">目標管理 × 時間專注 ── LINE／FB／IG 三通路文案</div>
+  </header>
+
+  <div class="infobar">
+    <b>活動：</b>覺知 SEL 親子體驗課（主題：目標管理 × 時間專注）<br>
+    <b>時間：</b>6/13（六）14:00–14:50　<b>地點：</b>K12 覺知素養教育學苑（高雄市鼓山區美術東三路 86 號）<br>
+    <b>對象：</b>開智班・6–10 歲，親子參加　<b>名額：</b>限 10 組，限 10 組　<b>報名：</b>https://forms.gle/8TjtEUTzjqrZtAaFA
+  </div>
+
+  <div class="angle">
+    <div class="al">Core Angle ｜ 三通路一致的訴求</div>
+    <div class="av">直接講價值：陪 6–10 歲的孩子練「目標管理」與「時間專注」。<br>不寫研究鋪陳、不販賣焦慮、不指責父母 —— 開門見山、白話、邀請語氣。</div>
+  </div>
+
+  <!-- LINE -->
+  <div class="block">
+    <div class="block-head">
+      <span class="badge line">LINE</span>
+      <span class="bt">LINE 訊息（官方帳號 ／ 群發）</span>
+      <span class="bn">精簡，含一個連結、一個下一步</span>
+    </div>
+    <div class="copybox">
+      <div class="copybar"><span>點右側按鈕複製全文</span>
+        <button class="copybtn" onclick="copyText(this)">複製</button></div>
+<pre class="copy">【6/13 親子體驗課・限 10 組】
+
+寫作業神遊、講好的事拖到最後一刻 ——
+這不是孩子不認真，
+是「目標管理」和「時間專注」還沒被好好練過。
+
+6/13 下午，我們帶 6–10 歲的孩子練兩件事：
+把大目標拆成做得到的小步驟、
+在該專注的時候把注意力收回來。
+
+🗓 6/13（六）14:00–14:50
+📍 K12 覺知素養教育學苑（高雄市鼓山區美術東三路 86 號）
+👨‍👩‍👧 開智班・6–10 歲｜限 10 組，限 10 組
+
+位子我們留著，等你來 👇
+https://forms.gle/8TjtEUTzjqrZtAaFA
+
+—— K12 覺知素養教育學苑</pre>
+    </div>
+    <div class="subnote"><b>LINE 社群版調整：</b>開頭改成「分享」語氣、別像廣告 —— 例：「分享一個高雄的親子活動 👇 6/13 有一場帶 6–10 歲孩子練目標管理與時間專注的體驗課…」。發社群守規則：一次最多 5 群、<b>幼兒園小學生家長</b>（禁推課）與<b>北高私幼討論</b>（潛水）不發、優先發國小／親子屬性的群。</div>
+    <div class="swap"><b>下次換活動改這些：</b>標題行（活動名＋名額）、痛點開頭、「練兩件事」那段、活動資訊 3 行、報名連結。</div>
+  </div>
+
+  <!-- FB -->
+  <div class="block">
+    <div class="block-head">
+      <span class="badge fb">FB</span>
+      <span class="bt">Facebook 文案</span>
+      <span class="bn">對話感、用問句引留言</span>
+    </div>
+    <div class="copybox">
+      <div class="copybar"><span>點右側按鈕複製全文</span>
+        <button class="copybtn" onclick="copyText(this)">複製</button></div>
+<pre class="copy">📌 6/13 親子體驗課｜把「想做」變成「做到」
+
+孩子寫作業寫到一半就神遊、講好的事總拖到最後一刻?
+
+這不是孩子不認真 —— 是「目標管理」和「時間專注」這兩個能力，還沒被好好練過。它們不是長大就會，是要練的。
+
+6/13 下午，我們帶 6–10 歲的孩子練兩件事：
+把一個大目標，拆成做得到的小步驟；
+在該專注的時候，把注意力收回來。
+
+不是逼孩子「更認真」，是讓他看見自己可以怎麼做。
+
+🗓 6/13（六）14:00–14:50
+📍 K12 覺知素養教育學苑（高雄·鼓山｜美術東三路 86 號）
+👨‍👩‍👧 開智班 6–10 歲，親子一起來｜🎟 限 10 組，限 10 組
+
+報名 👉 https://forms.gle/8TjtEUTzjqrZtAaFA
+先懂心，再懂教。位子我們留著，等你來。</pre>
+    </div>
+    <div class="swap"><b>下次換活動改這些：</b>第一行標題、開頭問句、「練兩件事」那段、活動資訊 3 行、報名連結。結尾「先懂心，再懂教」固定。</div>
+  </div>
+
+  <!-- IG -->
+  <div class="block">
+    <div class="block-head">
+      <span class="badge ig">IG</span>
+      <span class="bt">Instagram 文案</span>
+      <span class="bn">視覺優先、短句斷行、標籤收尾</span>
+    </div>
+    <div class="copybox">
+      <div class="copybar"><span>點右側按鈕複製全文</span>
+        <button class="copybtn" onclick="copyText(this)">複製</button></div>
+<pre class="copy">把「想做」，變成「做到」。
+
+孩子寫作業寫到一半就神遊、
+講好的事總拖到最後一刻⋯⋯
+
+這不是孩子不認真——
+是「目標管理」和「時間專注」，
+還沒被好好練過。
+
+它們不是長大就會，是要練的。
+
+6/13 下午，我們帶 6–10 歲的孩子練兩件事：
+把大目標拆成做得到的小步驟、
+在該專注時把注意力收回來。
+
+🗓 6/13（六）14:00–14:50
+📍 K12 覺知素養教育學苑｜高雄·鼓山
+👨‍👩‍👧 開智班 6–10 歲｜限 10 組，限 10 組
+
+報名連結在主頁 🔗 ｜ 先懂心，再懂教 🤍
+
+#覺知SEL #親子教養 #目標管理 #專注力 #高雄親子 #兒童情緒教育 #國小教養 #高雄體驗課</pre>
+    </div>
+    <div class="swap"><b>下次換活動改這些：</b>第一行 hook、痛點段、「練兩件事」那段、活動資訊 3 行、主題標籤（後幾個依活動換）。IG 連結放主頁，文案不放長網址。</div>
+  </div>
+
+  <!-- 圖片 -->
+  <div class="block">
+    <div class="block-head">
+      <span class="badge img">圖</span>
+      <span class="bt">圖片建議</span>
+      <span class="bn">三平台主視覺一致，只換比例</span>
+    </div>
+    <div class="imgcard">
+      <div class="ic">概念 A（主推）</div>
+      <p>桌面上一張小小的「待辦清單」，幾項打了勾。暖光、大量留白，襯線大字「把『想做』變成『做到』」＋ 角落小字「6/13 親子體驗課」。傳達目標管理。</p>
+    </div>
+    <div class="imgcard">
+      <div class="ic">概念 B（情境）</div>
+      <p>孩子專注做一件事的側面（疊積木／畫畫／寫字，不露臉），暖光，傳達「專注的那一刻」。適合 IG 貼文。</p>
+    </div>
+    <div class="imgcard">
+      <div class="ic">概念 C（資訊卡）</div>
+      <p>純色塊版面，活動資訊清楚（6/13・14:00・開智班 6–10 歲・限 10 組）。適合 IG 限動／FB 連結圖。</p>
+    </div>
+    <div class="swap"><b>用法：</b>IG 貼文用 A 或 B、限動／FB 用 C。比例：IG 貼文 1:1 或 4:5、限動 9:16、FB 連結圖 1.91:1。可丟給「自動化生成社群封面圖」系統做。</div>
+  </div>
+
+  <footer>
+    <div class="wm">K12 覺知素養教育學苑</div>
+    <div>6/13 體驗課 · 社群發文範本 ｜ 搭配 email 版：6-6體驗課_EMAIL_活動邀請版.html</div>
+    <div style="margin-top:5px;color:var(--line);">先懂心，再懂教</div>
+  </footer>
+</div>
+
+<script>
+function copyText(btn){
+  const pre=btn.closest('.copybox').querySelector('pre.copy');
+  const text=pre.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='✓ 已複製';
+    btn.classList.add('done');
+    setTimeout(()=>{ btn.textContent='複製'; btn.classList.remove('done'); },2000);
+  }).catch(()=>{
+    const r=document.createRange(); r.selectNodeContents(pre);
+    const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    btn.textContent='已選取，請按 Ctrl+C';
+    setTimeout(()=>{ btn.textContent='複製'; },2500);
+  });
+}
+</script>
+</body>
+</html>

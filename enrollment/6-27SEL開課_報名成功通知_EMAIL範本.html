@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="x-apple-disable-message-reformatting">
+<title>6/27 SEL 開課・報名成功通知 EMAIL 範本</title>
+<!-- ================================================================
+  覺知 SEL ｜ 6/27 課程開課・報名成功通知 EMAIL 範本
+  用法：① 選梯次 ② 點「複製 Email 內容」③ 到 Gmail 撰寫視窗 Ctrl+V，
+       主旨依下方建議 → 寄出
+  下次新梯次：在 events 陣列加一筆即可。
+  寄送對象：已完成 6/27 SEL 課程報名（不是體驗活動）的家長。
+================================================================ -->
+<style>
+  body{margin:0;padding:0;background:#f3ece0;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;}
+  .topbar{position:sticky;top:0;z-index:99;background:#3a322b;color:#f3ece0;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 18px;box-shadow:0 2px 10px rgba(0,0,0,.2);}
+  .topbar .tt{font-weight:700;font-size:.92rem;margin-right:auto;}
+  .topbar .tt small{font-weight:400;color:#b3a892;font-size:.74rem;margin-left:6px;}
+  .tbtn{font-family:inherit;font-size:.82rem;font-weight:500;border:1px solid #5f5446;
+    background:#4a4034;color:#f3ece0;padding:8px 15px;border-radius:4px;cursor:pointer;}
+  .tbtn:hover{background:#5a4f40;}
+  .tbtn.main{background:#b85c40;border-color:#b85c40;color:#fff;font-weight:700;}
+  .tbtn.main:hover{background:#9c4730;}
+  .toolhint{width:100%;font-size:.72rem;color:#a89c87;padding-top:2px;}
+  .picker{max-width:680px;margin:20px auto 0;padding:0 14px;}
+  .picker .pl{font-weight:700;font-size:.92rem;color:#5f574d;margin-bottom:8px;}
+  .ev{display:flex;gap:8px;flex-wrap:wrap;}
+  .ev button{font-weight:600;font-size:.92rem;border:1px solid #d8cdb9;background:#fff;color:#5f574d;
+    padding:9px 18px;border-radius:6px;cursor:pointer;}
+  .ev button.on{background:#b85c40;border-color:#b85c40;color:#fff;}
+  .subj{max-width:680px;margin:14px auto 0;padding:11px 16px;background:#fff;border:1px solid #e5dccd;
+    border-radius:4px;font-size:.86rem;color:#5f574d;}
+  .subj b{color:#2b2622;}
+  @media print{.topbar,.picker,.subj{display:none;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tt">6/27 SEL 開課・報名成功通知 Email<small>選梯次 → 複製 → 貼進 Gmail</small></div>
+  <button class="tbtn main" onclick="copyEmail(this)">📋 複製 Email 內容</button>
+  <button class="tbtn" onclick="window.print()">🖨 列印</button>
+  <div class="toolhint">寄送對象＝已完成 6/27 SEL 課程報名（付費正式課）的家長，不是體驗活動。</div>
+</div>
+
+<div class="picker">
+  <div class="pl">① 選梯次</div>
+  <div class="ev" id="evBtns"></div>
+</div>
+<div class="subj" id="subjBox"></div>
+
+<div id="emailContent" style="max-width:600px;margin:18px auto 40px;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">歡迎加入 K12 SEL 課程，第一堂 6/27 下午見。</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:6px;overflow:hidden;border:1px solid #e5dccd;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;">
+
+  <tr><td style="background-color:#9c4730;background:linear-gradient(135deg,#9c4730 0%,#d8a05a 100%);padding:34px 36px 28px;text-align:center;">
+    <div style="font-size:14px;letter-spacing:2px;color:#fff2e0;font-weight:600;">✓ 課程報名完成</div>
+    <div style="font-family:'Noto Serif TC',serif;font-size:26px;font-weight:900;color:#ffffff;line-height:1.45;margin:8px 0 4px;">歡迎加入 SEL 課程，<br>你的孩子的位子已備好。</div>
+    <div style="font-size:14px;color:#fff2e0;">第一堂 <span class="eDate"></span>　K12 覺知素養教育學苑</div>
+  </td></tr>
+
+  <tr><td style="padding:28px 36px 6px;">
+    <p style="margin:0 0 12px;font-size:16px;line-height:1.9;color:#2b2622;">
+      您好，
+    </p>
+    <p style="margin:0 0 10px;font-size:16px;line-height:1.9;color:#2b2622;">
+      感謝您完成 K12 覺知素養教育學苑 <b style="color:#9c4730;"><span class="eName"></span></b> 的報名。我們已為您的孩子保留學員席次，<span class="eDate"></span>正式開課。
+    </p>
+    <p style="margin:0;font-size:15px;line-height:1.85;color:#5f574d;">
+      此封信件請收存。完整課表與每週主題、課前準備建議，會在開課前一週透過 LINE 一併寄送。
+    </p>
+  </td></tr>
+
+  <tr><td style="padding:18px 36px 8px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fff2d8;background:linear-gradient(135deg,#fff7e0,#ffe9c2);border-radius:6px;">
+      <tr><td style="padding:20px 22px;">
+        <div style="font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:#9c4730;margin-bottom:10px;">課程資訊</div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;line-height:1.7;color:#2b2622;">
+          <tr><td style="padding:3px 0;width:74px;color:#a8895c;">課程</td><td style="padding:3px 0;font-weight:600;"><span class="eName"></span></td></tr>
+          <tr><td style="padding:3px 0;color:#a8895c;">開課</td><td style="padding:3px 0;font-weight:600;"><span class="eDate"></span> <span class="eTime"></span>（第一堂）</td></tr>
+          <tr><td style="padding:3px 0;color:#a8895c;">堂數</td><td style="padding:3px 0;"><span class="eSessions"></span></td></tr>
+          <tr><td style="padding:3px 0;color:#a8895c;">對象</td><td style="padding:3px 0;"><span class="eAudience"></span></td></tr>
+          <tr><td style="padding:3px 0;color:#a8895c;">地點</td><td style="padding:3px 0;"><a href="https://www.google.com/maps/search/?api=1&amp;query=高雄市鼓山區美術東三路86號" style="color:#9c4730;text-decoration:underline;">K12 覺知素養教育學苑（高雄市鼓山區美術東三路 86 號・點此開地圖）</a></td></tr>
+          <tr><td style="padding:3px 0;color:#a8895c;">主題</td><td style="padding:3px 0;"><span class="eTopic"></span></td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:22px 36px 6px;">
+    <div style="font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:#2b2622;margin-bottom:10px;">接下來的三件事</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;line-height:1.75;color:#2b2622;">
+      <tr><td style="padding:8px 0;vertical-align:top;width:30px;"><span style="display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;background:#9c4730;color:#fff;border-radius:50%;font-weight:700;font-size:13px;">1</span></td>
+        <td style="padding:8px 0;"><b>完成繳費</b>　請於 <b style="color:#9c4730;">開課前 3 天</b>完成費用繳交（匯款資訊請見附件 / 或洽 LINE 客服）。繳費完成後我們會以 LINE 回覆「✓ 已收款」。</td></tr>
+      <tr><td style="padding:8px 0;vertical-align:top;"><span style="display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;background:#9c4730;color:#fff;border-radius:50%;font-weight:700;font-size:13px;">2</span></td>
+        <td style="padding:8px 0;"><b>加入 LINE 取得課表</b>　加入官方 LINE 後，我們會在開課前一週寄出完整課表、每週主題、課前準備事項。</td></tr>
+      <tr><td style="padding:8px 0;vertical-align:top;"><span style="display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;background:#9c4730;color:#fff;border-radius:50%;font-weight:700;font-size:13px;">3</span></td>
+        <td style="padding:8px 0;"><b>第一堂提前 10 分鐘到場</b>　<span class="eDate"></span>提前到場、安頓孩子情緒、與老師見面。第一堂不需準備任何材料。</td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:18px 36px 6px;">
+    <div style="background:#f5efe3;border-left:3px solid #9c4730;padding:14px 18px;border-radius:0 4px 4px 0;">
+      <p style="margin:0 0 6px;font-size:14px;color:#5f574d;font-weight:600;">📋 請假與退費政策（請先閱讀）</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.75;color:#5f574d;">
+        ・ 第 4 堂起不接受插班；插班須於第 3 堂前完成。<br>
+        ・ 第 7 堂收下一期續班費。<br>
+        ・ 請假請於上課前一日通知，我們會協助補課或調整。<br>
+        ・ 退費依本學苑收費辦法辦理，詳情請洽客服。
+      </p>
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:18px 36px 6px;">
+    <div style="background:#f0f7f3;border-left:3px solid #1f8a5c;padding:14px 18px;border-radius:0 4px 4px 0;">
+      <p style="margin:0 0 6px;font-size:14px;color:#5f574d;font-weight:600;">📲 加入 K12 官方 LINE（取得課表、請假、提問）</p>
+      <p style="margin:0;font-size:14px;line-height:1.7;color:#2b2622;">
+        <a href="https://lin.ee/u4IYYpH" style="color:#1f8a5c;font-weight:700;text-decoration:underline;">@931irimh</a>　｜　07-2693525　｜　admin@z-way-edu.com
+      </p>
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:22px 36px 26px;">
+    <div style="border-top:1px solid #eee3d2;padding-top:20px;text-align:center;">
+      <p style="margin:0;font-family:'Noto Serif TC',serif;font-size:16px;line-height:1.8;color:#9c4730;font-style:italic;">
+        先懂心，再懂教 ——<br>
+        <span class="eDate"></span>，第一堂見。
+      </p>
+    </div>
+  </td></tr>
+
+  <tr><td style="background-color:#3a322b;padding:24px 36px;text-align:center;">
+    <p style="margin:0 0 4px;font-size:13px;color:#d8a05a;font-family:'Noto Serif TC',serif;">Written by K12 覺知素養教育學苑</p>
+    <p style="margin:0 0 10px;font-size:15px;color:#f3ece0;font-family:'Noto Serif TC',serif;font-weight:700;">先懂心，再懂教</p>
+    <p style="margin:0;font-size:12px;line-height:1.8;color:#a89c87;">
+      K12 覺知素養教育學苑 ｜ 台灣展威文化教育有限公司<br>
+      <a href="https://www.google.com/maps/search/?api=1&amp;query=高雄市鼓山區美術東三路86號" style="color:#a89c87;">高雄市鼓山區美術東三路 86 號</a> ｜ 07-2693525<br>
+      LINE：<a href="https://lin.ee/u4IYYpH" style="color:#d8a05a;">@931irimh</a> ｜ admin@z-way-edu.com
+    </p>
+  </td></tr>
+
+</table>
+</div>
+
+<script>
+// 之後新梯次：複製一筆改 date / sessions / 對象 即可
+var events=[
+  {
+    label:"6/27 SEL 開智班・第一期",
+    name:"覺知 SEL 課程・開智班（第一期）",
+    date:"6/27（六）",
+    time:"14:00–15:30",
+    sessions:"全期 8 堂（每週六同時段）",
+    audience:"開智班・6–10 歲兒童",
+    topic:"覺知 SEL ｜ 情緒調節 × 目標管理 × 時間專注"
+  }
+];
+var cur=0;
+function pick(i){
+  cur=i;
+  var e=events[i];
+  document.querySelectorAll('.eName').forEach(function(el){el.textContent=e.name;});
+  document.querySelectorAll('.eDate').forEach(function(el){el.textContent=e.date;});
+  document.querySelectorAll('.eTime').forEach(function(el){el.textContent=e.time;});
+  document.querySelectorAll('.eSessions').forEach(function(el){el.textContent=e.sessions;});
+  document.querySelectorAll('.eAudience').forEach(function(el){el.textContent=e.audience;});
+  document.querySelectorAll('.eTopic').forEach(function(el){el.textContent=e.topic;});
+  document.querySelectorAll('#evBtns button').forEach(function(b,j){b.classList.toggle('on',j===i);});
+  document.getElementById('subjBox').innerHTML=
+    '<b>主旨建議：</b>✓ 課程報名完成 ｜ '+e.name+'，'+e.date+' 開課<br>'+
+    '<b>預覽文字：</b>歡迎加入 K12 SEL 課程，第一堂 '+e.date+' 見。';
+}
+function copyEmail(btn){
+  var el=document.getElementById('emailContent');
+  var range=document.createRange(); range.selectNode(el);
+  var sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  var ok=false; try{ ok=document.execCommand('copy'); }catch(e){}
+  sel.removeAllRanges();
+  var o=btn.textContent;
+  btn.textContent= ok ? '✓ 已複製！到 Gmail 按 Ctrl+V' : '複製失敗，請手動選取';
+  setTimeout(function(){btn.textContent=o;},2800);
+}
+(function(){
+  var box=document.getElementById('evBtns');
+  events.forEach(function(e,i){
+    var b=document.createElement('button');
+    b.textContent=e.label;
+    b.onclick=function(){pick(i);};
+    box.appendChild(b);
+  });
+  pick(0);
+})();
+</script>
+</body>
+</html>

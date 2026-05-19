@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>「看見孩子的光」── 覺知 SEL 暑期招生線上曝光計畫 v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f2ea;
+    --card:#ffffff;
+    --ink:#2b2622;
+    --ink-soft:#5f574d;
+    --ink-faint:#8a8175;
+    --orange:#b85c40;
+    --orange-deep:#9c4730;
+    --gold:#a8895c;
+    --green:#1f8a5c;
+    --line:#e5dccd;
+    --line-soft:#efe8db;
+    --shadow:0 1px 3px rgba(43,38,34,.05),0 8px 28px rgba(43,38,34,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Noto Sans TC',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.85;
+    font-weight:300;
+    -webkit-font-smoothing:antialiased;
+    padding:0 20px;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+
+  /* ---- COVER ---- */
+  .cover{
+    padding:90px 0 64px;
+    border-bottom:1px solid var(--line);
+    text-align:center;
+  }
+  .kicker{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:1.25rem;
+    color:var(--orange);
+    letter-spacing:.04em;
+    margin-bottom:18px;
+  }
+  .cover h1{
+    font-family:'Noto Serif TC',serif;
+    font-weight:900;
+    font-size:2.85rem;
+    line-height:1.35;
+    letter-spacing:.02em;
+    margin-bottom:10px;
+  }
+  .cover h1 .light{color:var(--orange);}
+  .cover .sub{
+    font-family:'Noto Serif TC',serif;
+    font-size:1.15rem;
+    color:var(--ink-soft);
+    font-weight:400;
+    margin-bottom:34px;
+  }
+  .cover-meta{
+    display:inline-flex;gap:0;flex-wrap:wrap;justify-content:center;
+    border:1px solid var(--line);border-radius:2px;overflow:hidden;
+    background:var(--card);
+  }
+  .cover-meta div{
+    padding:13px 26px;font-size:.82rem;color:var(--ink-soft);
+    border-right:1px solid var(--line);
+  }
+  .cover-meta div:last-child{border-right:none;}
+  .cover-meta b{color:var(--ink);font-weight:700;}
+
+  /* ---- SECTION ---- */
+  section{padding:54px 0;border-bottom:1px solid var(--line-soft);}
+  .sec-head{display:flex;align-items:baseline;gap:18px;margin-bottom:26px;}
+  .sec-num{
+    font-family:'Cormorant Garamond',serif;
+    font-size:3rem;font-weight:600;color:var(--orange);
+    line-height:1;flex-shrink:0;
+  }
+  .sec-title{
+    font-family:'Noto Serif TC',serif;
+    font-weight:700;font-size:1.7rem;letter-spacing:.02em;
+  }
+  .sec-title .en{
+    display:block;font-family:'Cormorant Garamond',serif;
+    font-style:italic;font-size:.95rem;color:var(--ink-faint);
+    font-weight:500;letter-spacing:.06em;margin-top:2px;
+  }
+  h3{
+    font-family:'Noto Serif TC',serif;font-weight:600;
+    font-size:1.18rem;margin:30px 0 14px;
+    padding-left:14px;border-left:3px solid var(--orange);
+  }
+  h4{
+    font-family:'Noto Serif TC',serif;font-weight:600;
+    font-size:1rem;margin:20px 0 8px;color:var(--orange-deep);
+  }
+  p{margin-bottom:14px;}
+  strong{font-weight:700;color:var(--ink);}
+  .lead{font-size:1.05rem;color:var(--ink-soft);}
+  ul{margin:8px 0 16px;padding-left:0;list-style:none;}
+  ul li{
+    position:relative;padding-left:22px;margin-bottom:8px;
+  }
+  ul li::before{
+    content:"";position:absolute;left:4px;top:13px;
+    width:6px;height:6px;background:var(--gold);border-radius:50%;
+  }
+  ul li ul{margin:6px 0 6px;}
+  ul li ul li::before{background:none;border:1px solid var(--gold);}
+
+  /* ---- ASSUMPTION BOX ---- */
+  .note{
+    background:#fbf6ee;border:1px solid var(--line);
+    border-left:4px solid var(--gold);
+    padding:22px 26px;border-radius:2px;margin:24px 0;
+  }
+  .note .label{
+    font-family:'Noto Serif TC',serif;font-weight:700;
+    font-size:.85rem;color:var(--gold);letter-spacing:.1em;
+    text-transform:uppercase;margin-bottom:10px;
+  }
+  .note ul{margin-bottom:0;}
+  .note ul li{font-size:.92rem;margin-bottom:6px;}
+
+  /* ---- CARD GRID ---- */
+  .grid{display:grid;gap:18px;margin:20px 0;}
+  .grid.g2{grid-template-columns:1fr 1fr;}
+  .grid.g3{grid-template-columns:1fr 1fr 1fr;}
+  .grid.g4{grid-template-columns:1fr 1fr;}
+  .card{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:2px;padding:24px;box-shadow:var(--shadow);
+  }
+  .card .ico{
+    font-family:'Cormorant Garamond',serif;font-size:1.6rem;
+    color:var(--orange);font-weight:600;
+  }
+  .card h4{margin-top:6px;}
+  .card p{font-size:.9rem;margin-bottom:0;color:var(--ink-soft);}
+  .card .tag{
+    display:inline-block;font-size:.72rem;background:#f4ece0;
+    color:var(--gold);padding:3px 10px;border-radius:2px;
+    margin-bottom:10px;letter-spacing:.05em;
+  }
+
+  /* ---- FUNNEL ---- */
+  .funnel{margin:26px 0;}
+  .fstage{
+    display:flex;align-items:stretch;margin-bottom:10px;
+    background:var(--card);border:1px solid var(--line);
+    border-radius:2px;overflow:hidden;box-shadow:var(--shadow);
+  }
+  .fstage .fbar{
+    flex-shrink:0;width:8px;background:var(--orange);
+  }
+  .fstage:nth-child(1) .fbar{background:#d8a05a;}
+  .fstage:nth-child(2) .fbar{background:#c9824a;}
+  .fstage:nth-child(3) .fbar{background:#b85c40;}
+  .fstage:nth-child(4) .fbar{background:#9c4730;}
+  .fstage:nth-child(5) .fbar{background:#1f8a5c;}
+  .fstage .fnum{
+    flex-shrink:0;width:64px;display:flex;align-items:center;justify-content:center;
+    font-family:'Cormorant Garamond',serif;font-size:1.9rem;
+    color:var(--ink-faint);font-weight:600;border-right:1px solid var(--line-soft);
+  }
+  .fstage .fbody{padding:16px 22px;flex-grow:1;}
+  .fstage .fbody .fname{
+    font-family:'Noto Serif TC',serif;font-weight:700;font-size:1.08rem;
+  }
+  .fstage .fbody .fname span{color:var(--ink-faint);font-weight:400;font-size:.85rem;}
+  .fstage .fbody .fdesc{font-size:.88rem;color:var(--ink-soft);margin-top:2px;}
+  .fstage .fpillar{
+    flex-shrink:0;width:210px;padding:16px 20px;background:#fbf6ee;
+    border-left:1px solid var(--line-soft);font-size:.8rem;color:var(--ink-soft);
+    display:flex;align-items:center;
+  }
+  .fstage .fpillar b{color:var(--orange-deep);}
+
+  /* ---- TABLE ---- */
+  .tbl-wrap{overflow-x:auto;margin:18px 0;border:1px solid var(--line);border-radius:2px;}
+  table{width:100%;border-collapse:collapse;background:var(--card);font-size:.82rem;}
+  th,td{padding:11px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-soft);}
+  thead th{
+    background:#3a322b;color:#f7f2ea;font-weight:500;
+    font-family:'Noto Serif TC',serif;font-size:.82rem;letter-spacing:.03em;
+    position:sticky;top:0;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#fbf8f2;}
+  .wk{
+    font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:1.05rem;color:var(--orange);white-space:nowrap;
+  }
+  .wk small{display:block;font-family:'Noto Sans TC';font-size:.68rem;color:var(--ink-faint);font-weight:300;}
+  td .theme{font-family:'Noto Serif TC',serif;font-weight:600;color:var(--ink);font-size:.86rem;}
+  .phase-row td{
+    background:#3a322b;color:#f7f2ea;font-family:'Noto Serif TC',serif;
+    font-weight:600;font-size:.95rem;letter-spacing:.04em;padding:10px 13px;
+  }
+  .phase-row td .pmeta{font-weight:300;font-size:.78rem;color:#d8cdb9;float:right;}
+  .pill{
+    display:inline-block;font-size:.68rem;padding:1px 7px;border-radius:2px;
+    background:#f4ece0;color:var(--gold);margin:1px 2px 1px 0;white-space:nowrap;
+  }
+  .pill.h{background:#f3e0d9;color:var(--orange-deep);}
+  .pill.a{background:#e8e3d3;color:var(--gold);}
+  .pill.b{background:#dceee5;color:var(--green);}
+  .pill.c{background:#e6e0ec;color:#7a6a93;}
+  .star{color:var(--orange);font-weight:700;}
+
+  /* metric / kpi */
+  .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:20px 0;}
+  .kpi{
+    background:var(--card);border:1px solid var(--line);border-radius:2px;
+    padding:16px 14px;text-align:center;box-shadow:var(--shadow);
+  }
+  .kpi .kl{font-size:.74rem;color:var(--ink-faint);margin-bottom:6px;}
+  .kpi .kv{font-family:'Noto Serif TC',serif;font-weight:700;font-size:.95rem;color:var(--orange-deep);}
+  .kpi .kn{font-size:.7rem;color:var(--ink-faint);margin-top:4px;}
+
+  .mathbox{
+    background:#3a322b;color:#ece3d3;border-radius:2px;padding:24px 28px;margin:20px 0;
+  }
+  .mathbox .label{
+    font-family:'Cormorant Garamond',serif;font-style:italic;
+    color:#d8a05a;font-size:1rem;margin-bottom:14px;
+  }
+  .mathchain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:.9rem;}
+  .mathchain .m{
+    background:rgba(255,255,255,.07);padding:8px 14px;border-radius:2px;
+    font-family:'Noto Serif TC',serif;
+  }
+  .mathchain .m b{color:#fff;font-size:1.05rem;}
+  .mathchain .arrow{color:#d8a05a;font-weight:700;}
+  .mathbox .fineprint{font-size:.76rem;color:#a89c87;margin-top:14px;margin-bottom:0;}
+
+  /* risk */
+  .risk{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--line-soft);}
+  .risk:last-child{border-bottom:none;}
+  .risk .rn{
+    font-family:'Cormorant Garamond',serif;font-size:1.7rem;color:var(--orange);
+    font-weight:600;flex-shrink:0;width:38px;line-height:1.2;
+  }
+  .risk .rbody{flex-grow:1;}
+  .risk .rbody .rt{font-family:'Noto Serif TC',serif;font-weight:600;font-size:1rem;margin-bottom:3px;}
+  .risk .rbody .rd{font-size:.88rem;color:var(--ink-soft);margin-bottom:6px;}
+  .risk .rbody .rfix{font-size:.86rem;}
+  .risk .rbody .rfix b{color:var(--green);}
+
+  /* steps */
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:18px 0;}
+  ol.steps li{
+    counter-increment:s;position:relative;padding:14px 0 14px 52px;
+    border-bottom:1px solid var(--line-soft);font-size:.92rem;
+  }
+  ol.steps li:last-child{border-bottom:none;}
+  ol.steps li::before{
+    content:counter(s);position:absolute;left:0;top:12px;
+    width:32px;height:32px;background:var(--orange);color:#fff;
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.05rem;
+  }
+  ol.steps li b{display:block;font-family:'Noto Serif TC',serif;color:var(--ink);}
+  ol.steps li .who{font-size:.78rem;color:var(--ink-faint);}
+
+  .quote{
+    font-family:'Noto Serif TC',serif;font-style:italic;font-size:1.15rem;
+    color:var(--orange-deep);text-align:center;padding:30px 40px;
+    line-height:1.8;
+  }
+  .quote::before,.quote::after{content:"「";color:var(--gold);}
+  .quote::after{content:"」";}
+
+  footer{
+    text-align:center;padding:46px 0 70px;color:var(--ink-faint);font-size:.8rem;
+  }
+  footer .wm{
+    font-family:'Noto Serif TC',serif;font-weight:700;font-size:1rem;
+    color:var(--ink);margin-bottom:6px;
+  }
+  /* TOC */
+  .toc{
+    background:var(--card);border:1px solid var(--line);border-radius:2px;
+    padding:22px 28px;margin:30px 0 0;box-shadow:var(--shadow);
+  }
+  .toc .label{
+    font-family:'Noto Serif TC',serif;font-weight:700;font-size:.85rem;
+    letter-spacing:.1em;color:var(--gold);margin-bottom:14px;
+  }
+  .toc ol{list-style:none;counter-reset:t;columns:2;column-gap:40px;}
+  .toc ol li{
+    counter-increment:t;padding:5px 0;font-size:.88rem;
+    border-bottom:1px dotted var(--line);
+  }
+  .toc ol li::before{
+    content:counter(t,decimal-leading-zero);color:var(--orange);
+    font-family:'Cormorant Garamond',serif;font-weight:600;margin-right:10px;
+  }
+  .toc a{color:var(--ink-soft);text-decoration:none;}
+  .toc a:hover{color:var(--orange);}
+
+  @media(max-width:760px){
+    .cover h1{font-size:2rem;}
+    .grid.g2,.grid.g3,.grid.g4{grid-template-columns:1fr;}
+    .kpi-row{grid-template-columns:1fr 1fr;}
+    .fstage{flex-wrap:wrap;}
+    .fstage .fpillar{width:100%;border-left:none;border-top:1px solid var(--line-soft);}
+    .toc ol{columns:1;}
+    .sec-num{font-size:2.2rem;}
+    .sec-title{font-size:1.35rem;}
+  }
+  @media print{
+    body{background:#fff;padding:0;font-size:11px;}
+    .cover{padding:40px 0;}
+    section{padding:28px 0;page-break-inside:avoid;}
+    .card,.fstage,.kpi,.tbl-wrap{box-shadow:none;}
+    .toc{display:none;}
+    thead th{position:static;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== COVER ===================== -->
+  <header class="cover">
+    <div class="kicker">Enrollment Exposure Plan &nbsp;·&nbsp; 2026 Summer</div>
+    <h1>「看見孩子的<span class="light">光</span>」<br>覺知 SEL 暑期招生線上曝光計畫</h1>
+    <div class="sub">先懂心，再懂教 —— 從一份心智光譜，到一間教室的相遇</div>
+    <div class="cover-meta">
+      <div>版本　<b>v1</b></div>
+      <div>期程　<b>W22 – W33（約 12 週）</b></div>
+      <div>製作　<b>2026-05-14</b></div>
+      <div>單位　<b>K12 覺知素養教育學苑</b></div>
+    </div>
+
+    <div class="toc">
+      <div class="label">計畫目錄 ｜ CONTENTS</div>
+      <ol>
+        <li><a href="#s1">計畫總覽與目標</a></li>
+        <li><a href="#s2">招生漏斗：曝光如何變成報名</a></li>
+        <li><a href="#s3">目標對象</a></li>
+        <li><a href="#s4">核心訊息</a></li>
+        <li><a href="#s5">四大內容支柱：文章・影片・Email・互動</a></li>
+        <li><a href="#s6">12 週內容行事曆</a></li>
+        <li><a href="#s7">內容產出清單</a></li>
+        <li><a href="#s8">成效指標與漏斗試算</a></li>
+        <li><a href="#s9">資源與預算建議</a></li>
+        <li><a href="#s10">風險與對策</a></li>
+        <li><a href="#s11">啟動下一步</a></li>
+      </ol>
+    </div>
+  </header>
+
+  <!-- ===================== ASSUMPTIONS ===================== -->
+  <div class="note" style="margin-top:30px;">
+    <div class="label">本規劃的前提假設</div>
+    <p style="font-size:.9rem;margin-bottom:10px;color:var(--ink-soft);">因應「先設計、不中斷詢問」的指示，以下為合理推斷的前提；如與實際不符，調整任一項即可重排其餘內容：</p>
+    <ul>
+      <li><strong>主要目標</strong>：透過線上曝光，為暑期體驗課與秋季正式課程招生（同時帶動一日大學生暑期梯次）。</li>
+      <li><strong>期程</strong>：銜接現有 Email 週次排程（W20–W34 已規劃），招生季設定為 <strong>W22–W33，約 5 月底至 8 月中</strong>，收官後轉入秋季常態招生。</li>
+      <li><strong>對象</strong>：高雄為主場（既有校園足跡），線上延伸至台南與全島 K12 學生家長。</li>
+      <li><strong>預算</strong>：未指定，故本計畫以「不依賴付費」為基礎設計；第 9 節標註「若有預算，投在哪裡最有效」。</li>
+      <li><strong>沿用既有資產</strong>：H/A/B/C Email 分級系統與 4 款公版、心智光譜測驗、LINE @zwayedu、每日覺知文案自動產文系統、櫃檯電視牆、體驗課信件範本 —— 本計畫是「把既有零件編成一首招生季的曲子」，不是重造輪子。</li>
+    </ul>
+  </div>
+
+  <!-- ===================== 1. OVERVIEW ===================== -->
+  <section id="s1">
+    <div class="sec-head">
+      <div class="sec-num">01</div>
+      <div class="sec-title">計畫總覽與目標<span class="en">Campaign Overview &amp; Objectives</span></div>
+    </div>
+
+    <p class="lead">這不是一檔「打廣告衝報名」的活動，而是一條<strong>讓陌生家長一步步靠近的路</strong>：先在內容裡被理解，再用一份心智光譜被看見，然後走進一堂體驗課，最後把孩子交給我們。</p>
+
+    <h3>一句話描述</h3>
+    <p>用 12 週的文章、影片、Email 與互動，把「先懂心，再懂教」的理念，轉化成家長可以親身體驗的一份測評與一堂課 —— 讓招生不靠話術，靠的是「被看懂」的感覺。</p>
+
+    <h3>主要目標（Primary）</h3>
+    <p>在招生季結束時，累積足夠的<strong>正式課程報名數</strong>（暑期體驗課轉換 + 秋季課程預報名）。具體數字請見第 8 節漏斗試算 —— 建議以「報名目標」回推所需的測驗量與曝光量。</p>
+
+    <h3>次要目標（Secondary）</h3>
+    <ul>
+      <li><strong>名單蓄水</strong>：心智光譜測驗完成數 ＋ LINE @zwayedu 新好友數 —— 這是整個招生季的「水庫」。</li>
+      <li><strong>冷名單活化</strong>：把 C 級「2026 招生潛在」1,237 筆田野調查冷名單，透過訂閱重確認導流，轉化部分進入可經營的 B 軌。</li>
+      <li><strong>體驗課出席</strong>：體驗課報名數與實際出席率（show rate）。</li>
+      <li><strong>品牌資產累積</strong>：4 篇分齡主打長文 ＋ 一套測評分析影片，招生季結束後仍可長期使用。</li>
+    </ul>
+
+    <div class="quote">招生的本質，不是說服家長相信我們，<br>而是讓家長在我們的內容裡，先相信他自己還能再靠近孩子一點。</div>
+  </section>
+
+  <!-- ===================== 2. FUNNEL ===================== -->
+  <section id="s2">
+    <div class="sec-head">
+      <div class="sec-num">02</div>
+      <div class="sec-title">招生漏斗：曝光如何變成報名<span class="en">The Enrollment Funnel</span></div>
+    </div>
+    <p class="lead">所有的文章、影片、Email、互動，都只為了推動家長走過這五段路。每一段都有一個「該發生的動作」，與一個負責推它的內容支柱。</p>
+
+    <div class="funnel">
+      <div class="fstage">
+        <div class="fbar"></div>
+        <div class="fnum">01</div>
+        <div class="fbody">
+          <div class="fname">曝光 <span>Awareness</span></div>
+          <div class="fdesc">陌生家長第一次接觸到「覺知 SEL」，在一篇文章或一支短影音裡，感覺「這說的好像就是我家」。</div>
+        </div>
+        <div class="fpillar"><span>主力支柱：<b>文章 ＋ 影片</b>（社群、Wowhome、電視牆）</span></div>
+      </div>
+      <div class="fstage">
+        <div class="fbar"></div>
+        <div class="fnum">02</div>
+        <div class="fbody">
+          <div class="fname">興趣 <span>Interest</span></div>
+          <div class="fdesc">家長想多了解一點，點進文章看完、追蹤社群、看完一支影片 —— 還沒留資料，但已經在看。</div>
+        </div>
+        <div class="fpillar"><span>主力支柱：<b>文章 ＋ 互動</b>（周哈里窗測試頁、深度長文）</span></div>
+      </div>
+      <div class="fstage">
+        <div class="fbar"></div>
+        <div class="fnum">03</div>
+        <div class="fbody">
+          <div class="fname">名單 <span>Lead</span></div>
+          <div class="fdesc">家長完成<strong>心智光譜測驗</strong>、或加入 LINE @zwayedu —— 這是漏斗的關鍵閘門，從匿名變成可經營的名單。</div>
+        </div>
+        <div class="fpillar"><span>主力支柱：<b>互動 ＋ Email</b>（心智光譜測驗、LINE 加好友禮）</span></div>
+      </div>
+      <div class="fstage">
+        <div class="fbar"></div>
+        <div class="fnum">04</div>
+        <div class="fbody">
+          <div class="fname">體驗 <span>Trial</span></div>
+          <div class="fdesc">家長報名並實際出席一堂體驗課、或參加一場線上講座 —— 第一次面對面，信任在這裡建立。</div>
+        </div>
+        <div class="fpillar"><span>主力支柱：<b>Email ＋ 互動</b>（體驗課邀請信、線上講座、致電提醒）</span></div>
+      </div>
+      <div class="fstage">
+        <div class="fbar"></div>
+        <div class="fnum">05</div>
+        <div class="fbody">
+          <div class="fname">報名 <span>Enroll</span></div>
+          <div class="fdesc">家長報名正式課程（SEL 課程線／AI 智學班／家長學堂／一日大學生）—— 招生季的真正成果。</div>
+        </div>
+        <div class="fpillar"><span>主力支柱：<b>Email ＋ 互動</b>（報名催單、課程說明會、早鳥）</span></div>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="label">漏斗的設計重點</div>
+      <ul>
+        <li><strong>所有曝光的 CTA 都收斂到同一個閘門</strong>：心智光譜測驗。文章結尾、影片資訊欄、社群貼文、電視牆 QR、Email —— 都導向同一個測驗 landing page，不分散。</li>
+        <li><strong>測驗本身就是最強的互動</strong>：它不是表單，是一份「家長願意花 10 分鐘、因為想更懂孩子」的體驗。完成後的結果頁，是把人推往「體驗」的最佳跳板。</li>
+        <li><strong>三方視角的病毒迴圈</strong>：測驗結果頁加上「分享給另一半／孩子的老師一起看」，呼應品牌「孩子自己＋家長＋老師」三角度測評 —— 一個家長進來，可能帶兩個人。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== 3. AUDIENCE ===================== -->
+  <section id="s3">
+    <div class="sec-head">
+      <div class="sec-num">03</div>
+      <div class="sec-title">目標對象<span class="en">Target Audience</span></div>
+    </div>
+
+    <h3>主要對象：K12 學生家長</h3>
+    <p>正在經歷「教不動」時刻的父母。他們的真實心聲（取自品牌語氣庫）：<em>「我真的教不動了」「我已經不知道怎麼跟孩子說話了」</em>。教室裡老師在講、學生在吼；家裡孩子甩門、家長無力。他們不缺愛，缺的是<strong>一種看懂孩子的方法</strong>。</p>
+
+    <div class="grid g4">
+      <div class="card">
+        <span class="tag">分齡 · 幼兒</span>
+        <h4>啟蒙班家長</h4>
+        <p>面對情緒風暴與「教養是不是失敗」的自我懷疑。需要被安頓，需要知道「這很正常」。</p>
+      </div>
+      <div class="card">
+        <span class="tag">分齡 · 國小</span>
+        <h4>開智班家長</h4>
+        <p>常擔心「乖小孩」的隱藏面，或為過動、分心焦慮。想看見孩子真實的樣子。</p>
+      </div>
+      <div class="card">
+        <span class="tag">分齡 · 國中</span>
+        <h4>智優班家長</h4>
+        <p>「孩子一升國中就變了一個人」。親子溝通斷線，急著想重新接上線。</p>
+      </div>
+      <div class="card">
+        <span class="tag">分齡 · 高中</span>
+        <h4>恆毅力班家長</h4>
+        <p>面對「不用你管」與成績壓力，擔心動機熄火、生涯方向不明。</p>
+      </div>
+    </div>
+
+    <h3>次要對象：教育工作者（老師）</h3>
+    <p>不是直接招生對象，但是<strong>強力的轉介來源</strong>與內容擴散節點。品牌已有深厚的校園足跡（福山、鹽埕、鼎金、七賢國小研習，11 校成大簽署）。招生季的部分內容（如周哈里窗、4C 非認知能力）對老師同樣有共鳴，他們會把內容轉給家長。</p>
+
+    <h3>他們在哪裡、在乎什麼</h3>
+    <div class="grid g2">
+      <div class="card">
+        <h4>他們在哪裡出沒</h4>
+        <ul>
+          <li>FB 家長社團、教養粉專、LINE 群組</li>
+          <li>IG（年輕一輩家長）</li>
+          <li>Google 搜尋「孩子 情緒 / 不聽話 / 過動 / 升國中」</li>
+          <li>學校講座、櫃檯（既有電視牆觸點）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>他們最在乎</h4>
+        <ul>
+          <li>「這會不會犧牲成績？」—— 用「先有動機，再談成績」回應</li>
+          <li>「這跟一般情緒課有什麼不同？」—— 用「覺知」差異化</li>
+          <li>「我這樣的家庭也適用嗎？」—— 用分齡場景具體化</li>
+          <li>不想被推銷、不想被指責 —— 語氣安定優先於激動</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 4. KEY MESSAGES ===================== -->
+  <section id="s4">
+    <div class="sec-head">
+      <div class="sec-num">04</div>
+      <div class="sec-title">核心訊息<span class="en">Key Messages</span></div>
+    </div>
+
+    <h3>招生季主訊息</h3>
+    <p class="lead" style="font-family:'Noto Serif TC',serif;color:var(--orange-deep);font-size:1.3rem;">先懂心，再懂教 —— 看見孩子的光，從一份心智光譜開始。</p>
+
+    <h3>四條支撐訊息（對應家長痛點，每篇內容至少呼應一條）</h3>
+    <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:30%;">支撐訊息</th><th style="width:32%;">回應的痛點 / 疑慮</th><th style="width:38%;">佐證點（Proof）</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>「沒有無意義的搗蛋，<br>只有沒被看懂的求救。」</strong></td>
+          <td>家長把行為問題當成「孩子的錯」或「自己的失敗」，陷入對立。</td>
+          <td>覺知 × SEL 觀念骨架；周哈里窗工具；李守蕾老師現場案例。</td>
+        </tr>
+        <tr>
+          <td><strong>「先有動機，再談成績。」</strong></td>
+          <td>「上 SEL 課會不會排擠讀書時間、犧牲成績？」</td>
+          <td>情緒穩定 → 學習更專注更持久；不犧牲成績的論述軸；Sara 博士靜心研究。</td>
+        </tr>
+        <tr>
+          <td><strong>「AI 取代得了大腦，<br>取代不了心。」</strong></td>
+          <td>「為什麼是現在？這個時代孩子最需要的是什麼？」</td>
+          <td>AI 時代素養論述；4C 非認知能力；「用工業時代的方式面對 AI 時代的孩子」。</td>
+        </tr>
+        <tr>
+          <td><strong>「一份測評，<br>孩子、你、老師看見的是同一個人嗎？」</strong></td>
+          <td>「你們的測評跟坊間的有什麼不同？準嗎？」</td>
+          <td>測評三角度（孩子自己／家長／老師觀察）；心智光譜紅橘綠藍；三大核心功能。</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3>訊息層級（每篇內容的說服路徑）</h3>
+    <div class="grid g4">
+      <div class="card"><div class="ico">I.</div><h4>為什麼我該在意？</h4><p>用具體場景擊中痛點，但收在「看見」而非「驚嚇」。</p></div>
+      <div class="card"><div class="ico">II.</div><h4>那解法是什麼？</h4><p>帶出覺知 SEL 的觀點：覺察 → 選擇空間 → 行動。</p></div>
+      <div class="card"><div class="ico">III.</div><h4>為什麼是你們？</h4><p>四大守護系統、三角度測評、十年協會足跡。</p></div>
+      <div class="card"><div class="ico">IV.</div><h4>我現在該做什麼？</h4><p>單一 CTA：做一份心智光譜測驗。</p></div>
+    </div>
+
+    <div class="note">
+      <div class="label">語氣紅線（沿用品牌語氣守則 v2）</div>
+      <ul>
+        <li><strong>要</strong>：安定優先於激動、對仗式短語、「光」的意象、讓父母也被安頓、三方在場。</li>
+        <li><strong>不要</strong>：補習班話術（「3 個祕訣」「不上就輸了」）、過度恐嚇、指責父母、把 AI 妖魔化、滿篇學術縮寫。</li>
+        <li><strong>署名</strong>：所有 Email 一律「Written by K12 覺知素養教育學苑」，不用個人名。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== 5. FOUR PILLARS ===================== -->
+  <section id="s5">
+    <div class="sec-head">
+      <div class="sec-num">05</div>
+      <div class="sec-title">四大內容支柱<span class="en">Four Content Pillars — Articles · Video · Email · Interaction</span></div>
+    </div>
+    <p class="lead">這是您指定的四種曝光形式。每一根支柱都盡量<strong>接在既有的引擎上</strong>，而不是另起爐灶。</p>
+
+    <!-- 文章 -->
+    <h3>支柱一 ｜ 文章 Articles　<span style="font-size:.8rem;color:var(--ink-faint);font-weight:300;">— 漏斗的「曝光 + 興趣」段</span></h3>
+    <div class="grid g2">
+      <div class="card">
+        <span class="tag">既有引擎</span>
+        <h4>每日覺知文案自動產文系統</h4>
+        <p>已在運作的自動產文 → IG／FB／LINE／Wowhome。招生季只需「掛上主題」：每週對齊行事曆的週主題，不必新建流程。</p>
+      </div>
+      <div class="card">
+        <span class="tag">招生季新產</span>
+        <h4>4 篇分齡主打長文</h4>
+        <p>幼兒／國小／國中／高中各一篇深度長文，用品牌文章結構模板，結尾 CTA 一律導向心智光譜測驗。招生季結束後仍是長期 SEO 資產。</p>
+      </div>
+      <div class="card">
+        <span class="tag">借力</span>
+        <h4>校園巡禮 / 見證報導文</h4>
+        <p>把既有實戰場域（福山、鹽埕國小講座等）寫成第三人稱報導風，當作「earned media 感」的信任素材。</p>
+      </div>
+      <div class="card">
+        <span class="tag">主場</span>
+        <h4>Wowhome 為 SEO 主場</h4>
+        <p>長文發佈在 Wowhome（搜尋承接），社群與 LINE 做摘要導流。一篇長文 = 多平台素材。</p>
+      </div>
+    </div>
+    <h4>4 篇分齡主打長文 — 暫定標題（依品牌語氣，收在「看見」而非「驚嚇」）</h4>
+    <ul>
+      <li><strong>幼兒</strong>：〈幼兒情緒風暴，不是教養失敗〉—— 安頓家長的自我懷疑</li>
+      <li><strong>國小</strong>：〈那個「很乖」的孩子，你真的看見他了嗎？〉—— 從周哈里窗的「隱藏我」切入</li>
+      <li><strong>國中</strong>：〈孩子一升國中，就像變了一個人？〉—— 親子溝通斷線的重新接線</li>
+      <li><strong>高中</strong>：〈高中生說「不用你管」的，其實是什麼？〉—— 動機與生涯方向</li>
+    </ul>
+
+    <!-- 影片 -->
+    <h3>支柱二 ｜ 影片 Video　<span style="font-size:.8rem;color:var(--ink-faint);font-weight:300;">— 「曝光」段的高停留素材 + 「體驗」段的轉換素材</span></h3>
+    <div class="grid g2">
+      <div class="card">
+        <span class="tag">既有資產 · 轉換型</span>
+        <h4>測評分析影片系列（4 支）</h4>
+        <p>沿用「測評分析(影片)」資料夾。主題〈心智光譜怎麼看〉— 紅橘綠藍四色解讀、分齡解讀。3–5 分鐘，放在<strong>測驗結果頁與體驗課邀請信</strong>，是把人從名單推往體驗的關鍵。中等製作成本。</p>
+      </div>
+      <div class="card">
+        <span class="tag">高頻 · 低成本</span>
+        <h4>李守蕾老師招牌句短影音</h4>
+        <p>把品牌招牌句（「3 秒鐘覺知對話」「沒有無意義的搗蛋」「AI 取代得了大腦」）做成 30–60 秒直式短影音 → IG Reels／FB／YouTube Shorts。手機拍攝＋字幕即可，每週 2–3 支。</p>
+      </div>
+      <div class="card">
+        <span class="tag">信任素材</span>
+        <h4>家長見證短片（3 支）</h4>
+        <p>體驗課後家長 1–2 分鐘真實訪談。不演、不腳本，真實感優先。用於社群與體驗課邀請信。</p>
+      </div>
+      <div class="card">
+        <span class="tag">再利用</span>
+        <h4>線上講座精華剪輯</h4>
+        <p>周哈里窗親子工作坊錄影 → 切 3–5 段精華短片。一場講座 = 整月的社群影片素材。</p>
+      </div>
+    </div>
+
+    <!-- EMAIL -->
+    <h3>支柱三 ｜ Email　<span style="font-size:.8rem;color:var(--ink-faint);font-weight:300;">— 漏斗的「培養 + 體驗 + 報名」段（已系統化）</span></h3>
+    <p>Email 是四根支柱中<strong>最成熟的一根</strong>：H/A/B/C 分級系統、4 款鎖定公版、W20–W34 週次排程都已就緒。招生季的工作是「給既有的 W22–W33 排程套上招生主題」，並善用一個關鍵動作 —— 活化 C 級冷名單。</p>
+    <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:14%;">分級</th><th style="width:30%;">名單來源 / 性質</th><th style="width:14%;">頻率</th><th style="width:42%;">招生季任務</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pill h">H 級</span></td>
+          <td>學員家長 ＋ 近期體驗課（CRM 名單）</td>
+          <td>每週 1 封</td>
+          <td>培養 → 升級。主推秋季正式課程、家長學堂報名。文章版為主，活動邀請版穿插。</td>
+        </tr>
+        <tr>
+          <td><span class="pill a">A 級</span></td>
+          <td>參加過過往活動（一日大學生）</td>
+          <td>每 2 週 1 封</td>
+          <td>喚醒 → 回流。主推一日大學生暑期梯次「回娘家＋新梯次」。</td>
+        </tr>
+        <tr>
+          <td><span class="pill b">B 級</span></td>
+          <td>心智光譜測評來源</td>
+          <td>每月 1 封</td>
+          <td>已測過 → 邀體驗。他們手上已有測驗結果，最自然的下一步就是「來解讀＋體驗課」。</td>
+        </tr>
+        <tr>
+          <td><span class="pill c">C 級</span></td>
+          <td>2026 招生潛在 · 田野調查冷名單（1,237 筆）</td>
+          <td>原則不寄行銷</td>
+          <td><span class="star">★ 招生季重點動作</span>：W22 寄訂閱重確認，願意收信者轉入 B 軌、邀做測驗。這是把「冷名單」變成「招生季水庫」的關鍵。</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-soft);">體驗課邀請信沿用既有範本（「冠軍版」「體驗課優化版」「活動前提醒」），招生季期間系統化排入；致電提醒話術沿用既有版本守住出席率。</p>
+
+    <!-- 互動 -->
+    <h3>支柱四 ｜ 互動 Interaction　<span style="font-size:.8rem;color:var(--ink-faint);font-weight:300;">— 漏斗的「名單」閘門與「體驗」轉換引擎</span></h3>
+    <div class="grid g2">
+      <div class="card">
+        <span class="tag">核心 · Lead Magnet</span>
+        <h4>心智光譜測驗</h4>
+        <p>整個招生季的核心互動與名單閘門。所有曝光 CTA 收斂於此。建議優化：結果頁加「分享給另一半／老師」（三方視角病毒迴圈）＋「預約結果解讀」CTA。</p>
+      </div>
+      <div class="card">
+        <span class="tag">經營池</span>
+        <h4>LINE @zwayedu</h4>
+        <p>加好友禮（心智光譜測驗 / 教養指南 PDF）；測驗後 1:1 諮詢；群發對齊週主題。把社群流量沉澱成可反覆觸及的池子。</p>
+      </div>
+      <div class="card">
+        <span class="tag">每月節點</span>
+        <h4>線上講座 / Webinar（3 場）</h4>
+        <p>每月 1 場「周哈里窗親子工作坊」線上版。報名即留名單，結束即邀體驗課。錄影再利用為影片素材。</p>
+      </div>
+      <div class="card">
+        <span class="tag">輕量導流</span>
+        <h4>周哈里窗自我測試互動頁</h4>
+        <p>一個輕量的線上互動頁（開放我／盲目我／隱藏我／未知我），社群導流用，比長文更低門檻，再導向完整測驗。</p>
+      </div>
+      <div class="card">
+        <span class="tag">轉換臨門</span>
+        <h4>體驗課（線下互動高峰）</h4>
+        <p>線上曝光的終點站、報名的起點站。招生季排定固定梯次，配合 Email 邀請與致電提醒。</p>
+      </div>
+      <div class="card">
+        <span class="tag">既有觸點</span>
+        <h4>櫃檯電視牆</h4>
+        <p>已上線的招生工具。招生季可同步更新 slide 主題與 QR，讓線下走過的家長也進同一個漏斗。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 6. CALENDAR ===================== -->
+  <section id="s6">
+    <div class="sec-head">
+      <div class="sec-num">06</div>
+      <div class="sec-title">12 週內容行事曆<span class="en">12-Week Content Calendar</span></div>
+    </div>
+    <p class="lead">三階段、各 4 週。週次銜接既有 Email 排程；月份為概估，請依實際週曆對齊。</p>
+
+    <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:7%;">週</th>
+          <th style="width:15%;">週主題</th>
+          <th style="width:20%;">文章</th>
+          <th style="width:17%;">影片</th>
+          <th style="width:19%;">Email</th>
+          <th style="width:22%;">互動 / 里程碑</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- PHASE 1 -->
+        <tr class="phase-row"><td colspan="6">階段一　曝光蓄水<span class="pmeta">W22–W25 ｜ 約 5 月底–6 月底 ｜ 目標：建立認知、衝測驗量、啟動冷名單</span></td></tr>
+        <tr>
+          <td class="wk">W22<small>5月底</small></td>
+          <td><span class="theme">先懂心，再懂教</span><br>認識覺知 SEL</td>
+          <td>招生季開季長文〈為什麼孩子越管，心離得越遠？〉</td>
+          <td>李守蕾短影音「3 秒鐘覺知對話」</td>
+          <td><span class="pill h">H</span> 文章版（開季）<br><span class="pill c">C</span> 訂閱重確認 <span class="star">★啟動冷名單</span></td>
+          <td>LINE 加好友禮上線（心智光譜測驗）<br><strong>里程碑：</strong>測驗 landing + 結果頁分享功能就緒</td>
+        </tr>
+        <tr>
+          <td class="wk">W23<small>6月初</small></td>
+          <td><span class="theme">看見孩子的天賦光譜</span></td>
+          <td>〈紅、橘、綠、藍 —— 你的孩子是哪一種光？〉心智光譜科普</td>
+          <td>測評分析影片 #1〈心智光譜怎麼看〉</td>
+          <td><span class="pill h">H</span> 文章版</td>
+          <td>周哈里窗自我測試互動頁上線</td>
+        </tr>
+        <tr>
+          <td class="wk">W24<small>6月中</small></td>
+          <td><span class="theme">國中家長場景</span>（分齡主打）</td>
+          <td>分齡長文〈孩子一升國中，就像變了一個人？〉</td>
+          <td>家長見證短片 #1</td>
+          <td><span class="pill h">H</span> 文章版<br><span class="pill a">A</span> 一日大學生喚醒信</td>
+          <td>線上講座 #1 開放報名（周哈里窗親子工作坊）</td>
+        </tr>
+        <tr>
+          <td class="wk">W25<small>6月底</small></td>
+          <td><span class="theme">國小家長場景</span></td>
+          <td>分齡長文〈那個「很乖」的孩子，你真的看見他了嗎？〉</td>
+          <td>李守蕾短影音「沒有無意義的搗蛋」</td>
+          <td><span class="pill h">H</span> 活動邀請版（講座）<br><span class="pill b">B</span> 月信（邀測驗解讀）</td>
+          <td>線上講座 #1 舉辦<br><strong>里程碑：</strong>階段一檢視 — 測驗完成數 / LINE 新好友</td>
+        </tr>
+        <!-- PHASE 2 -->
+        <tr class="phase-row"><td colspan="6">階段二　互動轉換<span class="pmeta">W26–W29 ｜ 約 7 月初–7 月底 ｜ 目標：講座＋測驗解讀＋體驗課，培養名單往下走</span></td></tr>
+        <tr>
+          <td class="wk">W26<small>7月初</small></td>
+          <td><span class="theme">三方視角，看見同一個孩子</span></td>
+          <td>〈一份測評，孩子、你、老師看見的是同一個人嗎？〉</td>
+          <td>測評分析影片 #2（分齡解讀）</td>
+          <td><span class="pill h">H</span> 文章版<br>體驗課邀請信（寄 <span class="pill b">B</span> 已測者）</td>
+          <td>測驗結果頁「分享給另一半／老師」推廣</td>
+        </tr>
+        <tr>
+          <td class="wk">W27<small>7月中</small></td>
+          <td><span class="theme">幼兒家長場景</span></td>
+          <td>分齡長文〈幼兒情緒風暴，不是教養失敗〉</td>
+          <td>李守蕾短影音「AI 取代得了大腦，取代不了心」</td>
+          <td><span class="pill h">H</span> 文章版<br><span class="pill a">A</span> 一日大學生暑期梯次</td>
+          <td>體驗課梯次開放報名</td>
+        </tr>
+        <tr>
+          <td class="wk">W28<small>7月中</small></td>
+          <td><span class="theme">高中家長場景 ＋ 動機</span></td>
+          <td>分齡長文〈高中生說「不用你管」的，其實是什麼？〉</td>
+          <td>家長見證短片 #2 / 講座精華剪輯</td>
+          <td><span class="pill h">H</span> 活動邀請版（體驗課）<br><span class="pill b">B</span> 月信</td>
+          <td>線上講座 #2 開放報名</td>
+        </tr>
+        <tr>
+          <td class="wk">W29<small>7月底</small></td>
+          <td><span class="theme">先有動機，再談成績</span></td>
+          <td>〈成績的底層，是一套看不見的作業系統〉</td>
+          <td>測評分析影片 #3</td>
+          <td><span class="pill h">H</span> 文章版<br>體驗課提醒信</td>
+          <td>線上講座 #2 舉辦 ｜ 體驗課第一梯<br><strong>里程碑：</strong>階段二檢視 — 體驗課報名 / 講座出席</td>
+        </tr>
+        <!-- PHASE 3 -->
+        <tr class="phase-row"><td colspan="6">階段三　報名衝刺<span class="pmeta">W30–W33 ｜ 約 8 月初–8 月中 ｜ 目標：體驗課密集、一日大學生、秋季課程報名收單</span></td></tr>
+        <tr>
+          <td class="wk">W30<small>8月初</small></td>
+          <td><span class="theme">暑期最後倒數 / 一日大學生</span></td>
+          <td>〈那一天，孩子的眼睛亮了〉一日大學生招生＋回顧</td>
+          <td>一日大學生現場花絮</td>
+          <td><span class="pill h">H</span> 活動邀請版<br><span class="pill a">A</span> 一日大學生催單</td>
+          <td>體驗課第二梯 ｜ 一日大學生暑期場</td>
+        </tr>
+        <tr>
+          <td class="wk">W31<small>8月初</small></td>
+          <td><span class="theme">秋季課程開放報名</span></td>
+          <td>〈新學期，給孩子一個不一樣的開始〉SEL 課程線介紹</td>
+          <td>測評分析影片 #4 / 課程介紹影片</td>
+          <td><span class="pill h">H</span> 文章版（秋季課程）<br><span class="pill b">B</span> 月信（體驗轉報名）</td>
+          <td>秋季課程報名上線 ｜ 體驗課加場</td>
+        </tr>
+        <tr>
+          <td class="wk">W32<small>8月中</small></td>
+          <td><span class="theme">家長學堂 ＋ 報名催單</span></td>
+          <td>〈父母，也需要被接住〉家長學堂介紹</td>
+          <td>家長見證短片 #3（學員成長）</td>
+          <td><span class="pill h">H</span> 活動邀請版（報名催單）<br>體驗課邀請信</td>
+          <td>線上講座 #3（秋季課程說明會）</td>
+        </tr>
+        <tr>
+          <td class="wk">W33<small>8月中</small></td>
+          <td><span class="theme">招生季收官 ＋ 早鳥截止</span></td>
+          <td>招生季回顧長文 ＋ 早鳥倒數</td>
+          <td>招生季精華回顧影片</td>
+          <td><span class="pill h">H</span> 活動邀請版（早鳥截止）<br>活動回顧版</td>
+          <td>早鳥優惠截止 ｜ 報名衝刺<br><strong>里程碑：</strong>招生季總檢視，轉入秋季常態招生</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="note">
+      <div class="label">行事曆使用原則</div>
+      <ul>
+        <li><strong>主打長文每週僅 1 篇</strong>，其餘日常曝光交給「每日覺知文案」自動系統 —— 控制產能負擔。</li>
+        <li><strong>Email 欄位對齊既有 W22–W33 排程</strong>：把這份行事曆的「Email 欄」回填進 Google Sheet 內容排程分頁的對應週次即可，不需另建系統。寄送仍依 H→A→B 分批、每批 300 封規則。</li>
+        <li><strong>保留 20% 機動</strong>：校園活動、即時新聞、家長熱議話題可隨時插入，不必死守表格。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== 7. ASSETS ===================== -->
+  <section id="s7">
+    <div class="sec-head">
+      <div class="sec-num">07</div>
+      <div class="sec-title">內容產出清單<span class="en">Content Assets Needed</span></div>
+    </div>
+    <p class="lead">招生季全部需要產出的素材，標註優先級（必備 / 加分）與建議完成時間。</p>
+    <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:8%;">支柱</th><th style="width:26%;">素材</th><th style="width:36%;">內容說明</th><th style="width:13%;">優先級</th><th style="width:17%;">建議完成</th></tr>
+      </thead>
+      <tbody>
+        <tr><td rowspan="4">文章</td><td>4 篇分齡主打長文</td><td>幼兒／國小／國中／高中，品牌文章結構，CTA 導向測驗</td><td><span class="star">必備</span></td><td>W22 前完成 2 篇，其餘滾動</td></tr>
+        <tr><td>招生季開季 / 收官長文</td><td>W22 開季、W33 回顧各一篇</td><td><span class="star">必備</span></td><td>W22 前 / W32</td></tr>
+        <tr><td>觀念科普文（光譜、三方視角、動機）</td><td>3 篇，可由每日覺知文案系統升級產出</td><td>必備</td><td>滾動</td></tr>
+        <tr><td>校園巡禮 / 見證報導文</td><td>把既有校園足跡寫成報導風</td><td>加分</td><td>滾動</td></tr>
+        <tr><td rowspan="4">影片</td><td>測評分析影片 ×4</td><td>心智光譜解讀系列，3–5 分鐘，中等製作成本</td><td><span class="star">必備</span></td><td>#1 於 W23 前，其餘滾動</td></tr>
+        <tr><td>李守蕾招牌句短影音 ×6+</td><td>30–60 秒直式，手機＋字幕，每週 2–3 支</td><td>必備</td><td>每週滾動</td></tr>
+        <tr><td>家長見證短片 ×3</td><td>體驗課後真實訪談 1–2 分鐘</td><td>加分</td><td>W24 起滾動</td></tr>
+        <tr><td>講座精華剪輯</td><td>線上講座錄影切片再利用</td><td>加分</td><td>講座後</td></tr>
+        <tr><td rowspan="3">Email</td><td>W22–W33 招生季信件（套既有公版）</td><td>依行事曆 Email 欄，4 公版改文字</td><td><span class="star">必備</span></td><td>每週滾動</td></tr>
+        <tr><td>C 級訂閱重確認信</td><td>啟動 1,237 筆冷名單的關鍵信</td><td><span class="star">必備</span></td><td>W22</td></tr>
+        <tr><td>體驗課邀請 / 提醒信</td><td>沿用既有「冠軍版」等範本</td><td>必備</td><td>梯次前</td></tr>
+        <tr><td rowspan="5">互動</td><td>心智光譜測驗 landing + 結果頁優化</td><td>加分享功能、預約解讀 CTA</td><td><span class="star">必備</span></td><td>W22 前（最優先）</td></tr>
+        <tr><td>LINE 加好友禮素材</td><td>歡迎訊息、自動回覆、贈品 PDF</td><td><span class="star">必備</span></td><td>W22 前</td></tr>
+        <tr><td>周哈里窗自我測試互動頁</td><td>輕量線上互動，導向完整測驗</td><td>加分</td><td>W23</td></tr>
+        <tr><td>線上講座 ×3（報名頁＋簡報）</td><td>周哈里窗工作坊 / 秋季說明會</td><td>必備</td><td>各場前 2 週</td></tr>
+        <tr><td>電視牆 slide 更新</td><td>同步招生季主題與 QR</td><td>加分</td><td>W22</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ===================== 8. METRICS ===================== -->
+  <section id="s8">
+    <div class="sec-head">
+      <div class="sec-num">08</div>
+      <div class="sec-title">成效指標與漏斗試算<span class="en">Success Metrics &amp; Funnel Math</span></div>
+    </div>
+
+    <h3>五層漏斗 KPI</h3>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kl">曝光層</div><div class="kv">文章閱讀 · 影片觀看</div><div class="kn">觸及、社群互動率</div></div>
+      <div class="kpi"><div class="kl">名單層 ★主指標(上)</div><div class="kv">測驗完成數<br>LINE 新好友</div><div class="kn">招生季的「水庫水位」</div></div>
+      <div class="kpi"><div class="kl">培養層</div><div class="kv">Email 開信率 / 點擊<br>講座報名+出席</div><div class="kn">名單往下走的力道</div></div>
+      <div class="kpi"><div class="kl">體驗層</div><div class="kv">體驗課報名數<br>出席率 show rate</div><div class="kn">線上轉線下的漏點</div></div>
+      <div class="kpi"><div class="kl">報名層 ★主指標(下)</div><div class="kv">正式課程報名數</div><div class="kn">招生季真正的成果</div></div>
+    </div>
+
+    <h3>用「報名目標」回推所需曝光量（示意）</h3>
+    <p>因尚無歷史轉換率數據，以下為<strong>結構示意</strong>。建議第一週起即記錄各層真實數字，逐步用真實轉換率取代假設值。</p>
+    <div class="mathbox">
+      <div class="label">Illustrative funnel — 假設目標 60 位正式課程報名</div>
+      <div class="mathchain">
+        <span class="m"><b>60</b> 報名</span>
+        <span class="arrow">←</span>
+        <span class="m">體驗→報名 30%　<b>≈200</b> 體驗出席</span>
+        <span class="arrow">←</span>
+        <span class="m">報名→出席 70%　<b>≈285</b> 體驗報名</span>
+        <span class="arrow">←</span>
+        <span class="m">測驗→體驗 20%　<b>≈1,425</b> 測驗完成</span>
+        <span class="arrow">←</span>
+        <span class="m">曝光→測驗 2–4%　<b>≈40,000–70,000</b> 有效曝光</span>
+      </div>
+      <p class="fineprint">＊百分比為產業常見起點，非承諾值。冷名單（C 級 1,237）與既有 H/A/B 名單（約 2,920）可大幅降低「曝光→測驗」段的純新流量需求 —— 這正是先活化既有名單的價值。</p>
+    </div>
+
+    <h3>追蹤與回報節奏</h3>
+    <ul>
+      <li><strong>每週</strong>：測驗完成數、LINE 新好友、Email 開信率 —— 回填 Google Sheet（沿用既有寄送紀錄分頁邏輯）。</li>
+      <li><strong>每階段（4 週）</strong>：漏斗各層轉換率檢視，調整下一階段內容配比。</li>
+      <li><strong>招生季末</strong>：報名數 vs 目標、各支柱貢獻度、可長期沿用的資產盤點。</li>
+    </ul>
+  </section>
+
+  <!-- ===================== 9. BUDGET ===================== -->
+  <section id="s9">
+    <div class="sec-head">
+      <div class="sec-num">09</div>
+      <div class="sec-title">資源與預算建議<span class="en">Resources &amp; Budget Guidance</span></div>
+    </div>
+    <p class="lead">本計畫預設「不依賴付費投放」也能跑完整 —— 因為最貴的資產（名單、內容引擎、測驗、品牌）都已經有了。以下說明：若有預算，投在哪裡邊際效益最高。</p>
+
+    <div class="grid g3">
+      <div class="card">
+        <div class="ico">01</div>
+        <h4>第一筆預算 → 測驗頁體驗優化</h4>
+        <p>整個漏斗的閘門。landing 與結果頁的轉換率，每提升 1%，後面每一層都跟著放大。投這裡 CP 值最高。</p>
+      </div>
+      <div class="card">
+        <div class="ico">02</div>
+        <h4>第二筆 → FB / IG 在地定向廣告</h4>
+        <p>高雄、台南家長定向，廣告直接導向測驗 landing。先小額測素材（4 篇分齡長文當素材），找出 winning ad 再加碼。</p>
+      </div>
+      <div class="card">
+        <div class="ico">03</div>
+        <h4>第三筆 → 影片製作升級</h4>
+        <p>測評分析影片若要更精緻（剪輯、字卡、配樂）可外包；短影音維持手機自製即可，不需投錢。</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="label">投放原則</div>
+      <ul>
+        <li><strong>先有機、後付費</strong>：階段一先用自然流量與既有名單測出「哪篇長文、哪支影片轉換最好」，階段二才把預算押在已驗證的素材上。</li>
+        <li><strong>保留 10–15% 機動金</strong>：因應突發的校園合作機會或表現特別好的素材加碼。</li>
+        <li>真正的成本不是媒體費，是<strong>內容產出的人力時間</strong> —— 本計畫已盡量靠既有自動化系統壓低這塊。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== 10. RISKS ===================== -->
+  <section id="s10">
+    <div class="sec-head">
+      <div class="sec-num">10</div>
+      <div class="sec-title">風險與對策<span class="en">Risks &amp; Mitigations</span></div>
+    </div>
+
+    <div class="risk">
+      <div class="rn">01</div>
+      <div class="rbody">
+        <div class="rt">內容產能跟不上 12 週節奏</div>
+        <div class="rd">四支柱同時跑，每週要長文＋影片＋Email＋互動，容易斷氣。</div>
+        <div class="rfix"><b>對策：</b>主打長文每週只 1 篇，日常曝光全交給「每日覺知文案」自動系統；影片以低成本短影音為主力，精緻影片只做 4 支測評分析；Email 套既有公版只改文字。</div>
+      </div>
+    </div>
+    <div class="risk">
+      <div class="rn">02</div>
+      <div class="rbody">
+        <div class="rt">C 級冷名單訂閱重確認回應率低</div>
+        <div class="rd">1,237 筆田野調查冷名單，可能只有少數願意回流。</div>
+        <div class="rfix"><b>對策：</b>預期回流率 5–15% 即屬正常，目標不是救回全部，是把回流者乾淨地導入 B 軌經營。回確認信本身用心寫（價值先行、不催促），沒回應的就停寄，不損品牌。</div>
+      </div>
+    </div>
+    <div class="risk">
+      <div class="rn">03</div>
+      <div class="rbody">
+        <div class="rt">暑期家長與孩子注意力分散</div>
+        <div class="rd">出遊、安親、營隊多，線上內容與實體活動都可能被瓜分。</div>
+        <div class="rfix"><b>對策：</b>體驗課排平日晚間＋週末多時段；線上講座提供錄影回放；行事曆階段三刻意對齊「暑假尾聲＋秋季開學焦慮」這個家長最有感的時間窗。</div>
+      </div>
+    </div>
+    <div class="risk">
+      <div class="rn">04</div>
+      <div class="rbody">
+        <div class="rt">線上報名了，體驗課卻沒出席（show rate 流失）</div>
+        <div class="rd">這是線上轉線下最大的漏點，報名數漂亮但出席慘淡。</div>
+        <div class="rfix"><b>對策：</b>沿用既有「致電提醒話術」＋「活動前溫和提醒信」；報名後 LINE 1:1 確認；報名到出席之間的等待期縮短，並在期間持續給測驗解讀內容維持溫度。</div>
+      </div>
+    </div>
+    <div class="risk">
+      <div class="rn">05</div>
+      <div class="rbody">
+        <div class="rt">曝光做了，但 CTA 分散、無法歸因</div>
+        <div class="rd">文章導 A、影片導 B、Email 導 C，最後算不清誰帶來報名。</div>
+        <div class="rfix"><b>對策：</b>所有曝光 CTA 統一收斂到「心智光譜測驗」單一入口；不同來源用不同連結參數（UTM / 來源碼），讓每一筆測驗都知道從哪來。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 11. NEXT STEPS ===================== -->
+  <section id="s11">
+    <div class="sec-head">
+      <div class="sec-num">11</div>
+      <div class="sec-title">啟動下一步<span class="en">Next Steps to Kick Off</span></div>
+    </div>
+    <p class="lead">W22 開跑前，依序完成以下事項。前三項是「不做就跑不動」的關鍵路徑。</p>
+
+    <ol class="steps">
+      <li><b>確認招生季期程與報名目標數字</b><span class="who">— 決策：負責人 ｜ 有了目標數字，第 8 節漏斗試算才能定錨</span></li>
+      <li><b>心智光譜測驗 landing page ＋ 結果頁「分享」功能優化上線</b><span class="who">— 最優先技術項，漏斗閘門，建議 W22 前完成</span></li>
+      <li><b>LINE @zwayedu 加好友禮素材就緒</b><span class="who">— 歡迎訊息、自動回覆、贈品 PDF</span></li>
+      <li><b>4 篇分齡主打長文 — 先完成 2 篇，排入「每日覺知文案」系統</b><span class="who">— 內容組 ｜ 其餘 W24、W25、W27、W28 滾動</span></li>
+      <li><b>測評分析影片 #1 腳本確認、開始製作</b><span class="who">— 影片組 ｜ W23 前需上線</span></li>
+      <li><b>Email W22–W33 主題對齊本計畫，回填 Google Sheet 內容排程分頁</b><span class="who">— 沿用既有 H→A→B 分批、每批 300 封規則</span></li>
+      <li><b>線上講座 #1 日期、報名表、簡報定案</b><span class="who">— W24 開放報名、W25 舉辦</span></li>
+      <li><b>指定四大支柱各自負責人與每週交付節點</b><span class="who">— 文章 / 影片 / Email / 互動，各一位 owner</span></li>
+    </ol>
+
+    <div class="quote">一群人、一件事、一輩子。<br>招生季只是其中一段路 —— 但每一個走進來的家庭，都是一輩子的相遇。</div>
+  </section>
+
+  <footer>
+    <div class="wm">K12 覺知素養教育學苑</div>
+    <div>「看見孩子的光」覺知 SEL 暑期招生線上曝光計畫 ｜ v1 ｜ 製作日期 2026-05-14</div>
+    <div style="margin-top:8px;color:var(--line);">先懂心，再懂教 ｜ 用覺知打開 SEL 的大門</div>
+  </footer>
+
+</div>
+</body>
+</html>
