@@ -1,6 +1,13 @@
 /**
- * K12 收費行事曆 ・ 後端 API (Apps Script Web App)
+ * K12 收費行事曆 ・ 後端 API (Apps Script Web App) ・ v2 (2026-05)
  * 雙向同步: HTML 既能讀,也能寫回 Sheet
+ *
+ * v2 變更 (相對 v1):
+ *  - 班別 加 textbookFee 欄
+ *  - 規則 加 renewalWeekStart, renewalWeekEnd, textbookFeeEvery 欄
+ *  - 新增 重點週 sheet (label/start/end/color)
+ *  - doGet 回傳加 highlightWeeks
+ *  - doPost saveAll 支援 highlightWeeks 同步
  *
  * 部署方式: 請看 README_設定步驟.md
  * 教育版 (Google Workspace for Education) 注意事項:
@@ -9,12 +16,14 @@
  * - HTML 端使用者用該 Google 帳號登入瀏覽器即可存取
  */
 
-const SHEET_CLASSES  = '班別';
-const SHEET_HOLIDAYS = '連假';
-const SHEET_RULES    = '規則';
+const SHEET_CLASSES    = '班別';
+const SHEET_HOLIDAYS   = '連假';
+const SHEET_RULES      = '規則';
+const SHEET_HIGHLIGHTS = '重點週';
 
-const CLASS_HEADERS = ['id','name','weekday','time','teacher','campus','startDate','fee','studentCount','periodCount','memo'];
-const RULE_HEADERS  = ['periodLength','feeDayIndex','renewalDayIndex','lastIntakeIndex','cutoffIndex'];
+const CLASS_HEADERS = ['id','name','weekday','time','teacher','campus','startDate','fee','studentCount','periodCount','textbookFee','memo'];
+const RULE_HEADERS  = ['periodLength','feeDayIndex','renewalDayIndex','renewalWeekStart','renewalWeekEnd','lastIntakeIndex','cutoffIndex','textbookFeeEvery'];
+const HIGHLIGHT_HEADERS = ['label','start','end','color'];
 
 // ==================== READ (doGet) ====================
 // 支援 JSONP: 若帶 ?callback=foo 則回傳 foo({...}) 包裝, 讓 <script> tag 可載入 (繞過 CORS)
@@ -23,10 +32,12 @@ function doGet(e) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const data = {
-      classes:   readClasses(ss),
-      holidays:  readHolidays(ss),
-      rules:     readRules(ss),
-      fetchedAt: new Date().toISOString(),
+      classes:        readClasses(ss),
+      holidays:       readHolidays(ss),
+      rules:          readRules(ss),
+      highlightWeeks: readHighlights(ss),
+      fetchedAt:      new Date().toISOString(),
+      apiVersion:     'v2',
     };
     return callback ? jsonpResponse(callback, data) : jsonResponse(data);
   } catch (err) {
@@ -37,7 +48,7 @@ function doGet(e) {
 
 // ==================== WRITE (doPost) ====================
 // HTML 用 POST + Content-Type: text/plain (避開 CORS 預檢)
-// body = { action: 'saveClasses' | 'saveHolidays' | 'saveRules' | 'saveAll', data: {...} }
+// body = { action: 'saveClasses' | 'saveHolidays' | 'saveRules' | 'saveHighlights' | 'saveAll', data: {...} }
 function doPost(e) {
   try {
     const body = JSON.parse(e.postData.contents);
@@ -46,26 +57,28 @@ function doPost(e) {
     const data = body.data || {};
 
     switch (action) {
-      case 'saveClasses':  writeClasses(ss, data.classes || []); break;
-      case 'saveHolidays': writeHolidays(ss, data.holidays || []); break;
-      case 'saveRules':    writeRules(ss, data.rules || {}); break;
+      case 'saveClasses':    writeClasses(ss, data.classes || []); break;
+      case 'saveHolidays':   writeHolidays(ss, data.holidays || []); break;
+      case 'saveRules':      writeRules(ss, data.rules || {}); break;
+      case 'saveHighlights': writeHighlights(ss, data.highlightWeeks || []); break;
       case 'saveAll':
-        if (data.classes)  writeClasses(ss, data.classes);
-        if (data.holidays) writeHolidays(ss, data.holidays);
-        if (data.rules)    writeRules(ss, data.rules);
+        if (data.classes)        writeClasses(ss, data.classes);
+        if (data.holidays)       writeHolidays(ss, data.holidays);
+        if (data.rules)          writeRules(ss, data.rules);
+        if (data.highlightWeeks) writeHighlights(ss, data.highlightWeeks);
         break;
       default:
         return jsonResponse({ error: '未知 action: ' + action });
     }
 
-    // 寫完回傳最新的完整資料,前端可順便同步畫面
     return jsonResponse({
       ok: true,
       action,
-      classes:  readClasses(ss),
-      holidays: readHolidays(ss),
-      rules:    readRules(ss),
-      savedAt:  new Date().toISOString(),
+      classes:        readClasses(ss),
+      holidays:       readHolidays(ss),
+      rules:          readRules(ss),
+      highlightWeeks: readHighlights(ss),
+      savedAt:        new Date().toISOString(),
     });
   } catch (err) {
     return jsonResponse({ error: String(err), stack: err.stack });
@@ -86,6 +99,7 @@ function readClasses(ss) {
       headers.forEach((h, i) => { obj[h] = r[i]; });
       obj.weekday = Number(obj.weekday);
       obj.fee = Number(obj.fee);
+      obj.textbookFee = Number(obj.textbookFee) || 0;
       obj.studentCount = Number(obj.studentCount) || 0;
       obj.periodCount = Number(obj.periodCount) || 4;
       if (obj.startDate instanceof Date) {
@@ -108,7 +122,12 @@ function readHolidays(ss) {
 
 function readRules(ss) {
   const sheet = ss.getSheetByName(SHEET_RULES);
-  const defaults = { periodLength: 10, feeDayIndex: 7, renewalDayIndex: 7, lastIntakeIndex: 3, cutoffIndex: 4 };
+  const defaults = {
+    periodLength: 10, feeDayIndex: 1, renewalDayIndex: 8,
+    renewalWeekStart: 8, renewalWeekEnd: 10,
+    lastIntakeIndex: 3, cutoffIndex: 4,
+    textbookFeeEvery: 20,
+  };
   if (!sheet) return defaults;
   const values = sheet.getDataRange().getValues();
   if (values.length < 2) return defaults;
@@ -117,6 +136,25 @@ function readRules(ss) {
   const obj = {};
   headers.forEach((h, i) => { obj[h] = Number(row[i]) || 0; });
   return Object.assign({}, defaults, obj);
+}
+
+function readHighlights(ss) {
+  const sheet = ss.getSheetByName(SHEET_HIGHLIGHTS);
+  if (!sheet) return [];
+  const values = sheet.getDataRange().getValues();
+  if (values.length < 2) return [];
+  const headers = values[0].map(String);
+  return values.slice(1)
+    .filter(r => r[0])
+    .map(r => {
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = r[i]; });
+      if (obj.start instanceof Date) obj.start = Utilities.formatDate(obj.start, 'Asia/Taipei', 'yyyy-MM-dd');
+      if (obj.end instanceof Date)   obj.end   = Utilities.formatDate(obj.end, 'Asia/Taipei', 'yyyy-MM-dd');
+      obj.label = String(obj.label || '');
+      obj.color = String(obj.color || '#888888');
+      return obj;
+    });
 }
 
 // ==================== Write helpers ====================
@@ -128,9 +166,7 @@ function writeClasses(ss, classes) {
     rows.push(CLASS_HEADERS.map(h => c[h] != null ? c[h] : ''));
   }
   sheet.getRange(1, 1, rows.length, CLASS_HEADERS.length).setValues(rows);
-  // 美化:第 1 列粗體
   sheet.getRange(1, 1, 1, CLASS_HEADERS.length).setFontWeight('bold');
-  // startDate 欄轉日期格式
   if (classes.length > 0) {
     const dateColIdx = CLASS_HEADERS.indexOf('startDate') + 1;
     sheet.getRange(2, dateColIdx, classes.length, 1).setNumberFormat('yyyy-mm-dd');
@@ -157,6 +193,23 @@ function writeRules(ss, rules) {
   sheet.getRange(1, 1, 1, RULE_HEADERS.length).setFontWeight('bold');
 }
 
+function writeHighlights(ss, highlights) {
+  let sheet = ss.getSheetByName(SHEET_HIGHLIGHTS) || ss.insertSheet(SHEET_HIGHLIGHTS);
+  sheet.clear();
+  const rows = [HIGHLIGHT_HEADERS];
+  for (const h of highlights) {
+    rows.push(HIGHLIGHT_HEADERS.map(k => h[k] != null ? h[k] : ''));
+  }
+  sheet.getRange(1, 1, rows.length, HIGHLIGHT_HEADERS.length).setValues(rows);
+  sheet.getRange(1, 1, 1, HIGHLIGHT_HEADERS.length).setFontWeight('bold');
+  if (highlights.length > 0) {
+    const startCol = HIGHLIGHT_HEADERS.indexOf('start') + 1;
+    const endCol   = HIGHLIGHT_HEADERS.indexOf('end') + 1;
+    sheet.getRange(2, startCol, highlights.length, 1).setNumberFormat('yyyy-mm-dd');
+    sheet.getRange(2, endCol, highlights.length, 1).setNumberFormat('yyyy-mm-dd');
+  }
+}
+
 // ==================== Util ====================
 function jsonResponse(data) {
   return ContentService
@@ -176,6 +229,13 @@ function testRead() {
   Logger.log(doGet({}).getContent());
 }
 function testWriteRules() {
-  const e = { postData: { contents: JSON.stringify({ action: 'saveRules', data: { rules: { periodLength: 8, feeDayIndex: 5, lastIntakeIndex: 2, cutoffIndex: 3 }}})}};
+  const e = { postData: { contents: JSON.stringify({ action: 'saveRules', data: { rules: { periodLength: 10, feeDayIndex: 1, renewalDayIndex: 8, renewalWeekStart: 8, renewalWeekEnd: 10, lastIntakeIndex: 3, cutoffIndex: 4, textbookFeeEvery: 20 }}})}};
+  Logger.log(doPost(e).getContent());
+}
+function testWriteHighlights() {
+  const e = { postData: { contents: JSON.stringify({ action: 'saveHighlights', data: { highlightWeeks: [
+    { label: '收費週', start: '2026-05-29', end: '2026-06-06', color: '#ff6d00' },
+    { label: '插班週', start: '2026-06-06', end: '2026-06-20', color: '#1976d2' },
+  ]}})}};
   Logger.log(doPost(e).getContent());
 }

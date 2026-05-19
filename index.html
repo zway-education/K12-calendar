@@ -1322,6 +1322,7 @@ async function fetchFromCloud(showMsg = true) {
     if (Array.isArray(data.classes) && data.classes.length > 0) state.classes = data.classes;
     if (Array.isArray(data.holidays)) state.holidays = data.holidays;
     if (data.rules && typeof data.rules === 'object') state.rules = {...DEFAULT_RULES, ...data.rules};
+    if (Array.isArray(data.highlightWeeks) && data.highlightWeeks.length > 0) state.highlightWeeks = data.highlightWeeks;
     saveState();
     localStorage.setItem(CLOUD_FETCHED_KEY, new Date().toISOString());
     if (showMsg) setCloudMsg(`✓ 已從雲端讀取 ${data.classes?.length || 0} 個班別 ・ ${new Date().toLocaleString('zh-TW')}`, 'ok');
@@ -1339,7 +1340,12 @@ async function pushToCloud(action) {
   if (!url) return { ok: false, reason: '未設雲端網址' };
   const payload = {
     action,
-    data: { classes: state.classes, holidays: state.holidays, rules: state.rules }
+    data: {
+      classes: state.classes,
+      holidays: state.holidays,
+      rules: state.rules,
+      highlightWeeks: state.highlightWeeks
+    }
   };
   try {
     setCloudMsg(`寫入雲端中 (${action})…`, 'info');

@@ -1,128 +1,122 @@
-# K12 收費行事曆 ・ 雲端設定步驟（教育版適用 + 雙向同步）
+# K12 收費行事曆 ・ 雲端設定包 v2 (2026-05)
 
-把資料從「我這台瀏覽器的 localStorage」搬到「Google Sheet 雲端」。
-完成後：
-- ✅ **HTML 改完自動寫回 Sheet**（不用打開 Sheet 編輯）
-- ✅ **Sheet 改完 HTML 重新整理也會同步**（兩種改法都可以）
-- ✅ 多人同時編輯（用 Sheet 共用權限管理誰可改）
-- ✅ 換電腦/換瀏覽器資料還在
-- ✅ Apps Script 免費（在 Google 額度內）
-
-> 💡 我（Claude）**不需要進您的 Sheet**。所有東西由您的 Google 帳號部署、執行、擁有。我只給 .gs 程式碼。
+雙向同步：HTML 與 Google Sheet 互通。改 Sheet → HTML 重 fetch；HTML 改完 → 自動推回 Sheet。
 
 ---
 
-## 一、建立主檔 Sheet（5 分鐘）
+## v2 變更 (從 v1 升級)
 
-1. 用您的 K12 教育版帳號進 Google Drive
-2. **新增 → Google 試算表**
-3. 檔名改為「**K12_收費行事曆_主檔**」
-4. 在左下「+」**新增 3 個分頁**並改名為：`班別`、`連假`、`規則`（原「工作表 1」可刪可留）
-
-5. **匯入 CSV 到對應分頁**：
-   - 點「**班別**」分頁 → **檔案 → 匯入** → 上傳 `1_班別.csv`
-     → 匯入位置「**取代目前的工作表**」、勾「**將文字轉換成數字、日期、公式**」
-   - 對「**連假**」分頁匯入 `2_連假.csv`
-   - 對「**規則**」分頁匯入 `3_規則.csv`
-
-> ⚠ **分頁名稱必須完全一致**（`班別` / `連假` / `規則`），否則 Apps Script 找不到。
-
----
-
-## 二、部署 Apps Script Web App（10 分鐘）
-
-1. 在主檔 Sheet 中：**擴充功能 → Apps Script**
-2. 把預設的 `function myFunction() {}` 全選刪除
-3. 把 [AppsScript_Code.gs](AppsScript_Code.gs) 全部內容**貼進去**
-4. 按 **💾 儲存**（Ctrl+S），專案名稱可填「K12 收費行事曆 API」
-5. 右上角 **部署 → 新增部署作業**
-6. 齒輪 ⚙ → 選「**網頁應用程式**」
-7. 設定：
-   - **說明**：K12 收費行事曆 API v1
-   - **執行身分**：**我** ✅（您的 K12 教育帳號）
-   - **存取權**（看您 Google Workspace admin 政策，**從上往下選第一個能用的**）：
-     | 選項 | 教育版常見限制 | 適用場景 |
-     |---|---|---|
-     | 任何人 | ❌ admin 多半禁用 | 完全公開 |
-     | 擁有 Google 帳戶的任何人 | ⚠ 有些 admin 限 | 對外協作 |
-     | **K12-KH-ART@z-way-edu.com 內任何成員** | ✅ **教育版這選項通常 OK** | **建議** |
-     | 只有我 | ✅ 一定能用 | 只有您一人用 |
-
-     > 💡 **「組織內任何成員」**是教育版最常見能用的選項。您團隊成員（漂漂、崴仁、石業老師…）只要用 K12 教育帳號登入瀏覽器，HTML 就能存取。
-
-8. 點 **部署** → 第一次跳「授權」畫面
-   - 「選擇帳號」→ K12 教育帳號
-   - 看到「Google 尚未驗證這個應用程式」→ 點「**進階**」→「**前往 K12 收費行事曆 API（不安全）**」
-   - 同意所有權限（Sheet 讀寫）
-9. 完成後給您網址：
-   ```
-   https://script.google.com/macros/s/AKfycbz.../exec
-   ```
-   👉 **複製這個網址**
-
----
-
-## 三、把 HTML 連到雲端（1 分鐘）
-
-1. 打開 http://localhost:8770/
-2. 點「**⑤ 規則與設定**」分頁
-3. 在「**雲端 API 網址**」貼上剛剛複製的網址
-4. 按「**測試連線**」→ 看到綠字「✓ 連線成功!讀到 10 個班別…」就 OK
-5. 按「**儲存網址**」
-6. 按「**⬇ 從雲端拉**」
-
-完成。從此：
-- **每次打開 HTML 自動拉 Sheet 最新資料**
-- **在 HTML 改班別/規則/連假 → 自動寫回 Sheet**
-
----
-
-## 四、改資料的兩種方式
-
-| 改的地方 | 是否會同步另一邊 |
+| 變更 | 細節 |
 |---|---|
-| 在 HTML 「① 班別管理」改/新增/刪除 | ✅ 自動寫回 Sheet |
-| 在 HTML 「⑤ 規則與設定」改收費期程 | ✅ 自動寫回 Sheet |
-| 在 HTML 「⑤ 規則與設定」改連假 | ✅ 自動寫回 Sheet |
-| 在 Sheet 「班別」分頁直接改 | 需在 HTML 按「⬇ 從雲端拉」才更新畫面 |
-| 在 Sheet 「規則」分頁直接改 | 需在 HTML 按「⬇ 從雲端拉」才更新畫面 |
-| 在 Sheet 「連假」分頁直接改 | 需在 HTML 按「⬇ 從雲端拉」才更新畫面 |
-
-> 💡 **推薦**：日常用 HTML 改（介面友善，自動寫回）。需要批次貼資料時才開 Sheet 改，改完按「⬇ 從雲端拉」。
-
-> 🛟 **安全網**：若擔心 HTML 不小心覆蓋 Sheet，按「⬆ 全部推上去」需要二次確認。建議在 Sheet 開啟「版本歷史紀錄」（檔案 → 版本紀錄）— Google Sheet 自動保留歷史版本。
+| 班別 sheet 加 `textbookFee` 欄 | 每 20 堂教材費 (智優前期 1000、STEAM-R 0、其他依班型) |
+| 規則 sheet 加 3 欄 | `renewalWeekStart`(8) / `renewalWeekEnd`(10) / `textbookFeeEvery`(20) |
+| 新增 **重點週** sheet | label / start / end / color (供 banner chip 同步) |
+| 連假 sheet 修端午 | 6/10-6/12 → 6/19-6/21 |
+| 班別資料 20 筆 | 10 本期 (即將開班/進行中) + 10 前期 (進行中, 帶 `_prev` 後綴) |
+| API doGet 回傳加 `highlightWeeks` | + `apiVersion: 'v2'` |
+| doPost 加 `saveHighlights` action | saveAll 也會一併寫重點週 |
 
 ---
 
-## 五、Sheet 共用權限（誰能改 Sheet）
+## 一、Google Sheet 建立 (一次性)
 
-主檔 Sheet 的共用：
-- **執行長/會計**：「編輯者」（可在 Sheet 直接動）
-- **行政**：「編輯者」
-- **老師**：「檢視者」（只能看不能改）
+1. 進 `https://sheets.google.com` (用 K12 教育帳號)
+2. 新增空白試算表，命名 **「K12 收費行事曆_資料源」**
+3. 建立 **4 個分頁** (右下角 + 號)，名稱要完全一致：
+   - `班別`
+   - `連假`
+   - `規則`
+   - `重點週`
+4. 依序把這 4 份 CSV 內容貼進對應分頁 (含表頭)：
+   - `1_班別.csv` → 班別分頁
+   - `2_連假.csv` → 連假分頁
+   - `3_規則.csv` → 規則分頁
+   - `4_重點週.csv` → 重點週分頁
 
-Apps Script 的存取權獨立於 Sheet：
-- Apps Script 用「**您的帳號**」執行（您是 owner），所以即使老師只能「檢視」Sheet，他從 HTML 介面**仍能透過 API 寫資料**（這是 API 的特性）。
-- 若想限制「只有特定人能透過 HTML 改」→ 在 .gs 的 `doPost` 開頭加 token 驗證（之後想做再說）。
+> 貼上 CSV 時用 **檔案 → 匯入 → 上傳 → 取代目前的工作表**，或直接 **複製貼上** 後用 **資料 → 將文字分割為欄** (分隔符選逗號)。
 
 ---
 
-## 疑難排解
+## 二、Apps Script 部署 (一次性)
+
+1. 在試算表 → **擴充功能 → Apps Script**
+2. 把預設的 `Code.gs` 內容全部刪掉，**貼上 `AppsScript_Code.gs` 全文**
+3. 左上「無標題的專案」改名 **K12 收費行事曆 API**
+4. 點 **儲存** (磁碟 icon 或 Ctrl+S)
+5. 點 **部署 → 新增部署作業**
+   - 類型：**網頁應用程式**
+   - 說明：`K12 fee calendar API v2`
+   - 執行身分：**我** (你的 K12 帳號)
+   - 存取權：**擁有 Google 帳戶的任何人** ※ 教育版若 admin 鎖了「任何人」就選此項；或改「您網域內的所有人」
+6. 按 **部署** → 第一次會要授權，依序允許 (登入 → 進階 → 移至「未驗證的應用程式」)
+7. 取得 **網頁應用程式網址**，看起來像：
+   ```
+   https://script.google.com/a/macros/z-way-edu.com/s/AKfyc.../exec
+   ```
+   **複製這個網址**
+
+---
+
+## 三、HTML 端接上雲端
+
+1. 開 https://zway-education.github.io/K12-calendar/
+2. 切到 **⑤ 規則與設定** tab
+3. 在「雲端 API 網址」欄位貼上剛剛複製的網址
+4. 按 **儲存網址** → 按 **⬇ 從雲端拉**
+5. 看到「✓ 已從 Sheet 同步」就完成
+
+之後你在 HTML 上改任何班別/規則/連假/重點週，會自動推回 Sheet。
+你在 Sheet 上改完，HTML 重 fetch (按 ⬇ 從雲端拉) 即可拉回。
+
+---
+
+## 四、API 規格速查
+
+### doGet (讀)
+- URL: `<webApp>?callback=<jsonpFn>` (JSONP，繞 CORS)
+- 回傳：
+  ```json
+  {
+    "classes":        [ {id, name, weekday, time, teacher, campus, startDate, fee, textbookFee, studentCount, periodCount, memo}, ... ],
+    "holidays":       [ "2026-01-01", ... ],
+    "rules":          { periodLength, feeDayIndex, renewalDayIndex, renewalWeekStart, renewalWeekEnd, lastIntakeIndex, cutoffIndex, textbookFeeEvery },
+    "highlightWeeks": [ {label, start, end, color}, ... ],
+    "fetchedAt":      "ISO-8601",
+    "apiVersion":     "v2"
+  }
+  ```
+
+### doPost (寫)
+- URL: `<webApp>`
+- Headers: `Content-Type: text/plain;charset=utf-8` (避開 CORS 預檢)
+- Body:
+  ```json
+  {
+    "action": "saveClasses" | "saveHolidays" | "saveRules" | "saveHighlights" | "saveAll",
+    "data": {
+      "classes": [...],
+      "holidays": [...],
+      "rules": {...},
+      "highlightWeeks": [...]
+    }
+  }
+  ```
+
+---
+
+## 五、疑難排解
 
 | 症狀 | 處理 |
 |---|---|
-| 部署時跳「需要管理員核准」 | 教育版 admin 鎖了權限。請 IT 開放「Apps Script Web App」對外部署，或讓您加入「進階保護不適用」清單。或退而求其次,讓 IT 同事(有 admin 權限)幫忙部署。 |
-| HTML 顯示「✗ 連線失敗」 | 1. 網址有沒有貼完整(整個 https:// 到 /exec)<br>2. 部署存取權選對了嗎(若選「組織內」,您在無痕視窗測試會失敗,要登入 K12 教育帳號)<br>3. 改了 .gs 程式碼要**重新部署**:部署 → 管理部署作業 → 鉛筆編輯 → 版本「新版本」 |
-| 「找不到工作表」 | 分頁名稱必須是 `班別` / `連假` / `規則`(全形繁中字) |
-| 寫入後 Sheet 日期變數字 | .gs 有自動套用 yyyy-mm-dd 格式,若仍有問題,在 Sheet 該欄手動「格式 → 數字 → 日期」 |
-| 想完全脫離雲端 | HTML「⑤ 規則與設定」清空雲端網址 → 儲存。下次打開回到本機 localStorage 模式。 |
-| Sheet 被誤覆蓋 | Google Sheet 的「檔案 → 版本紀錄」可回到任何時間點 |
+| HTML 「✗ 連線失敗」 | 檢查 Apps Script 部署存取權是否允許你的帳號 |
+| HTML 抓到舊資料 | 在 Sheet 改完, 用 HTML「⬇ 從雲端拉」refetch |
+| Sheet 沒同步到新欄 | 確認 Sheet 表頭跟 CSV 一致 (textbookFee/renewalWeekStart 等) |
+| 端午顯示 6/10 | localStorage 還有舊 v1 資料, 用 ?reset=1 清掉重載 |
+| 重點週分頁是空的 | 從 HTML 端按「⬆ 全部推上去」會自動建立並寫入 |
 
 ---
 
-## 之後可加（升級項）
+## 六、個資保護
 
-- **token 驗證**：限制只有持票的 HTML 能寫(防同網域其他人寫)
-- **變更日誌**：每次寫入記錄誰、什麼時間、改了什麼到「日誌」分頁
-- **學生名單分頁**:把每個班的學生姓名/電話也搬上來,跟班別 join
-- **金流串接**:銀行對帳檔自動比對「該收 vs 已收」
+- Sheet 上不要放學生姓名/電話/Email (現有 `studentCount` 只記人數,沒有名單)
+- 學生名單請放在獨立 sheet 並嚴格控管權限,**不要連到這個 Apps Script**
