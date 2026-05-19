@@ -611,7 +611,7 @@
 <section class="panel active" id="panel-annual">
   <details class="rules-box">
     <summary><span class="rule-summary-text">收費規則 — 點開展開,文字可直接編輯</span></summary>
-    <div class="rule-body" contenteditable="true" data-rules-key="rules.annual" data-placeholder="（輸入收費規則…）">每期 10 堂;第 7 堂 = 續班收費日;第 4 堂起不接受插班,插班必須在第 3 堂前完成;逢國定連假/校內定假日自動跳過順延。</div>
+    <div class="rule-body" contenteditable="true" data-rules-key="rules.annual" data-placeholder="（輸入收費規則…）">每期 10 堂;每期第 1 堂 = 學費繳清日(11堂、21堂...);上期第 7 堂發續班通知;第 4 堂起不接受插班,插班必須在第 3 堂前完成;逢國定連假/校內定假日自動跳過順延。</div>
   </details>
   <div class="toolbar">
     <label>年度：
@@ -632,7 +632,7 @@
       <label class="evt-tog"><input type="checkbox" data-evt="start" checked> <span class="lg-start">●</span> 開課</label>
       <label class="evt-tog"><input type="checkbox" data-evt="class"> <span style="color:var(--ink-3);">●</span> 上課</label>
       <label class="evt-tog"><input type="checkbox" data-evt="renewal" checked> <span style="color:#3a72b0;">●</span> 續班</label>
-      <label class="evt-tog"><input type="checkbox" data-evt="fee" checked> <span class="lg-fee">●</span> 收費</label>
+      <label class="evt-tog"><input type="checkbox" data-evt="fee" checked> <span class="lg-fee">●</span> 學費繳清</label>
     </span>
   </div>
   <div id="annual-grid"></div>
@@ -644,7 +644,7 @@
   <details class="rules-box">
     <summary><span class="rule-summary-text">用途與規則 — 點開展開,文字可直接編輯</span></summary>
     <div class="rule-body" contenteditable="true" data-rules-key="rules.monthly" data-placeholder="（輸入用途說明…）">用途:每期開課第一堂課之後產出當月收費清單,送會計與執行長。
-規則重申:第 7 堂為續班收費日;插班限制第 3 堂前。</div>
+規則重申:每期第 1 堂為學費繳清日;插班限制第 3 堂前。</div>
   </details>
   <div class="toolbar">
     <label>選擇月份：
@@ -764,8 +764,8 @@ const DEFAULT_HOLIDAYS = [
 
 const DEFAULT_RULES = {
   periodLength: 10,     // 一期幾堂
-  feeDayIndex: 7,       // 第幾堂收下一期費
-  renewalDayIndex: 7,   // 第幾堂為續班觸發堂 (預設等於收費堂)
+  feeDayIndex: 1,       // 第幾堂學費繳清 (每期第 1 堂)
+  renewalDayIndex: 7,   // 上一期第幾堂發續班通知
   lastIntakeIndex: 3,   // 第幾堂為插班最終日
   cutoffIndex: 4,       // 第幾堂起禁止插班
 };
@@ -1159,7 +1159,7 @@ function renderAnnualGrid() {
         } else if (e.type === 'fee-day') {
           cls = 'fee';
           const subtotal = (e.cls.fee || 0) * (e.cls.studentCount || 0);
-          txt = `${escapeHtml(e.cls.name)} 收第${e.period + 1}期 ${subtotal > 0 ? '$' + subtotal.toLocaleString() : ''}`;
+          txt = `${escapeHtml(e.cls.name)} 學費繳清 第${e.period}期 ${subtotal > 0 ? '$' + subtotal.toLocaleString() : ''}`;
         }
         // 套用使用者覆寫 (若有)
         const ovKey = evtOverrideKey(e.cls.id, e.idx, e.type);
@@ -1245,8 +1245,8 @@ function renderAnnualList() {
       desc = `第 ${state.rules.cutoffIndex} 堂起禁止插班`;
     } else if (e.type === 'fee-day') {
       rowClass = 'fee-row';
-      badge = '<span class="badge fee">續班收費日</span>';
-      desc = `收第 ${e.period + 1} 期學費 NT$${e.cls.fee.toLocaleString()}`;
+      badge = '<span class="badge fee">學費繳清日</span>';
+      desc = `第 ${e.period} 期學費 NT$${e.cls.fee.toLocaleString()}`;
     }
     html += `<tr class="${rowClass}">
       <td>${e.date}</td>
@@ -1298,19 +1298,21 @@ function renderMonthly() {
     for (const s of sch) {
       if (s.isFeeDay && s.date.startsWith(month)) {
         const P = state.rules.periodLength || 10;
-        // 收費期限 = 本期最後一堂 = 0-based index s.period * P - 1
-        const deadlineDate = sch[s.period * P - 1]?.date || '?';
+        // 學費繳清日 = 該期第 N 堂 (預設 = 第 1 堂)
+        // 該期最後一堂 (期末) = 0-based index s.period * P - 1
+        const lastDayOfPeriod = sch[s.period * P - 1]?.date || '?';
         // 下一期第 1 堂 = 0-based index s.period * P
-        const nextStartDate = sch[s.period * P]?.date || '?';
+        const nextPeriodStart = sch[s.period * P]?.date || '?';
         const students = cls.studentCount || 0;
         const subtotal = cls.fee * students;
         rows.push({
           feeDate: s.date,
-          deadline: deadlineDate,
+          deadline: s.date, // 學費繳清日即為繳清截止
           cls,
           period: s.period,
           nextPeriod: s.period + 1,
-          nextStart: nextStartDate,
+          lastDay: lastDayOfPeriod,
+          nextStart: nextPeriodStart,
           students,
           unitFee: cls.fee,
           subtotal
@@ -1328,32 +1330,32 @@ function renderMonthly() {
   const [yy, mm] = month.split('-');
 
   let html = `<div class="month-block">
-    <h3>${yy}年 ${parseInt(mm)} 月 ・ 收費總表
+    <h3>${yy}年 ${parseInt(mm)} 月 ・ 學費繳清總表
       <span class="sum">合計 ${rows.length} 班 ／ ${totalStudents} 位學生 ／ 預計收入 <span style="color:var(--accent);font-weight:600;">NT$${totalAmount.toLocaleString()}</span></span>
     </h3>
     <table>
       <thead><tr>
-        <th>收費日</th>
+        <th>繳清日</th>
         <th>班別／時段</th>
         <th>老師</th>
         <th style="text-align:right;">人數</th>
         <th style="text-align:right;">每 ${state.rules.periodLength} 堂</th>
         <th style="text-align:right;">該班總金額</th>
-        <th>繳費期限</th>
-        <th>下期第 1 堂</th>
+        <th>該期最後一堂</th>
+        <th>下一期第 1 堂</th>
       </tr></thead><tbody>`;
   for (const r of rows) {
     const feeWd = getWeekdayChar(parseYmd(r.feeDate).getDay());
-    const deadlineWd = getWeekdayChar(parseYmd(r.deadline).getDay());
+    const lastDayWd = getWeekdayChar(parseYmd(r.lastDay).getDay());
     const studentWarn = r.students === 0;
     html += `<tr class="fee-row">
-      <td>${r.feeDate} (${feeWd})<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;letter-spacing:0.3px;">第 ${r.period} 期 第 ${state.rules.feeDayIndex} 堂</span></td>
+      <td>${r.feeDate} (${feeWd})<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;letter-spacing:0.3px;">第 ${r.period} 期 第 ${state.rules.feeDayIndex} 堂 (繳清)</span></td>
       <td><strong>${escapeHtml(r.cls.name)}</strong><br><span style="font-size:10px;color:var(--ink-3);font-weight:400;">W${getWeekdayChar(r.cls.weekday)} ${escapeHtml(r.cls.time)} ・ ${escapeHtml(r.cls.campus)}</span></td>
       <td>${escapeHtml(r.cls.teacher)}</td>
       <td style="text-align:right;font-feature-settings:'tnum';">${studentWarn ? '<span style="color:var(--warn);">未填</span>' : r.students + ' 位'}</td>
       <td style="text-align:right;font-feature-settings:'tnum';">NT$${r.unitFee.toLocaleString()}</td>
       <td style="text-align:right;font-feature-settings:'tnum';font-weight:600;">${studentWarn ? '—' : 'NT$' + r.subtotal.toLocaleString()}</td>
-      <td>${r.deadline} (${deadlineWd})<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;">第 ${r.period} 期 第 ${state.rules.periodLength} 堂</span></td>
+      <td>${r.lastDay} (${lastDayWd})<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;">第 ${r.period} 期 第 ${state.rules.periodLength} 堂</span></td>
       <td>${r.nextStart}<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;">第 ${r.nextPeriod} 期 第 1 堂</span></td>
     </tr>`;
   }
@@ -1367,7 +1369,8 @@ function renderMonthly() {
   </tr>`;
   html += '</tbody></table>';
   html += `<div style="padding: 10px 18px; font-size: 11.5px; color: var(--ink-2); letter-spacing: 0.3px; border-top: 1px solid var(--line); line-height: 1.6;">
-    <strong style="color: var(--ink);">收費規則 ・</strong>每期第 ${state.rules.feeDayIndex} 堂為收費日；第 ${state.rules.periodLength} 堂為繳費期限（家長須在期限前完成繳費才能續上下一期）。<br>
+    <strong style="color: var(--ink);">收費規則 ・</strong>每期第 ${state.rules.feeDayIndex} 堂為學費繳清日（家長須在當日繳清,該期才有效）。<br>
+    <strong style="color: var(--ink);">續班通知 ・</strong>上期第 ${state.rules.renewalDayIndex || state.rules.feeDayIndex} 堂發續班通知,給家長 ${state.rules.periodLength - (state.rules.renewalDayIndex || state.rules.feeDayIndex) + state.rules.feeDayIndex} 週準備繳費。<br>
     <strong style="color: var(--ink);">插班規則 ・</strong>每期第 ${state.rules.cutoffIndex} 堂起不接受插班；插班必須在第 ${state.rules.lastIntakeIndex} 堂前完成。
   </div></div>`;
   target.innerHTML = html;
@@ -1411,7 +1414,7 @@ function renderSingle() {
   }
   html += '</tbody></table>';
   html += `<div style="padding: 12px 18px; background: var(--soft); font-size: 13px; margin-top: 10px;">
-    <strong>規則:</strong>每期 ${state.rules.periodLength} 堂｜第 ${state.rules.feeDayIndex} 堂收下一期費｜第 ${state.rules.cutoffIndex} 堂起不接受插班｜插班最晚第 ${state.rules.lastIntakeIndex} 堂前完成
+    <strong>規則:</strong>每期 ${state.rules.periodLength} 堂｜第 ${state.rules.feeDayIndex} 堂學費繳清｜第 ${state.rules.cutoffIndex} 堂起不接受插班｜插班最晚第 ${state.rules.lastIntakeIndex} 堂前完成
   </div>`;
   target.innerHTML = html;
 }
@@ -1443,7 +1446,7 @@ function renderRules() {
     第 <b>${r.feeDayIndex}</b> 堂收下一期費　・
     插班最終日：第 <b>${r.lastIntakeIndex}</b> 堂　・
     第 <b>${r.cutoffIndex}</b> 堂起禁止插班<br>
-    <span style="color:var(--ink-3);">範例：第 1 期續班為第 ${r.renewalDayIndex || r.feeDayIndex} 堂；收費為第 ${r.feeDayIndex} 堂；繳費期限為第 ${r.periodLength} 堂；第 ${r.periodLength + 1} 堂即第 2 期第 1 堂。</span>
+    <span style="color:var(--ink-3);">範例：上期第 ${r.renewalDayIndex || r.feeDayIndex} 堂發續班通知；新期第 ${r.feeDayIndex} 堂(=第 1 堂)學費繳清；第 ${r.periodLength} 堂為該期最後一堂；第 ${r.periodLength + 1} 堂即下一期第 1 堂(再次繳清)。</span>
   `;
   document.getElementById('rule-preview').innerHTML = preview;
 }
