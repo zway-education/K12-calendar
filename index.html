@@ -332,28 +332,32 @@
     font-size: 13px; cursor: pointer; padding: 0 4px; line-height: 1;
   }
   .hw-chip .hw-del:hover { color: var(--warn); }
-  /* 12-month grid view - 設計成單一畫面顯示 12 格不用滾動 */
-  body.compact-grid { overflow: hidden; height: 100vh; }
-  body.compact-grid main { height: calc(100vh - 75px); overflow: hidden; padding-bottom: 6px; }
-  body.compact-grid #panel-annual { height: 100%; display: flex; flex-direction: column; }
-  body.compact-grid #panel-annual > .rules-box,
-  body.compact-grid #panel-annual > .toolbar { flex-shrink: 0; }
-  body.compact-grid #annual-grid { flex: 1; min-height: 0; }
+  /* 12-month grid view */
+  /* 全年模式才強制 fit viewport (compact-grid), 半年模式讓內容自然展開可滾動 */
+  body.compact-grid.full-year { overflow: hidden; height: 100vh; }
+  body.compact-grid.full-year main { height: calc(100vh - 75px); overflow: hidden; padding-bottom: 6px; }
+  body.compact-grid.full-year #panel-annual { height: 100%; display: flex; flex-direction: column; }
+  body.compact-grid.full-year #panel-annual > .rules-box,
+  body.compact-grid.full-year #panel-annual > .toolbar { flex-shrink: 0; }
+  body.compact-grid.full-year #annual-grid { flex: 1; min-height: 0; }
   .year-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  /* 全年模式: 12 格 fit 一頁 (4x3, 強制等分高度) */
+  body.compact-grid.full-year .year-grid {
     grid-template-rows: repeat(3, 1fr);
-    gap: 6px;
     height: 100%;
     min-height: 280px;
   }
-  @media (max-width: 1000px) { .year-grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); } }
-  @media (max-width: 700px)  { .year-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(6, 1fr); } }
+  @media (max-width: 1000px) { .year-grid { grid-template-columns: repeat(3, 1fr); } body.compact-grid.full-year .year-grid { grid-template-rows: repeat(4, 1fr); } }
+  @media (max-width: 700px)  { .year-grid { grid-template-columns: repeat(2, 1fr); } body.compact-grid.full-year .year-grid { grid-template-rows: repeat(6, 1fr); } }
   .month-card {
     background: var(--bg);
     border: 1px solid var(--line);
     border-radius: 0;
-    padding: 10px 12px 8px;
+    padding: 14px 18px 12px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -366,28 +370,28 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding-bottom: 6px;
-    margin-bottom: 6px;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
     border-bottom: 1px solid var(--ink);
     flex-shrink: 0;
   }
   .month-card .m-head .m-num {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--ink);
     letter-spacing: -0.5px;
     line-height: 1;
   }
   .month-card .m-head .m-num small {
-    font-size: 9px;
+    font-size: 11px;
     color: var(--ink-3);
     font-weight: 400;
-    margin-left: 4px;
-    letter-spacing: 2px;
+    margin-left: 6px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
   }
   .month-card .m-head .m-sum {
-    font-size: 11px;
+    font-size: 14px;
     color: var(--accent);
     font-weight: 600;
     letter-spacing: 0.3px;
@@ -396,18 +400,18 @@
   .month-card .m-events { flex: 1; overflow: hidden; min-height: 0; }
   .month-card .m-evt {
     display: flex;
-    gap: 8px;
-    padding: 3px 0;
-    font-size: 11px;
-    line-height: 1.4;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 13px;
+    line-height: 1.5;
     align-items: baseline;
   }
   .month-card .m-evt .d {
     color: var(--ink);
     font-weight: 600;
-    min-width: 64px;
+    min-width: 78px;
     flex-shrink: 0;
-    font-size: 10.5px;
+    font-size: 12px;
     font-feature-settings: "tnum";
     white-space: nowrap;
   }
@@ -420,7 +424,8 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.3px;
+    font-size: 13px;
   }
   .month-card .m-evt.fee {
     background: transparent;
@@ -543,12 +548,15 @@
     letter-spacing: 0.5px;
   }
   .half-toggle button.active { background: var(--ink); color: var(--bg); }
-  /* 上下半年模式: 6 月格佔滿(2 列 x 3 欄) */
+  /* 上下半年模式: 6 月格 3 欄, 自然高度 (不強制 fit viewport, 內容多就向下展開) */
   .year-grid.half-mode {
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
+    grid-auto-rows: minmax(220px, auto);
   }
-  @media (max-width: 1000px) { .year-grid.half-mode { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); } }
+  @media (max-width: 1000px) { .year-grid.half-mode { grid-template-columns: repeat(2, 1fr); } }
+  /* 半年模式 不要鎖 viewport (允許滾動) */
+  body.compact-grid:not(.full-year) { overflow: auto; }
+  body.compact-grid:not(.full-year) main { height: auto; }
   .legend {
     display: flex;
     gap: 14px;
@@ -1276,6 +1284,8 @@ function renderAnnualGrid() {
   document.querySelectorAll('.half-toggle button').forEach(b => {
     b.classList.toggle('active', b.dataset.half === half);
   });
+  // body.full-year: 全年模式才 fit viewport, 半年模式自然展開
+  document.body.classList.toggle('full-year', half === 'all');
 
   let html = `<div class="${gridClass}">`;
   for (let m = mStart; m <= mEnd; m++) {
