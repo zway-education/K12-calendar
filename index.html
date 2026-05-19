@@ -84,6 +84,21 @@
     letter-spacing: 0;
   }
   header .meta { font-size: 10px; color: var(--ink-3); letter-spacing: 0.2px; margin-left: auto; }
+  /* header 雲端操作按鈕 (在標題與狀態之間) */
+  .header-cloud-actions { display: inline-flex; gap: 6px; margin-left: 12px; }
+  .header-btn {
+    background: var(--bg); border: 1px solid var(--accent);
+    color: var(--accent); padding: 3px 10px;
+    border-radius: 4px; font-size: 11px; cursor: pointer;
+    font-family: inherit; letter-spacing: 0.3px;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  }
+  .header-btn:hover { background: var(--bg-3); color: var(--accent-2); }
+  .header-btn.header-btn-primary {
+    background: var(--grad-primary); color: #fff; border-color: transparent;
+    box-shadow: 0 1px 3px rgba(25, 118, 210, 0.20);
+  }
+  .header-btn.header-btn-primary:hover { background: var(--grad-primary-deep); box-shadow: 0 2px 6px rgba(25, 118, 210, 0.30); }
   nav.tabs {
     background: var(--bg);
     border-bottom: 1px solid var(--line);
@@ -853,6 +868,10 @@
 
 <header>
   <h1>K12 收費行事曆<small>高美館校</small></h1>
+  <div class="header-cloud-actions">
+    <button class="header-btn" id="cloud-fetch-top" title="從雲端拉最新資料">⬇ 從雲端拉</button>
+    <button class="header-btn header-btn-primary" id="cloud-push-top" title="把當前所有資料推到雲端 (Ctrl+S)">⬆ 全部推上去</button>
+  </div>
   <div class="meta" id="cloud-status"><span style="color: var(--warn);">● 雲端讀取中…</span></div>
 </header>
 
@@ -3074,6 +3093,17 @@ document.getElementById('save-btn')?.addEventListener('click', async () => {
   setCloudMsg('💾 儲存中…', 'info');
   const r = await pushToCloud('saveAll');
   if (r.ok) setCloudMsg('✓ 已儲存到雲端', 'ok');
+});
+// header 頂部「⬇ 從雲端拉 / ⬆ 全部推上去」按鈕 (任何 tab 都能按)
+document.getElementById('cloud-fetch-top')?.addEventListener('click', async () => {
+  setCloudMsg('⬇ 讀取中…', 'info');
+  const ok = await fetchFromCloud(true);
+  if (ok) renderAll();
+});
+document.getElementById('cloud-push-top')?.addEventListener('click', async () => {
+  setCloudMsg('⬆ 推送中…', 'info');
+  const r = await pushToCloud('saveAll');
+  if (r.ok) setCloudMsg('✓ 已推送到雲端', 'ok');
 });
 
 // 全局快捷鍵: Ctrl+Z (上一步), Ctrl+Y / Ctrl+Shift+Z (下一步), Ctrl+S (儲存)
