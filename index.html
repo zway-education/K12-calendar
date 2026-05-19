@@ -376,14 +376,14 @@
     flex-shrink: 0;
   }
   .month-card .m-head .m-num {
-    font-size: 24px;
+    font-size: 30px;
     font-weight: 700;
     color: var(--ink);
     letter-spacing: -0.5px;
     line-height: 1;
   }
   .month-card .m-head .m-num small {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--ink-3);
     font-weight: 400;
     margin-left: 6px;
@@ -391,9 +391,9 @@
     text-transform: uppercase;
   }
   .month-card .m-head .m-sum {
-    font-size: 14px;
+    font-size: 16px;
     color: var(--accent);
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.3px;
     font-feature-settings: "tnum";
   }
@@ -401,17 +401,17 @@
   .month-card .m-evt {
     display: flex;
     gap: 10px;
-    padding: 5px 0;
-    font-size: 13px;
-    line-height: 1.5;
+    padding: 6px 0;
+    font-size: 15px;
+    line-height: 1.55;
     align-items: baseline;
   }
   .month-card .m-evt .d {
     color: var(--ink);
     font-weight: 600;
-    min-width: 78px;
+    min-width: 88px;
     flex-shrink: 0;
-    font-size: 12px;
+    font-size: 13px;
     font-feature-settings: "tnum";
     white-space: nowrap;
   }
@@ -868,7 +868,7 @@ const DEFAULT_HOLIDAYS = [
   '2026-02-27', '2026-02-28', '2026-03-01',                                                      // 和平紀念日
   '2026-04-03', '2026-04-04', '2026-04-05', '2026-04-06',                                        // 兒童+清明
   '2026-05-01', '2026-05-02', '2026-05-03',                                                      // 勞動節
-  '2026-06-10', '2026-06-11', '2026-06-12',                                                      // 端午
+  '2026-06-19', '2026-06-20', '2026-06-21',                                                      // 端午 (週五-週日)
   '2026-09-25', '2026-09-26', '2026-09-27', '2026-09-28',                                        // 中秋+教師節
   '2026-10-09', '2026-10-10', '2026-10-11',                                                      // 國慶
   '2026-10-24', '2026-10-25', '2026-10-26',                                                      // 光復節
@@ -1333,35 +1333,49 @@ function renderAnnualGrid() {
       const classEvents = showEvents.filter(e => e.type === 'regular-class');
       const otherEvents = showEvents.filter(e => e.type !== 'regular-class');
 
-      // 先顯示其他重要事件(按日期)
+      // 同日同類型合併: group by (date + type)
+      const grouped = {};
       for (const e of otherEvents) {
-        const day = parseInt(e.date.split('-')[2]);
-        const wd = getWeekdayChar(parseYmd(e.date).getDay());
+        const k = e.date + '__' + e.type;
+        if (!grouped[k]) grouped[k] = { date: e.date, type: e.type, events: [], renewalDayOfWeek: e.renewalDayOfWeek };
+        grouped[k].events.push(e);
+      }
+      const groupKeys = Object.keys(grouped).sort();
+      for (const gk of groupKeys) {
+        const g = grouped[gk];
+        const day = parseInt(g.date.split('-')[2]);
+        const wd = getWeekdayChar(parseYmd(g.date).getDay());
+        const wkNum = isoWeekOfYmd(g.date);
+        const count = g.events.length;
+        const classNames = g.events.map(e => escapeHtml(e.cls.name)).join('、');
         let cls = '', txt = '';
-        if (e.type === 'period-start') {
+        if (g.type === 'period-start') {
           cls = 'start';
-          txt = `${escapeHtml(e.cls.name)} 開課`;
-        } else if (e.type === 'renewal-day') {
+          txt = count > 1 ? `開課 ×${count}: ${classNames}` : `${classNames} 開課`;
+        } else if (g.type === 'renewal-day') {
           cls = 'renewal';
-          const dw = e.renewalDayOfWeek || 1;
+          const dw = g.renewalDayOfWeek || 1;
           const totalDays = (state.rules.renewalWeekEnd || 10) - (state.rules.renewalWeekStart || 8) + 1;
-          txt = `${escapeHtml(e.cls.name)} 續班週 (${dw}/${totalDays})`;
-        } else if (e.type === 'fee-day') {
+          txt = count > 1
+            ? `續班週(${dw}/${totalDays}) ×${count}: ${classNames}`
+            : `${classNames} 續班週 (${dw}/${totalDays})`;
+        } else if (g.type === 'fee-day') {
           cls = 'fee';
-          const subtotal = (e.cls.fee || 0) * (e.cls.studentCount || 0);
-          txt = `${escapeHtml(e.cls.name)} 學費繳清${subtotal > 0 ? ' $' + subtotal.toLocaleString() : ''}`;
+          const total = g.events.reduce((sum, e) => sum + (e.cls.fee || 0) * (e.cls.studentCount || 0), 0);
+          txt = count > 1
+            ? `學費繳清 ×${count}: ${classNames}${total > 0 ? ' 合計 $' + total.toLocaleString() : ''}`
+            : `${classNames} 學費繳清${total > 0 ? ' $' + total.toLocaleString() : ''}`;
         }
-        // 套用使用者覆寫 (若有)
-        const ovKey = evtOverrideKey(e.cls.id, e.idx, e.type);
+        // 第一個事件當 override key 載體
+        const firstEvt = g.events[0];
+        const ovKey = evtOverrideKey(firstEvt.cls.id, firstEvt.idx, firstEvt.type);
         const ov = eventOverrides[ovKey];
         const displayText = (ov && ov.text != null) ? escapeHtml(ov.text) : txt;
         const noteText = (ov && ov.note) ? `　<small style="color:var(--ink-3);font-style:italic;">${escapeHtml(ov.note)}</small>` : '';
-        const editedMark = (ov && (ov.text != null || ov.note)) ? '<span class="evt-edited" title="已編輯">✎</span>' : '';
-        const wkNum = isoWeekOfYmd(e.date);
         const isEdited = (ov && (ov.text != null || ov.note));
         html += `<div class="m-evt ${cls}${isEdited ? ' is-edited' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}">
-          <span class="d">${String(day).padStart(2,'0')}・${wd}<small style="color:var(--ink-3);margin-left:3px;font-size:9px;">W${wkNum}</small></span>
-          <span class="cn" contenteditable="true" spellcheck="false" data-edit-text="1" title="點擊直接編輯,Enter/點別處存,Esc 取消">${displayText.replace(/<small[^>]*>.*?<\/small>/g, '')}</span>${isEdited ? `<span class="evt-revert" title="還原預設文字" data-revert-key="${ovKey}">↺</span>` : ''}
+          <span class="d">${String(day).padStart(2,'0')}・${wd}<small style="color:var(--ink-3);margin-left:3px;font-size:10px;">W${wkNum}</small></span>
+          <span class="cn" contenteditable="true" spellcheck="false" data-edit-text="1" title="點擊直接編輯,Enter/點別處存,Esc 取消">${displayText}${noteText}</span>${isEdited ? `<span class="evt-revert" title="還原預設文字" data-revert-key="${ovKey}">↺</span>` : ''}
         </div>`;
       }
 
