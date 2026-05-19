@@ -2599,6 +2599,7 @@ document.getElementById('rule-reset').addEventListener('click', () => {
   state.rules = {...DEFAULT_RULES};
   saveState();
   renderAll();
+  autoSyncIfCloud('saveRules');
 });
 
 document.getElementById('save-holidays').addEventListener('click', () => {
@@ -2674,6 +2675,7 @@ document.getElementById('import-all-btn')?.addEventListener('click', () => {
     saveState();
     renderAll();
     loadEditableRules();
+    autoSyncIfCloud('saveAll'); // 一鍵 import 後全部推上雲端
     setExportMsg('✓ 匯入成功! 來源: ' + (data.exportedAt || '未知時間'), 'ok');
   } catch (e) {
     setExportMsg('✗ JSON 格式錯誤: ' + e.message, 'err');
@@ -2736,15 +2738,17 @@ document.getElementById('import-json').addEventListener('click', () => {
     if (data.holidays) state.holidays = data.holidays;
     saveState();
     renderAll();
+    autoSyncIfCloud('saveAll');
     alert('匯入成功');
   } catch(e) { alert('JSON 格式錯誤:' + e.message); }
 });
 document.getElementById('reset-data').addEventListener('click', () => {
-  if (!confirm('確定清空所有資料?無法復原')) return;
+  if (!confirm('確定清空所有資料?無法復原 (這會把雲端 Sheet 也清空)')) return;
   state.classes = [];
   state.holidays = [...DEFAULT_HOLIDAYS];
   saveState();
   renderAll();
+  autoSyncIfCloud('saveAll');
 });
 document.getElementById('load-baseline').addEventListener('click', () => {
   if (!confirm('將載入基準資料(幼兒啟蒙班 L1),會合併到目前班別清單')) return;
@@ -2753,6 +2757,7 @@ document.getElementById('load-baseline').addEventListener('click', () => {
   }
   saveState();
   renderAll();
+  autoSyncIfCloud('saveClasses');
 });
 
 // ====== Cloud sync handlers ======
