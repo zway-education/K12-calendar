@@ -623,7 +623,7 @@
   /* 各事件類型 badge 配色 (顯式設定, 不用 currentColor 避免被內部 color 蓋過) */
   .month-card .m-evt.fee .evt-count   { background: var(--warn); }
   .month-card .m-evt.start .evt-count { background: var(--accent); }
-  .month-card .m-evt.renewal .evt-count { background: var(--renewal); }
+  .month-card .m-evt.renewal .evt-count { background: #d4361a; }
   /* 班別名稱: 比 label 略輕 */
   .month-card .m-evt .evt-names { font-weight: 500; }
   /* 事件型 label: 與 currentColor 同色 + 粗體 */
@@ -655,8 +655,8 @@
   #annual-table table tr.is-this-week-row td:first-child {
     border-left: 3px solid var(--warn);
   }
-  .month-card .m-evt.renewal .d { color: var(--renewal); }
-  .month-card .m-evt.renewal .cn { color: var(--renewal); }
+  .month-card .m-evt.renewal .d { color: #d4361a; }
+  .month-card .m-evt.renewal .cn { color: #d4361a; font-weight: 600; }
   .month-card .m-evt.class-evt .d { color: var(--ink-3); font-size: 9.5px; }
   .month-card .m-evt.class-evt .cn { color: var(--ink-3); font-size: 10px; }
   /* 當週 row: 極淡灰底 + 橙色邊條 (避免畫面太藍) */
@@ -2017,20 +2017,30 @@ function renderAnnualGrid() {
         </div>`;
       }
 
-      // 上課堂:聚合顯示
+      // 上課堂:聚合顯示 (含當週的日期會自動紅色高亮)
       if (F.class && classEvents.length > 0) {
-        // 按班別 group
+        // 按班別 group, 保留完整 date 以便判斷當週
         const byCls = {};
         for (const e of classEvents) {
           const k = e.cls.id;
-          if (!byCls[k]) byCls[k] = { cls: e.cls, days: [] };
-          byCls[k].days.push(parseInt(e.date.split('-')[2]));
+          if (!byCls[k]) byCls[k] = { cls: e.cls, items: [] };
+          byCls[k].items.push({ day: parseInt(e.date.split('-')[2]), date: e.date });
         }
         for (const k of Object.keys(byCls)) {
           const g = byCls[k];
+          // 各日期: 若該日 (年, 月, 月內週) 等於今天 → 紅字
+          const dayHtml = g.items.map(it => {
+            const d = parseYmd(it.date);
+            const eY = d.getFullYear();
+            const eM = d.getMonth() + 1;
+            const eW = Math.ceil(d.getDate() / 7);
+            const inThisWeek = (eY === todayYear && eM === todayMonth && eW === todayWeek);
+            const dStr = String(it.day).padStart(2, '0');
+            return inThisWeek ? `<span style="color:#d4361a;font-weight:700;">${dStr}</span>` : dStr;
+          }).join('/');
           html += `<div class="m-evt class-evt">
             <span class="d">上課</span>
-            <span class="cn" title="${escapeHtml(g.cls.name)}">${escapeHtml(g.cls.name)} ${g.days.length} 堂 (${g.days.map(d => String(d).padStart(2,'0')).join('/')})</span>
+            <span class="cn" title="${escapeHtml(g.cls.name)}">${escapeHtml(g.cls.name)} ${g.items.length} 堂 (${dayHtml})</span>
           </div>`;
         }
       }
