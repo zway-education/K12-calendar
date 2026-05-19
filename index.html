@@ -6,16 +6,18 @@
 <title>K12 收費行事曆原型 v1</title>
 <style>
   :root {
-    --ink: #111;            /* 主文字 - 近黑 */
-    --ink-2: #4a4a4a;       /* 次文字 */
+    /* 瑞士國際排版風 (Swiss International Typographic Style) */
+    --ink: #1d1d1b;         /* sw-black: 主文字 */
+    --ink-2: #555555;       /* sw-fg-soft: 次文字 */
     --ink-3: #8a8a8a;       /* 輔助文字 */
-    --line: #e5e5e5;        /* 細邊框 */
-    --line-2: #1a1a1a;      /* 強邊框(分隔) */
-    --bg: #ffffff;          /* 單色背景 純白 */
-    --bg-2: #f7f7f5;        /* 卡片極淺底 */
-    --accent: #b8860b;      /* 金色 - 只用在收費金額文字 */
-    --warn: #a33;           /* 暗紅 - 只用在禁插警示文字 */
-    --ok: #2a6c4a;          /* 暗綠 - 只用在期初文字 */
+    --line: #e6e6e3;        /* sw-grey-1: 細邊框 */
+    --line-2: #1d1d1b;      /* sw-black: 強邊框/hairline */
+    --bg: #ffffff;          /* sw-white: 純白 */
+    --bg-2: #f5f5f3;        /* 極淺灰: 當週底色 */
+    --accent: #d4361a;      /* sw-red: 單一強調色 (學費繳清/重要事件) */
+    --warn: #d4361a;        /* 統一用瑞士紅 */
+    --ok: #1d1d1b;          /* 簡化:開課用黑色粗體 (不再用綠) */
+    --renewal: #555555;     /* 續班用次文字灰 */
 
     /* alias */
     --navy: var(--ink);
@@ -26,13 +28,14 @@
   }
   * { box-sizing: border-box; }
   body {
-    font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+    font-family: 'Helvetica Neue', 'Helvetica', 'PingFang TC', 'Noto Sans TC', 'Arial', sans-serif;
     background: var(--bg);
     color: var(--ink);
     margin: 0;
     padding: 0;
-    line-height: 1.55;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    letter-spacing: 0;
   }
   /* 整合 header + tabs 到單列,大幅壓縮空間 */
   header {
@@ -376,25 +379,25 @@
     flex-shrink: 0;
   }
   .month-card .m-head .m-num {
-    font-size: 30px;
+    font-size: clamp(36px, 4vw, 56px);
     font-weight: 700;
     color: var(--ink);
-    letter-spacing: -0.5px;
-    line-height: 1;
+    letter-spacing: -0.025em;
+    line-height: 0.95;
   }
   .month-card .m-head .m-num small {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--ink-3);
-    font-weight: 400;
-    margin-left: 6px;
-    letter-spacing: 1.5px;
+    font-weight: 500;
+    margin-left: 8px;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
   .month-card .m-head .m-sum {
-    font-size: 16px;
+    font-size: 18px;
     color: var(--accent);
     font-weight: 700;
-    letter-spacing: 0.3px;
+    letter-spacing: -0.01em;
     font-feature-settings: "tnum";
   }
   .month-card .m-events { flex: 1; overflow: hidden; min-height: 0; }
@@ -430,28 +433,29 @@
   .month-card .m-evt.fee {
     background: transparent;
     margin: 0;
-    padding: 3px 0;
+    padding: 5px 0;
   }
+  /* 瑞士風: 學費繳清=紅色強調; 開課=黑色粗體; 續班=灰色 */
   .month-card .m-evt.fee .d { color: var(--accent); }
-  .month-card .m-evt.fee .cn { color: var(--accent); font-weight: 600; }
-  .month-card .m-evt.start .d { color: var(--ok); }
-  .month-card .m-evt.start .cn { color: var(--ok); }
-  .month-card .m-evt.renewal .d { color: #3a72b0; }
-  .month-card .m-evt.renewal .cn { color: #3a72b0; }
+  .month-card .m-evt.fee .cn { color: var(--accent); font-weight: 700; }
+  .month-card .m-evt.start .d { color: var(--ink); }
+  .month-card .m-evt.start .cn { color: var(--ink); font-weight: 600; }
+  .month-card .m-evt.renewal .d { color: var(--renewal); }
+  .month-card .m-evt.renewal .cn { color: var(--renewal); }
   .month-card .m-evt.class-evt .d { color: var(--ink-3); font-size: 9.5px; }
   .month-card .m-evt.class-evt .cn { color: var(--ink-3); font-size: 10px; }
-  /* 當週 row 底色 */
+  /* 當週 row 底色 (瑞士風: 紅色實心邊條 + 極淡灰底) */
   .month-card .m-evt.is-this-week {
-    background: #fff8d8;
-    margin: 0 -10px;
-    padding-left: 10px; padding-right: 10px;
-    border-left: 3px solid var(--gold);
+    background: var(--bg-2);
+    margin: 0 -18px;
+    padding-left: 18px; padding-right: 18px;
+    border-left: 3px solid var(--accent);
     position: relative;
   }
   .month-card .m-evt.is-this-week::after {
-    content: "本週";
-    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-    font-size: 9px; color: var(--gold); font-weight: 600; letter-spacing: 1px;
+    content: "THIS WEEK";
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 9px; color: var(--accent); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
   }
   /* 當月格邊框強調 */
   .month-card.is-current-month {
@@ -587,9 +591,9 @@
   }
   .legend .lg-item { display: inline-flex; align-items: center; gap: 4px; }
   .lg-fee { color: var(--accent); font-weight: 600; }
-  .lg-start { color: var(--ok); font-weight: 600; }
-  .lg-cutoff { color: var(--warn); font-weight: 600; }
-  .lg-renewal { color: #3a72b0; font-weight: 600; }
+  .lg-start { color: var(--ink); font-weight: 700; }
+  .lg-cutoff { color: var(--accent); font-weight: 600; }
+  .lg-renewal { color: var(--renewal); font-weight: 600; }
   /* Event toggles (年度行事曆顯示哪幾類事件) */
   .event-toggles {
     display: inline-flex;
@@ -745,7 +749,7 @@
     <span class="event-toggles">
       <label class="evt-tog"><input type="checkbox" data-evt="start" checked> <span class="lg-start">●</span> 開課</label>
       <label class="evt-tog"><input type="checkbox" data-evt="class"> <span style="color:var(--ink-3);">●</span> 上課</label>
-      <label class="evt-tog"><input type="checkbox" data-evt="renewal" checked> <span style="color:#3a72b0;">●</span> 續班</label>
+      <label class="evt-tog"><input type="checkbox" data-evt="renewal" checked> <span class="lg-renewal">●</span> 續班</label>
       <label class="evt-tog"><input type="checkbox" data-evt="fee" checked> <span class="lg-fee">●</span> 學費繳清</label>
     </span>
   </div>
@@ -878,7 +882,7 @@
 <script>
 // ====== Data Model ======
 const STORAGE_KEY = 'k12_fee_calendar_v1';
-const HOLIDAYS_KEY = 'k12_fee_holidays_v1';
+const HOLIDAYS_KEY = 'k12_fee_holidays_v2'; // v2: 修端午為 6/19-6/21 (舊 v1 是 6/10-6/12)
 const RULES_KEY = 'k12_fee_rules_v1';
 const CLOUD_URL_KEY = 'k12_fee_cloud_url_v1';
 const CLOUD_FETCHED_KEY = 'k12_fee_cloud_fetched_v1';
@@ -916,11 +920,11 @@ const DEFAULT_RULES = {
 
 // 重點週 (年度行事曆頂部 banner, 使用者手填日期範圍)
 const DEFAULT_HIGHLIGHT_WEEKS = [
-  { label: '收費週', start: '2026-05-29', end: '2026-06-06', color: '#b8860b' },
-  { label: '插班週', start: '2026-06-06', end: '2026-06-20', color: '#3a72b0' },
-  { label: '開課週', start: '2026-08-28', end: '2026-09-04', color: '#2a6c4a' },
+  { label: '收費週', start: '2026-05-29', end: '2026-06-06', color: '#d4361a' }, // 瑞士紅
+  { label: '插班週', start: '2026-06-06', end: '2026-06-20', color: '#1d1d1b' }, // 主文字黑
+  { label: '開課週', start: '2026-08-28', end: '2026-09-04', color: '#555555' }, // 次文字灰
 ];
-const HIGHLIGHT_KEY = 'k12_highlight_weeks_v1';
+const HIGHLIGHT_KEY = 'k12_highlight_weeks_v2'; // v2: 改瑞士風配色 (舊 v1 是 金/藍/綠)
 
 // 預設顯示哪幾類事件 (年度行事曆 12 月方格用)
 const DEFAULT_EVENT_FILTERS = { start: true, class: false, renewal: true, fee: true };
