@@ -88,8 +88,8 @@
   .header-cloud-actions { display: inline-flex; gap: 6px; margin-left: 12px; }
   .header-btn {
     background: var(--bg); border: 1px solid var(--accent);
-    color: var(--accent); padding: 3px 10px;
-    border-radius: 4px; font-size: 11px; cursor: pointer;
+    color: var(--accent); padding: 3px 12px;
+    border-radius: 999px; font-size: 11px; cursor: pointer;
     font-family: inherit; letter-spacing: 0.3px;
     transition: background 0.15s, color 0.15s, box-shadow 0.15s;
   }
@@ -233,7 +233,7 @@
     color: #fff;
     border: 1px solid transparent;
     padding: 7px 16px;
-    border-radius: 6px;
+    border-radius: 999px;
     cursor: pointer;
     font-family: inherit;
     font-size: 12px;
@@ -251,6 +251,9 @@
   button.btn.ghost:hover { background: var(--bg-3); color: var(--accent-2); border-color: var(--accent-2); transform: none; }
   button.btn.danger { background: var(--bg); border: 1px solid var(--warn); color: var(--warn); box-shadow: none; }
   button.btn.danger:hover { background: var(--grad-warm); color: #fff; border-color: transparent; transform: translateY(-1px); }
+  /* 續班按鈕 (primary 主要動作色) */
+  button.btn.primary { background: var(--bg); border: 1px solid var(--accent); color: var(--accent); box-shadow: none; }
+  button.btn.primary:hover { background: var(--grad-primary); color: #fff; border-color: transparent; transform: translateY(-1px); }
   .input, select, input[type="date"], input[type="text"], input[type="number"] {
     border: 1px solid var(--line);
     background: var(--bg);
@@ -286,7 +289,7 @@
     background: var(--bg);
     border: 1px solid var(--line);
     border-left: 3px solid var(--ink-3);
-    border-radius: 6px;
+    border-radius: 10px;
     padding: 12px 16px;
     margin-bottom: 8px;
     display: flex;
@@ -304,6 +307,46 @@
   .class-card .name { font-weight: 600; color: var(--ink); margin-bottom: 4px; letter-spacing: 0.3px; }
   .class-card .sub { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; line-height: 1.7; }
   .class-card .actions button { font-size: 11px; padding: 5px 12px; }
+  /* === 班別管理: filter bar === */
+  .class-filter-bar {
+    display: flex; gap: 10px; align-items: center;
+    padding: 8px 12px; margin-bottom: 10px;
+    background: var(--bg-2); border: 1px solid var(--line);
+    border-radius: 10px;
+    flex-wrap: wrap;
+  }
+  .class-filter-bar label {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; color: var(--ink-2); letter-spacing: 0.3px;
+  }
+  .class-filter-bar select, .class-filter-bar input {
+    padding: 3px 8px; font-size: 11.5px;
+    border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg); color: var(--ink); font-family: inherit;
+  }
+  .class-filter-bar button { font-size: 11px; padding: 3px 10px; border-radius: 6px; }
+
+  /* === 班別欄位 icon + 顏色 (非 emoji 符號) === */
+  .cls-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px;
+    font-size: 10px; font-weight: 700;
+    margin-right: 3px;
+    border-radius: 4px;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    letter-spacing: 0; vertical-align: -1px;
+    line-height: 1;
+  }
+  .cls-icon-fee     { color: #b45309; background: #fef3c7; }   /* 學費 黃 */
+  .cls-icon-tb      { color: #c2410c; background: #ffedd5; }   /* 教材費 橙黃 */
+  .cls-icon-count   { color: #1d4ed8; background: #dbeafe; }   /* 人數 藍 */
+  .cls-icon-period  { color: #6b7280; background: #f3f4f6; }   /* 期數 灰 */
+  .cls-icon-teacher { color: #047857; background: #d1fae5; }   /* 老師 綠 */
+  .cls-icon-campus  { color: #6b21a8; background: #f3e8ff; }   /* 校區 紫 */
+  .cls-icon-date    { color: #be185d; background: #fce7f3; }   /* 開課日 粉紅 */
+  .cls-icon-memo    { color: #6b7280; background: #f3f4f6; }   /* 備註 灰 */
+  .cls-unit { font-size: 10px; color: var(--ink-3); margin-left: 1px; }
+
   /* === 班別管理 inline edit 視覺 === */
   .cls-fld {
     display: inline-block;
@@ -506,7 +549,7 @@
   .month-card {
     background: var(--bg);
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 14px 18px 12px;
     display: flex;
     flex-direction: column;
@@ -955,6 +998,30 @@
     </form>
   </details>
 
+  <!-- 班別管理篩選列 -->
+  <div class="class-filter-bar">
+    <label>狀態 <select id="cls-flt-status">
+      <option value="all">全部</option>
+      <option value="ongoing">進行中</option>
+      <option value="upcoming">即將開班</option>
+      <option value="ended">已結束</option>
+    </select></label>
+    <label>星期 <select id="cls-flt-weekday">
+      <option value="all">全部</option>
+      <option value="0">W日</option>
+      <option value="1">W一</option>
+      <option value="2">W二</option>
+      <option value="3">W三</option>
+      <option value="4">W四</option>
+      <option value="5">W五</option>
+      <option value="6">W六</option>
+    </select></label>
+    <label>老師 <select id="cls-flt-teacher">
+      <option value="all">全部</option>
+    </select></label>
+    <label>搜尋班名 <input type="text" id="cls-flt-search" placeholder="輸入關鍵字…" style="width:140px;"></label>
+    <button class="btn ghost" id="cls-flt-clear" type="button">清除</button>
+  </div>
   <div id="class-list"></div>
 
   <div class="controls" style="margin-top: 20px;">
@@ -1619,6 +1686,65 @@ function generateClassDates(startDate, weekday, count, holidays) {
   return dates;
 }
 
+// 續班命名規則: L#上-1 → L#上-2 → L#下-1 → L#下-2 → L(#+1)上-1 ...
+function nextBatchName(name) {
+  const m1 = name.match(/^(.+?)\s*L(\d+)(上|下)-(\d+)$/);
+  if (m1) {
+    const prefix = m1[1].replace(/\s+$/, '');
+    const lvl = parseInt(m1[2]);
+    const half = m1[3];
+    const batch = parseInt(m1[4]);
+    if (batch === 1) return `${prefix} L${lvl}${half}-2`;
+    // batch === 2: 進到下一半 / 下一級
+    if (half === '上') return `${prefix} L${lvl}下-1`;
+    return `${prefix} L${lvl + 1}上-1`;
+  }
+  // 無 上/下, 例 "開智 L2-1" → "開智 L2-2" → "開智 L3-1"
+  const m2 = name.match(/^(.+?)\s*L(\d+)-(\d+)$/);
+  if (m2) {
+    const prefix = m2[1].replace(/\s+$/, '');
+    const lvl = parseInt(m2[2]);
+    const batch = parseInt(m2[3]);
+    if (batch === 1) return `${prefix} L${lvl}-2`;
+    return `${prefix} L${lvl + 1}-1`;
+  }
+  // 例 "家長班-1" → "家長班-2"
+  const m3 = name.match(/^(.+?)-(\d+)$/);
+  if (m3) {
+    return `${m3[1]}-${parseInt(m3[2]) + 1}`;
+  }
+  // 沒 suffix, 加 -2 (假設原是 "-1" 隱形)
+  return `${name} (續)`;
+}
+// 續班開課日: 本班最後一堂 + 7 天 (下一個同 weekday)
+function nextBatchStartDate(cls) {
+  const sch = expandClassSchedule(cls);
+  if (sch.length === 0) return cls.startDate;
+  const last = parseYmd(sch[sch.length - 1].date);
+  last.setDate(last.getDate() + 7);
+  return ymd(last);
+}
+function renewClass(id) {
+  const c = state.classes.find(x => x.id === id);
+  if (!c) { alert('找不到班別'); return; }
+  const newName = nextBatchName(c.name);
+  const newStartDate = nextBatchStartDate(c);
+  const newId = c.id.replace(/_n\d+$/, '') + '_n' + Date.now();
+  const newCls = {
+    ...c,
+    id: newId,
+    name: newName,
+    startDate: newStartDate,
+    periodCount: 1, // 續班新班預設 1 期 (10 堂)
+    memo: '↻ 續班自 ' + c.name
+  };
+  state.classes.push(newCls);
+  saveState();
+  renderAll();
+  autoSyncIfCloud('saveClasses');
+  setCloudMsg(`↻ 已新增續班「${newName}」開課日 ${newStartDate}`, 'ok');
+}
+
 // For one class, generate full schedule based on periodLength * periodCount
 // Returns array of {idx (1-based), date, isFeeDay, isIntakeCutoff, isPeriodStart, isRenewalDay, period}
 function expandClassSchedule(cls, periodCountOverride) {
@@ -1667,9 +1793,33 @@ function renderClasses() {
     list.innerHTML = '<div class="empty">尚無班別,請新增</div>';
     return;
   }
-  // 按狀態分組
+  // 更新老師下拉 (動態, 從現有資料拉)
+  const teacherSel = document.getElementById('cls-flt-teacher');
+  if (teacherSel) {
+    const teachers = [...new Set(state.classes.map(c => c.teacher).filter(Boolean))].sort();
+    const cur = teacherSel.value;
+    teacherSel.innerHTML = '<option value="all">全部</option>' + teachers.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+    if (teachers.includes(cur)) teacherSel.value = cur; else teacherSel.value = 'all';
+  }
+  // 套用篩選
+  const fStatus = document.getElementById('cls-flt-status')?.value || 'all';
+  const fWday = document.getElementById('cls-flt-weekday')?.value || 'all';
+  const fTeacher = document.getElementById('cls-flt-teacher')?.value || 'all';
+  const fSearch = (document.getElementById('cls-flt-search')?.value || '').trim().toLowerCase();
+  let filtered = state.classes.filter(c => {
+    if (fStatus !== 'all' && getClassStatus(c) !== fStatus) return false;
+    if (fWday !== 'all' && String(c.weekday) !== fWday) return false;
+    if (fTeacher !== 'all' && c.teacher !== fTeacher) return false;
+    if (fSearch && !c.name.toLowerCase().includes(fSearch)) return false;
+    return true;
+  });
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty">沒有符合篩選條件的班別 ・ 按「清除」回到全部</div>';
+    return;
+  }
+  // 按狀態分組 (在 filtered 內)
   const groups = { ongoing: [], upcoming: [], ended: [] };
-  for (const c of state.classes) {
+  for (const c of filtered) {
     const s = getClassStatus(c);
     groups[s].push(c);
   }
@@ -1691,19 +1841,20 @@ function renderClasses() {
       <div class="info">
         <div class="name">${f(c, 'name', c.name)} <span class="cls-meta-sep">・</span> ${fWeekday(c)} ${f(c, 'time', c.time)}</div>
         <div class="sub">
-          老師 ${f(c, 'teacher', c.teacher)}
-          <span class="cls-sep">｜</span> 校區 ${f(c, 'campus', c.campus)}
-          <span class="cls-sep">｜</span> 開課 ${fDate(c, 'startDate', c.startDate)}
-          <span class="cls-sep">｜</span> 每 10 堂 $${fNum(c, 'fee', c.fee)}
-          <span class="cls-sep">｜</span> 每 20 堂教材費 $${fNum(c, 'textbookFee', c.textbookFee || 0)}
-          <span class="cls-sep">｜</span> 人數 ${fNum(c, 'studentCount', c.studentCount || 0)} 位
-          <span class="cls-sep">｜</span> 期數 ${fPeriodCount(c)}
+          <span class="cls-icon cls-icon-teacher" title="老師">T</span>${f(c, 'teacher', c.teacher)}
+          <span class="cls-sep">｜</span><span class="cls-icon cls-icon-campus" title="校區">@</span>${f(c, 'campus', c.campus)}
+          <span class="cls-sep">｜</span><span class="cls-icon cls-icon-date" title="開課日">▶</span>${fDate(c, 'startDate', c.startDate)}
+          <span class="cls-sep">｜</span><span class="cls-icon cls-icon-fee" title="每 10 堂學費">$</span>${fNum(c, 'fee', c.fee)}<small class="cls-unit">/10 堂</small>
+          <span class="cls-sep">｜</span><span class="cls-icon cls-icon-tb" title="每 20 堂教材費">¥</span>${fNum(c, 'textbookFee', c.textbookFee || 0)}<small class="cls-unit">/20 堂</small>
+          <span class="cls-sep">｜</span><span class="cls-icon cls-icon-count" title="學生人數">#</span>${fNum(c, 'studentCount', c.studentCount || 0)}<small class="cls-unit">位</small>
+          <span class="cls-sep">｜</span><span class="cls-icon cls-icon-period" title="期數">×</span>${fPeriodCount(c)}
         </div>
         <div class="sub cls-memo-row">
-          備註 ${f(c, 'memo', c.memo || '')}${!c.memo ? ' <span class="cls-fld-hint">(空白, 點擊輸入)</span>' : ''}
+          <span class="cls-icon cls-icon-memo" title="備註">M</span>${f(c, 'memo', c.memo || '')}${!c.memo ? ' <span class="cls-fld-hint">(空白, 點擊輸入)</span>' : ''}
         </div>
       </div>
       <div class="actions">
+        <button class="btn primary" data-renew="${c.id}" title="自動新增下一期 (續班): 名稱+1, 開課日 = 本期最後一堂 +1 週">↻ 續班</button>
         <button class="btn danger" data-delete="${c.id}" title="刪除這個班別">刪除</button>
       </div>
     </div>
@@ -1742,6 +1893,10 @@ function renderClasses() {
       renderAll();
       autoSyncIfCloud('saveClasses');
     }
+  }));
+  // 續班按鈕
+  list.querySelectorAll('[data-renew]').forEach(b => b.addEventListener('click', e => {
+    renewClass(e.target.closest('[data-renew]').dataset.renew);
   }));
 
   // ====== Inline edit: contenteditable 欄位 (name/teacher/campus/time/memo/fee/textbookFee/studentCount) ======
@@ -2654,6 +2809,18 @@ document.getElementById('form-cancel').addEventListener('click', e => {
   form.closest('details').open = false;
 });
 
+// 班別管理篩選列 handlers
+['cls-flt-status','cls-flt-weekday','cls-flt-teacher'].forEach(id => {
+  document.getElementById(id)?.addEventListener('change', renderClasses);
+});
+document.getElementById('cls-flt-search')?.addEventListener('input', renderClasses);
+document.getElementById('cls-flt-clear')?.addEventListener('click', () => {
+  document.getElementById('cls-flt-status').value = 'all';
+  document.getElementById('cls-flt-weekday').value = 'all';
+  document.getElementById('cls-flt-teacher').value = 'all';
+  document.getElementById('cls-flt-search').value = '';
+  renderClasses();
+});
 document.getElementById('filter-class').addEventListener('change', renderAnnual);
 document.getElementById('filter-status').addEventListener('change', () => {
   // 狀態變更 → 重 render 班別下拉, 並重 render annual
