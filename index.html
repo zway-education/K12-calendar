@@ -899,7 +899,9 @@ let state = {
   holidays: [...DEFAULT_HOLIDAYS],
   rules: {...DEFAULT_RULES},
   eventFilters: {...DEFAULT_EVENT_FILTERS},
-  highlightWeeks: JSON.parse(JSON.stringify(DEFAULT_HIGHLIGHT_WEEKS))
+  highlightWeeks: JSON.parse(JSON.stringify(DEFAULT_HIGHLIGHT_WEEKS)),
+  // 預設依今天月份切到當前半年: 1-6 月 → 上半年, 7-12 月 → 下半年
+  annualHalf: ((new Date().getMonth() + 1) <= 6 ? 'h1' : 'h2')
 };
 
 function loadState() {
@@ -1270,6 +1272,10 @@ function renderAnnualGrid() {
   const mStart = half === 'h2' ? 7 : 1;
   const mEnd   = half === 'h1' ? 6 : 12;
   const gridClass = half === 'all' ? 'year-grid' : 'year-grid half-mode';
+  // 同步 half-toggle 按鈕 active 狀態
+  document.querySelectorAll('.half-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.half === half);
+  });
 
   let html = `<div class="${gridClass}">`;
   for (let m = mStart; m <= mEnd; m++) {
