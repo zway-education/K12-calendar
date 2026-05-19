@@ -1310,13 +1310,21 @@ function fetchViaJSONP(url, timeoutMs = 15000) {
 async function fetchFromCloud(showMsg = true) {
   const url = getCloudUrl();
   if (!url) return false;
-  // Apps Script Web App 一律走 JSONP (避開 CORS / 跨域 redirect 問題)
+  // Apps Script /macros/s/ GET script tag 會被 COOP/CORP 擋 → 改用 POST text/plain
+  // POST saveAll 空 data 不寫入任何東西, 但會回傳當前 sheet 全部資料 (等同 read)
   const isAppsScript = url.includes('script.google.com') || url.includes('/macros/');
   try {
-    if (showMsg) setCloudMsg(isAppsScript ? '讀取中 (JSONP 模式)…' : '讀取中…', 'info');
+    if (showMsg) setCloudMsg('讀取中…', 'info');
     let data;
     if (isAppsScript) {
-      data = await fetchViaJSONP(url);
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'saveAll', data: {} }),
+        redirect: 'follow'
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      data = await resp.json();
     } else {
       const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -2761,11 +2769,19 @@ document.getElementById('cloud-test').addEventListener('click', async () => {
   const url = document.getElementById('cloud-url').value.trim() || getCloudUrl();
   if (!url) { setCloudMsg('請先貼上網址', 'err'); return; }
   const isAppsScript = url.includes('script.google.com') || url.includes('/macros/');
-  setCloudMsg(isAppsScript ? '測試中 (JSONP 模式)…' : '測試中…', 'info');
+  setCloudMsg('測試中…', 'info');
   try {
     let data;
     if (isAppsScript) {
-      data = await fetchViaJSONP(url);
+      // 用 POST saveAll + 空 data 測試 (不寫入, 但會回應)
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'saveAll', data: {} }),
+        redirect: 'follow'
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      data = await resp.json();
     } else {
       const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
       const text = await resp.text();
