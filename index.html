@@ -399,6 +399,36 @@
   /* 視覺分隔點 */
   .cls-sep, .cls-meta-sep { color: var(--ink-3); margin: 0 2px; user-select: none; }
   .cls-memo-row { margin-top: 4px; }
+
+  /* 續班 modal */
+  .renew-modal-box { max-width: 560px; width: 92%; }
+  .renew-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .renew-form-grid label {
+    display: flex; flex-direction: column; gap: 4px;
+    font-size: 11px; color: var(--ink-3); letter-spacing: 0.3px;
+  }
+  .renew-form-grid label.full { grid-column: 1 / -1; }
+  .renew-form-grid label span { color: var(--ink); font-weight: 500; }
+  .renew-form-grid input, .renew-form-grid select {
+    padding: 6px 10px; font-size: 12.5px;
+    border: 1px solid var(--line); border-radius: 8px;
+    background: var(--bg); color: var(--ink); font-family: inherit;
+  }
+  .renew-form-grid input:focus, .renew-form-grid select:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.15);
+  }
+  .renew-preview {
+    background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 14px; font-size: 12px; color: var(--ink-2);
+    line-height: 1.7; margin: 8px 0 14px;
+  }
+  .renew-preview strong { color: var(--ink); font-weight: 600; }
   /* 班別管理: 進行中 / 即將開班 / 已結束 分組 */
   .class-section { margin-bottom: 20px; }
   .class-section-head {
@@ -1250,6 +1280,44 @@
   </div>
 </div>
 
+<!-- 續班確認彈窗 -->
+<div class="evt-edit-modal" id="renewModal">
+  <div class="evt-edit-box renew-modal-box">
+    <h3>↻ 續班 — 確認新增下一期</h3>
+    <div class="orig" id="renewSource"></div>
+    <div class="renew-form-grid">
+      <label class="full"><span>班別名稱</span><input type="text" id="renewName" placeholder="自動命名"></label>
+      <label><span>開課日</span><input type="date" id="renewStartDate"></label>
+      <label><span>期數</span>
+        <select id="renewPeriodCount">
+          <option value="1">1 期 (10 堂)</option>
+          <option value="2">2 期 (20 堂)</option>
+          <option value="3">3 期 (30 堂)</option>
+          <option value="4">4 期 (40 堂)</option>
+        </select>
+      </label>
+      <label><span>週幾</span>
+        <select id="renewWeekday">
+          <option value="0">W日</option><option value="1">W一</option><option value="2">W二</option>
+          <option value="3">W三</option><option value="4">W四</option><option value="5">W五</option>
+          <option value="6">W六</option>
+        </select>
+      </label>
+      <label><span>時段</span><input type="text" id="renewTime"></label>
+      <label><span>老師</span><input type="text" id="renewTeacher"></label>
+      <label><span>學費 (10 堂)</span><input type="number" id="renewFee" min="0" step="50"></label>
+      <label><span>教材費 (20 堂)</span><input type="number" id="renewTextbookFee" min="0" step="50"></label>
+      <label><span>學生人數</span><input type="number" id="renewStudentCount" min="0" step="1"></label>
+      <label class="full"><span>備註</span><input type="text" id="renewMemo"></label>
+    </div>
+    <div class="renew-preview" id="renewPreview"></div>
+    <div class="actions">
+      <button type="button" class="btn ghost" id="renewCancel">取消</button>
+      <button type="button" class="btn primary" id="renewConfirm">↻ 確認新增</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ====== Data Model ======
 const STORAGE_KEY = 'k12_fee_calendar_v1';
@@ -1768,25 +1836,81 @@ function nextBatchStartDate(cls) {
   last.setDate(last.getDate() + 7);
   return ymd(last);
 }
+let _renewSourceId = null;
 function renewClass(id) {
   const c = state.classes.find(x => x.id === id);
   if (!c) { alert('找不到班別'); return; }
-  const newName = nextBatchName(c.name);
-  const newStartDate = nextBatchStartDate(c);
-  const newId = c.id.replace(/_n\d+$/, '') + '_n' + Date.now();
+  _renewSourceId = id;
+  // 預先填好建議值
+  const suggestedName = nextBatchName(c.name);
+  const suggestedDate = nextBatchStartDate(c);
+  document.getElementById('renewSource').innerHTML =
+    `<strong>來源:</strong> ${escapeHtml(c.name)} ・ W${getWeekdayChar(c.weekday)} ${escapeHtml(c.time)} ・ 老師 ${escapeHtml(c.teacher)}`;
+  document.getElementById('renewName').value = suggestedName;
+  document.getElementById('renewStartDate').value = suggestedDate;
+  document.getElementById('renewPeriodCount').value = '1';
+  document.getElementById('renewWeekday').value = c.weekday;
+  document.getElementById('renewTime').value = c.time;
+  document.getElementById('renewTeacher').value = c.teacher;
+  document.getElementById('renewFee').value = c.fee || 0;
+  document.getElementById('renewTextbookFee').value = c.textbookFee || 0;
+  document.getElementById('renewStudentCount').value = c.studentCount || 0;
+  document.getElementById('renewMemo').value = '↻ 續班自 ' + c.name;
+  updateRenewPreview();
+  document.getElementById('renewModal').classList.add('show');
+}
+function updateRenewPreview() {
+  const src = state.classes.find(c => c.id === _renewSourceId);
+  if (!src) return;
   const newCls = {
-    ...c,
+    ...src,
+    weekday: parseInt(document.getElementById('renewWeekday').value),
+    startDate: document.getElementById('renewStartDate').value,
+    periodCount: parseInt(document.getElementById('renewPeriodCount').value),
+    time: document.getElementById('renewTime').value,
+  };
+  // 試算第 1 堂 + 最後一堂
+  const sch = expandClassSchedule(newCls);
+  const first = sch[0]?.date || '?';
+  const last = sch[sch.length - 1]?.date || '?';
+  const fee = parseInt(document.getElementById('renewFee').value) || 0;
+  const tb = parseInt(document.getElementById('renewTextbookFee').value) || 0;
+  const students = parseInt(document.getElementById('renewStudentCount').value) || 0;
+  const totalCount = sch.length;
+  const totalRev = (fee + tb) * students;
+  document.getElementById('renewPreview').innerHTML = `
+    <strong>預覽:</strong> 第 1 堂 ${first} ・ 最後一堂 ${last} ・ 共 ${totalCount} 堂
+    <br><strong>每期收入:</strong> ${students} 位 × (學費 $${fee.toLocaleString()} + 教材 $${tb.toLocaleString()}) = <span style="color: var(--warn); font-weight: 600;">NT$ ${totalRev.toLocaleString()}</span>
+  `;
+}
+function confirmRenew() {
+  const src = state.classes.find(c => c.id === _renewSourceId);
+  if (!src) { closeRenewModal(); return; }
+  const newId = src.id.replace(/_n\d+$/, '') + '_n' + Date.now();
+  const newCls = {
+    ...src,
     id: newId,
-    name: newName,
-    startDate: newStartDate,
-    periodCount: 1, // 續班新班預設 1 期 (10 堂)
-    memo: '↻ 續班自 ' + c.name
+    name: document.getElementById('renewName').value.trim() || src.name + ' (續)',
+    weekday: parseInt(document.getElementById('renewWeekday').value),
+    startDate: document.getElementById('renewStartDate').value,
+    periodCount: parseInt(document.getElementById('renewPeriodCount').value) || 1,
+    time: document.getElementById('renewTime').value.trim(),
+    teacher: document.getElementById('renewTeacher').value.trim(),
+    fee: parseInt(document.getElementById('renewFee').value) || 0,
+    textbookFee: parseInt(document.getElementById('renewTextbookFee').value) || 0,
+    studentCount: parseInt(document.getElementById('renewStudentCount').value) || 0,
+    memo: document.getElementById('renewMemo').value.trim()
   };
   state.classes.push(newCls);
   saveState();
   renderAll();
   autoSyncIfCloud('saveClasses');
-  setCloudMsg(`↻ 已新增續班「${newName}」開課日 ${newStartDate}`, 'ok');
+  setCloudMsg(`↻ 已新增續班「${newCls.name}」開課日 ${newCls.startDate}`, 'ok');
+  closeRenewModal();
+}
+function closeRenewModal() {
+  _renewSourceId = null;
+  document.getElementById('renewModal').classList.remove('show');
 }
 
 // For one class, generate full schedule based on periodLength * periodCount
@@ -3388,6 +3512,18 @@ document.getElementById('save-btn')?.addEventListener('click', async () => {
   if (r.ok) setCloudMsg('✓ 已儲存到雲端', 'ok');
 });
 // header 頂部「⬇ 從雲端拉 / ⬆ 全部推上去」按鈕 (任何 tab 都能按)
+// 續班 modal handlers
+document.getElementById('renewCancel')?.addEventListener('click', closeRenewModal);
+document.getElementById('renewConfirm')?.addEventListener('click', confirmRenew);
+['renewStartDate','renewPeriodCount','renewWeekday','renewTime','renewFee','renewTextbookFee','renewStudentCount'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', updateRenewPreview);
+  document.getElementById(id)?.addEventListener('change', updateRenewPreview);
+});
+// 點 modal 背景 (非 box) 關閉
+document.getElementById('renewModal')?.addEventListener('click', e => {
+  if (e.target.id === 'renewModal') closeRenewModal();
+});
+
 document.getElementById('cloud-fetch-top')?.addEventListener('click', async () => {
   setCloudMsg('⬇ 讀取中…', 'info');
   const ok = await fetchFromCloud(true);
