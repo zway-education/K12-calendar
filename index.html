@@ -466,10 +466,18 @@
   .month-card .m-evt.textbook .d { color: var(--accent); }
   .month-card .m-evt.textbook .cn { color: var(--accent); font-weight: 500; font-style: italic; }
   .month-card .m-evt.start .d { color: var(--ink); }
-  .month-card .m-evt.start .cn {
-    color: var(--ink); font-weight: 600;
+  .month-card .m-evt.start .cn { color: var(--ink); font-weight: 600; }
+  /* 開課黃色 highlighter 只套用在「當月」與「下個月」的開課事件 (近期將開課的提醒) */
+  .month-card .m-evt.start.is-near-month .cn {
     background-image: linear-gradient(to top, #ffe066 0%, #ffe066 28%, transparent 28%);
     padding: 0 2px;
+  }
+  /* 列表 view: 當週 row 黃色高亮 + 隱藏過去日期 */
+  #annual-table table tr.is-this-week-row td {
+    background-image: linear-gradient(to top, rgba(255, 224, 102, 0.5) 0%, rgba(255, 224, 102, 0.5) 100%);
+  }
+  #annual-table table tr.is-this-week-row td:first-child {
+    border-left: 3px solid var(--accent);
   }
   .month-card .m-evt.renewal .d { color: var(--renewal); }
   .month-card .m-evt.renewal .cn { color: var(--renewal); }
@@ -1579,7 +1587,9 @@ function renderAnnualGrid() {
         const isEdited = (ov && (ov.text != null || ov.note));
         const isThisWeek = (year === todayYear && m === todayMonth && wkNum === todayWeek);
         const isToday = (year === todayYear && m === todayMonth && day === _today.getDate());
-        html += `<div class="m-evt ${cls}${isEdited ? ' is-edited' : ''}${isThisWeek ? ' is-this-week' : ''}${isToday ? ' is-today' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}">
+        // 近期月份 (當月 + 下個月) → 開課事件套上 is-near-month, 黃色 highlighter 才會出現
+        const isNearMonth = (year === todayYear && (m === todayMonth || m === todayMonth + 1)) || (year === todayYear + 1 && todayMonth === 12 && m === 1);
+        html += `<div class="m-evt ${cls}${isEdited ? ' is-edited' : ''}${isThisWeek ? ' is-this-week' : ''}${isToday ? ' is-today' : ''}${isNearMonth && cls === 'start' ? ' is-near-month' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}">
           <span class="d">${String(day).padStart(2,'0')}・${wd}<small style="color:var(--ink-3);margin-left:3px;font-size:10px;">W${wkNum}</small></span>
           <span class="cn" contenteditable="true" spellcheck="false" data-edit-text="1" title="點擊直接編輯,Enter/點別處存,Esc 取消">${displayText}${noteText}</span>${isEdited ? `<span class="evt-revert" title="還原預設文字" data-revert-key="${ovKey}">↺</span>` : ''}
         </div>`;
@@ -1627,22 +1637,39 @@ function renderAnnualList() {
   }
   const year = parseInt(document.getElementById('year-picker').value);
   const classFilter = document.getElementById('filter-class').value;
-  const events = collectYearEvents(year, classFilter);
+  let events = collectYearEvents(year, classFilter);
+
+  // 今天 / 本週判斷
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().substring(0, 10);
+  const todayYear = today.getFullYear();
+  const todayMonth = today.getMonth() + 1;
+  const todayWeek = Math.ceil(today.getDate() / 7);
+
+  // 只顯示今天起 (含) 之後的事件, 由近到遠排
+  events = events.filter(e => e.date >= todayStr);
   events.sort((a, b) => a.date.localeCompare(b.date));
 
   if (events.length === 0) {
-    target.innerHTML = '<div class="empty">本年度無事件</div>';
+    target.innerHTML = '<div class="empty">本年度從今天起無事件 (過去事件已隱藏)</div>';
     return;
   }
 
-  let html = `<table>
+  let html = `<div style="padding: 6px 12px; font-size: 11px; color: var(--ink-3); letter-spacing: 0.3px;">由近到遠 ・ 過去事件已隱藏 ・ 共 ${events.length} 筆</div>`;
+  html += `<table>
     <thead><tr>
       <th>日期</th><th>週幾</th><th>班別</th><th>第 N 堂</th><th>期數</th><th>事件</th><th>金額/說明</th>
     </tr></thead><tbody>`;
 
   for (const e of events) {
-    const wd = getWeekdayChar(parseYmd(e.date).getDay());
-    let rowClass = '';
+    const d = parseYmd(e.date);
+    const wd = getWeekdayChar(d.getDay());
+    const eYear = d.getFullYear();
+    const eMonth = d.getMonth() + 1;
+    const eDay = d.getDate();
+    const eWeek = Math.ceil(eDay / 7);
+    const isThisWeek = (eYear === todayYear && eMonth === todayMonth && eWeek === todayWeek);
+    let rowClass = isThisWeek ? 'is-this-week-row' : '';
     let badge = '';
     let desc = '';
     if (e.type === 'period-start') {
@@ -1652,13 +1679,20 @@ function renderAnnualList() {
       badge = '<span class="badge renew">插班最終日</span>';
       desc = `第 ${state.rules.lastIntakeIndex} 堂,本期最後可插班`;
     } else if (e.type === 'intake-cutoff') {
-      rowClass = 'intake-cutoff';
+      rowClass = (rowClass + ' intake-cutoff').trim();
       badge = '<span class="badge cutoff">禁止插班</span>';
       desc = `第 ${state.rules.cutoffIndex} 堂起禁止插班`;
     } else if (e.type === 'fee-day') {
-      rowClass = 'fee-row';
-      badge = '<span class="badge fee">學費繳清日</span>';
-      desc = `第 ${e.period} 期學費 NT$${e.cls.fee.toLocaleString()}`;
+      rowClass = (rowClass + ' fee-row').trim();
+      const hasTextbook = e.isTextbookFeeDay && (e.cls.textbookFee || 0) > 0;
+      badge = `<span class="badge fee">學費繳清${hasTextbook ? ' (含教材)' : ''}</span>`;
+      const tuition = e.cls.fee;
+      const tb = hasTextbook ? e.cls.textbookFee : 0;
+      desc = `第 ${e.period} 期學費 NT$${tuition.toLocaleString()}${hasTextbook ? ' + 教材 NT$' + tb.toLocaleString() : ''}`;
+    } else if (e.type === 'renewal-day') {
+      rowClass = (rowClass + ' renewal-row').trim();
+      badge = '<span class="badge renew">續班週起</span>';
+      desc = `第 ${state.rules.renewalWeekStart || 8} 堂起續班通知`;
     }
     html += `<tr class="${rowClass}">
       <td>${e.date}</td>
