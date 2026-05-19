@@ -981,28 +981,34 @@ const EVT_FILTER_KEY = 'k12_fee_evt_filters_v1';
 
 const BASELINE_CLASSES = [
   // 班別 name 採用「開智 L1-下」「啟蒙 L2-上」這類短名 (依使用者偏好)
-  {id: 'jiazhi_l2_fri19', name: '啟蒙 L1-下', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 6, periodCount: 3, textbookFee: 600, memo: 'W五 19:00'},
-  {id: 'jiazhi_l1_sat10', name: '啟蒙 L2-上', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-13', fee: 3750, studentCount: 7, periodCount: 3, textbookFee: 600, memo: 'W六 10:00 ・ 小/中/大班混齡'},
-  {id: 'jiazhi_l1_sat11', name: '啟蒙 L1-下', weekday: 6, time: '11:00-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 5, periodCount: 3, textbookFee: 600, memo: 'W六 11:00'},
-  {id: 'kaizhi_l1_fri20', name: '開智 L2-上', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 10, periodCount: 3, textbookFee: 600, memo: 'W五 20:00'},
-  {id: 'kaizhi_l1_sat10', name: '開智 L2-上', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 14, periodCount: 3, textbookFee: 600, memo: 'W六 10:00'},
-  {id: 'kaizhi_l2_sat11', name: '開智 L2-上', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 7, periodCount: 3, textbookFee: 600, memo: 'W六 11:00'},
-  {id: 'zhiyou_l2_sat19', name: '智優 L1-下', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-06-20', fee: 3750, studentCount: 14, periodCount: 3, textbookFee: 600, memo: 'W六 19:00 ・ 90 分鐘'},
-  // 對照表未列 (保留通用名)
-  {id: 'kaizhi_l2_wed19', name: '開智 L2', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-04-15', fee: 3750, studentCount: 6, periodCount: 3, textbookFee: 600, memo: 'W三 ・ 對照表未列'},
-  {id: 'steam_l2_sat15', name: 'STEAM-R L2', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-04-11', fee: 3750, studentCount: 7, periodCount: 3, textbookFee: 600, memo: '對照表未列'},
+  // 啟蒙 即將開班 (新班 fee 4000)
+  {id: 'jiazhi_l2_fri19', name: '啟蒙 L1-下', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-05', fee: 4000, studentCount: 6, periodCount: 3, textbookFee: 2000, memo: 'W五 19:00 ・ 新班'},
+  {id: 'jiazhi_l1_sat10', name: '啟蒙 L2-上', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-13', fee: 4000, studentCount: 7, periodCount: 3, textbookFee: 2000, memo: 'W六 10:00 ・ 小/中/大班混齡 ・ 新班'},
+  {id: 'jiazhi_l1_sat11', name: '啟蒙 L1-下', weekday: 6, time: '11:00-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-06', fee: 4000, studentCount: 5, periodCount: 3, textbookFee: 2000, memo: 'W六 11:00 ・ 新班'},
+  // 開智 即將開班
+  {id: 'kaizhi_l1_fri20', name: '開智 L2-上', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-06-05', fee: 5000, studentCount: 10, periodCount: 3, textbookFee: 2000, memo: 'W五 20:00'},
+  {id: 'kaizhi_l1_sat10', name: '開智 L2-上', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 5000, studentCount: 14, periodCount: 3, textbookFee: 2000, memo: 'W六 10:00'},
+  {id: 'kaizhi_l2_sat11', name: '開智 L2-上', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 5000, studentCount: 7, periodCount: 3, textbookFee: 2000, memo: 'W六 11:00'},
+  // 智優 即將開班
+  {id: 'zhiyou_l2_sat19', name: '智優 L1-下', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-06-20', fee: 9000, studentCount: 14, periodCount: 3, textbookFee: 2000, memo: 'W六 19:00 ・ 90 分鐘'},
+  // 進行中 (原資料表未列, 保留通用名)
+  {id: 'kaizhi_l2_wed19', name: '開智 L2', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-04-15', fee: 5000, studentCount: 6, periodCount: 3, textbookFee: 2000, memo: 'W三'},
+  {id: 'steam_l2_sat15', name: 'STEAM-R L2', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-04-11', fee: 9500, studentCount: 7, periodCount: 3, textbookFee: 0, memo: ''},
   {id: 'parents_sun13', name: '家長班', weekday: 0, time: '13:00-17:00', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-22', fee: 3750, studentCount: 10, periodCount: 3, textbookFee: 600, memo: 'W日 4 小時 ・ 對照表未列'},
-  // 前 10 堂班別 (對應每個現有班的「上一期」) — startDate = 現有班 startDate − 70 天 (10 週), periodCount = 1
-  // 名稱規則: L#-下 → L#上-1, L#-上 → L(#-1)下-1, 無期 → 加 "-1" 後綴
-  {id: 'jiazhi_l2_fri19_prev', name: '啟蒙 L1上-1', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-03-27', fee: 3750, studentCount: 6, periodCount: 1, textbookFee: 600, memo: 'W五 19:00 ・ 前 10 堂'},
-  {id: 'jiazhi_l1_sat10_prev', name: '啟蒙 L1下-1', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-04-04', fee: 3750, studentCount: 7, periodCount: 1, textbookFee: 600, memo: 'W六 10:00 ・ 前 10 堂'},
-  {id: 'jiazhi_l1_sat11_prev', name: '啟蒙 L1上-1', weekday: 6, time: '11:00-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-03-28', fee: 3750, studentCount: 5, periodCount: 1, textbookFee: 600, memo: 'W六 11:00 ・ 前 10 堂'},
-  {id: 'kaizhi_l1_fri20_prev', name: '開智 L1下-1', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-27', fee: 3750, studentCount: 10, periodCount: 1, textbookFee: 600, memo: 'W五 20:00 ・ 前 10 堂'},
-  {id: 'kaizhi_l1_sat10_prev', name: '開智 L1下-1', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-03-28', fee: 3750, studentCount: 14, periodCount: 1, textbookFee: 600, memo: 'W六 10:00 ・ 前 10 堂'},
-  {id: 'kaizhi_l2_sat11_prev', name: '開智 L1下-1', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-03-28', fee: 3750, studentCount: 7, periodCount: 1, textbookFee: 600, memo: 'W六 11:00 ・ 前 10 堂'},
-  {id: 'zhiyou_l2_sat19_prev', name: '智優 L1上-1', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-04-11', fee: 3750, studentCount: 14, periodCount: 1, textbookFee: 600, memo: 'W六 19:00 ・ 90 分鐘 ・ 前 10 堂'},
-  {id: 'kaizhi_l2_wed19_prev', name: '開智 L2-1', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-02-04', fee: 3750, studentCount: 6, periodCount: 1, textbookFee: 600, memo: 'W三 ・ 前 10 堂'},
-  {id: 'steam_l2_sat15_prev', name: 'STEAM-R L2-1', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-01-31', fee: 3750, studentCount: 7, periodCount: 1, textbookFee: 600, memo: '前 10 堂'},
+  // 前 10 堂班別 (進行中) — startDate = 現有班 startDate − 70 天, periodCount = 1
+  // 啟蒙 進行中 (舊價 3750)
+  {id: 'jiazhi_l2_fri19_prev', name: '啟蒙 L1上-1', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-03-27', fee: 3750, studentCount: 6, periodCount: 1, textbookFee: 2000, memo: 'W五 19:00 ・ 前 10 堂 ・ 舊價'},
+  {id: 'jiazhi_l1_sat10_prev', name: '啟蒙 L1下-1', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-04-04', fee: 3750, studentCount: 7, periodCount: 1, textbookFee: 2000, memo: 'W六 10:00 ・ 前 10 堂 ・ 舊價'},
+  {id: 'jiazhi_l1_sat11_prev', name: '啟蒙 L1上-1', weekday: 6, time: '11:00-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-03-28', fee: 3750, studentCount: 5, periodCount: 1, textbookFee: 2000, memo: 'W六 11:00 ・ 前 10 堂 ・ 舊價'},
+  // 開智 進行中
+  {id: 'kaizhi_l1_fri20_prev', name: '開智 L1下-1', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-27', fee: 5000, studentCount: 10, periodCount: 1, textbookFee: 2000, memo: 'W五 20:00 ・ 前 10 堂'},
+  {id: 'kaizhi_l1_sat10_prev', name: '開智 L1下-1', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-03-28', fee: 5000, studentCount: 14, periodCount: 1, textbookFee: 2000, memo: 'W六 10:00 ・ 前 10 堂'},
+  {id: 'kaizhi_l2_sat11_prev', name: '開智 L1下-1', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-03-28', fee: 5000, studentCount: 7, periodCount: 1, textbookFee: 2000, memo: 'W六 11:00 ・ 前 10 堂'},
+  // 智優 進行中 (前 10 堂教材費 1000)
+  {id: 'zhiyou_l2_sat19_prev', name: '智優 L1上-1', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-04-11', fee: 9000, studentCount: 14, periodCount: 1, textbookFee: 1000, memo: 'W六 19:00 ・ 90 分鐘 ・ 前 10 堂 ・ 教材費減半'},
+  // 其他進行中 (前 10 堂)
+  {id: 'kaizhi_l2_wed19_prev', name: '開智 L2-1', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-02-04', fee: 5000, studentCount: 6, periodCount: 1, textbookFee: 2000, memo: 'W三 ・ 前 10 堂'},
+  {id: 'steam_l2_sat15_prev', name: 'STEAM-R L2-1', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-01-31', fee: 9500, studentCount: 7, periodCount: 1, textbookFee: 0, memo: '前 10 堂'},
   {id: 'parents_sun13_prev', name: '家長班-1', weekday: 0, time: '13:00-17:00', teacher: '李守蕾', campus: '高美館校', startDate: '2026-01-11', fee: 3750, studentCount: 10, periodCount: 1, textbookFee: 600, memo: 'W日 4 小時 ・ 前 10 堂'},
 ];
 
@@ -1054,6 +1060,20 @@ function loadState() {
       c.textbookFee = baseline?.textbookFee ?? 0;
       migrated = true;
     }
+  }
+  // 遷移: 更新費率到最新 BASELINE (一次性, 用 version key 防止重跑)
+  // 2026-05: 啟蒙新班 3750→4000 / 開智 →5000 / 智優 →9000 / STEAM-R →9500 / 教材費 600→2000 (智優前期 1000, STEAM-R 0)
+  const PRICING_MIGRATION_KEY = 'k12_fee_pricing_migrated_v2';
+  if (!localStorage.getItem(PRICING_MIGRATION_KEY)) {
+    for (const c of state.classes) {
+      const baseline = BASELINE_CLASSES.find(b => b.id === c.id);
+      if (baseline) {
+        c.fee = baseline.fee;
+        c.textbookFee = baseline.textbookFee;
+        migrated = true;
+      }
+    }
+    localStorage.setItem(PRICING_MIGRATION_KEY, new Date().toISOString());
   }
   // 遷移: 加入「前 10 堂」班別 (對應每個現有 baseline 班的 _prev 版本)
   // 只在使用者尚未自行刪除 prev 班時補進來 (用 id 結尾 _prev 判斷)
