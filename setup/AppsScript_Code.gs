@@ -17,17 +17,21 @@ const CLASS_HEADERS = ['id','name','weekday','time','teacher','campus','startDat
 const RULE_HEADERS  = ['periodLength','feeDayIndex','renewalDayIndex','lastIntakeIndex','cutoffIndex'];
 
 // ==================== READ (doGet) ====================
+// 支援 JSONP: 若帶 ?callback=foo 則回傳 foo({...}) 包裝, 讓 <script> tag 可載入 (繞過 CORS)
 function doGet(e) {
+  const callback = (e && e.parameter && e.parameter.callback) ? e.parameter.callback : null;
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    return jsonResponse({
+    const data = {
       classes:   readClasses(ss),
       holidays:  readHolidays(ss),
       rules:     readRules(ss),
       fetchedAt: new Date().toISOString(),
-    });
+    };
+    return callback ? jsonpResponse(callback, data) : jsonResponse(data);
   } catch (err) {
-    return jsonResponse({ error: String(err), stack: err.stack });
+    const errData = { error: String(err), stack: err.stack };
+    return callback ? jsonpResponse(callback, errData) : jsonResponse(errData);
   }
 }
 
@@ -158,6 +162,13 @@ function jsonResponse(data) {
   return ContentService
     .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// JSONP 包裝: 給 <script> tag 用, 繞過 CORS
+function jsonpResponse(callback, data) {
+  return ContentService
+    .createTextOutput(callback + '(' + JSON.stringify(data) + ')')
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
 }
 
 // ==================== 測試 (在 Apps Script 編輯器執行) ====================

@@ -939,14 +939,44 @@ function loadState() {
   if (migrated) saveState();
 }
 
+// JSONP loader: 用 <script> tag 載入 (繞過 CORS, 適用教育版組織內限定 URL)
+function fetchViaJSONP(url, timeoutMs = 15000) {
+  return new Promise((resolve, reject) => {
+    const cbName = '__jsonpCB_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('連線逾時 (' + timeoutMs/1000 + ' 秒)'));
+    }, timeoutMs);
+    function cleanup() {
+      clearTimeout(timer);
+      try { delete window[cbName]; } catch(e) { window[cbName] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = (data) => { cleanup(); resolve(data); };
+    script.onerror = () => { cleanup(); reject(new Error('Script 載入失敗 (可能未登入 z-way-edu.com 帳號)')); };
+    const sep = url.includes('?') ? '&' : '?';
+    script.src = url + sep + 'callback=' + cbName;
+    document.head.appendChild(script);
+  });
+}
+
 async function fetchFromCloud(showMsg = true) {
   const url = localStorage.getItem(CLOUD_URL_KEY);
   if (!url) return false;
+  const isOrgUrl = url.includes('/a/macros/');
   try {
-    if (showMsg) setCloudMsg('讀取中…', 'info');
-    const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
+    if (showMsg) setCloudMsg(isOrgUrl ? '讀取中 (JSONP 模式)…' : '讀取中…', 'info');
+    let data;
+    if (isOrgUrl) {
+      // 教育版/組織版限定 URL: 用 JSONP 繞過 CORS
+      data = await fetchViaJSONP(url);
+    } else {
+      // 一般部署: fetch 即可
+      const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      data = await resp.json();
+    }
     if (data.error) throw new Error(data.error);
     if (Array.isArray(data.classes) && data.classes.length > 0) state.classes = data.classes;
     if (Array.isArray(data.holidays)) state.holidays = data.holidays;
@@ -957,7 +987,7 @@ async function fetchFromCloud(showMsg = true) {
     updateCloudStatusBar();
     return true;
   } catch (err) {
-    if (showMsg) setCloudMsg('✗ 讀取失敗:' + err.message + ' (CORS / 部署設定 / 網址錯誤都可能)', 'err');
+    if (showMsg) setCloudMsg('✗ 讀取失敗:' + err.message, 'err');
     return false;
   }
 }
@@ -1848,12 +1878,17 @@ document.getElementById('cloud-save').addEventListener('click', () => {
 document.getElementById('cloud-test').addEventListener('click', async () => {
   const url = document.getElementById('cloud-url').value.trim() || localStorage.getItem(CLOUD_URL_KEY);
   if (!url) { setCloudMsg('請先貼上網址', 'err'); return; }
-  setCloudMsg('測試中…', 'info');
+  const isOrgUrl = url.includes('/a/macros/');
+  setCloudMsg(isOrgUrl ? '測試中 (JSONP 模式)…' : '測試中…', 'info');
   try {
-    const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
-    const text = await resp.text();
     let data;
-    try { data = JSON.parse(text); } catch { throw new Error('回應不是 JSON: ' + text.substring(0, 100)); }
+    if (isOrgUrl) {
+      data = await fetchViaJSONP(url);
+    } else {
+      const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
+      const text = await resp.text();
+      try { data = JSON.parse(text); } catch { throw new Error('回應不是 JSON: ' + text.substring(0, 100)); }
+    }
     if (data.error) throw new Error(data.error);
     const cnt = (data.classes || []).length;
     const hcnt = (data.holidays || []).length;
