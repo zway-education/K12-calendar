@@ -466,7 +466,11 @@
   .month-card .m-evt.textbook .d { color: var(--accent); }
   .month-card .m-evt.textbook .cn { color: var(--accent); font-weight: 500; font-style: italic; }
   .month-card .m-evt.start .d { color: var(--ink); }
-  .month-card .m-evt.start .cn { color: var(--ink); font-weight: 600; }
+  .month-card .m-evt.start .cn {
+    color: var(--ink); font-weight: 600;
+    background-image: linear-gradient(to top, #ffe066 0%, #ffe066 28%, transparent 28%);
+    padding: 0 2px;
+  }
   .month-card .m-evt.renewal .d { color: var(--renewal); }
   .month-card .m-evt.renewal .cn { color: var(--renewal); }
   .month-card .m-evt.class-evt .d { color: var(--ink-3); font-size: 9.5px; }
