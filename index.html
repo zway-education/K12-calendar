@@ -1148,9 +1148,8 @@ function generateClassDates(startDate, weekday, count, holidays) {
 function expandClassSchedule(cls, periodCountOverride) {
   const P = state.rules.periodLength || 10;
   const FEE = state.rules.feeDayIndex || 1;
-  // 續班週: 該期第 8-10 堂 (= 該期最後 3 堂)
-  const REN_START = state.rules.renewalWeekStart || (P - 2);  // 預設第 8 堂
-  const REN_END = state.rules.renewalWeekEnd || P;           // 預設第 10 堂
+  const REN_START = state.rules.renewalWeekStart || (P - 2);  // 第 8 堂
+  const REN_END = state.rules.renewalWeekEnd || P;           // 第 10 堂
   const CUT = state.rules.cutoffIndex || 4;
   const LAST = state.rules.lastIntakeIndex || 3;
   const periodCount = periodCountOverride || cls.periodCount || 4;
@@ -1159,15 +1158,24 @@ function expandClassSchedule(cls, periodCountOverride) {
     const idx = i + 1;
     const period = Math.floor(i / P) + 1;
     const idxInPeriod = (i % P) + 1;
-    const isRenewal = idxInPeriod >= REN_START && idxInPeriod <= REN_END;
+    // 續班週只在「第一堂」(REN_START) 標一次, 並附整個續班週的結束日期
+    const isRenewalStart = idxInPeriod === REN_START;
+    let renewalEndDate = null;
+    let renewalSpanDays = 0;
+    if (isRenewalStart) {
+      const endOffset = REN_END - REN_START;
+      renewalEndDate = allDates[i + endOffset] || null;
+      renewalSpanDays = endOffset + 1;
+    }
     return {
       idx,
       date,
       period,
       idxInPeriod,
       isPeriodStart: idxInPeriod === 1,
-      isRenewalDay: isRenewal,           // 續班週 (3 堂連續)
-      renewalDayOfWeek: isRenewal ? (idxInPeriod - REN_START + 1) : 0, // 續班週第幾天 (1-3)
+      isRenewalDay: isRenewalStart,
+      renewalEndDate,
+      renewalSpanDays,
       isFeeDay: idxInPeriod === FEE,
       isIntakeCutoff: idxInPeriod === CUT,
       isLastIntake: idxInPeriod === LAST,
@@ -1348,7 +1356,7 @@ function renderAnnualGrid() {
       const grouped = {};
       for (const e of otherEvents) {
         const k = e.date + '__' + e.type;
-        if (!grouped[k]) grouped[k] = { date: e.date, type: e.type, events: [], renewalDayOfWeek: e.renewalDayOfWeek };
+        if (!grouped[k]) grouped[k] = { date: e.date, type: e.type, events: [] };
         grouped[k].events.push(e);
       }
       const groupKeys = Object.keys(grouped).sort();
@@ -1365,11 +1373,12 @@ function renderAnnualGrid() {
           txt = count > 1 ? `開課 ×${count}: ${classNames}` : `${classNames} 開課`;
         } else if (g.type === 'renewal-day') {
           cls = 'renewal';
-          const dw = g.renewalDayOfWeek || 1;
-          const totalDays = (state.rules.renewalWeekEnd || 10) - (state.rules.renewalWeekStart || 8) + 1;
+          // 顯示「續班週 (X/Y-X/Z)」, 跨日範圍
+          const endDate = g.events[0].renewalEndDate;
+          const rangeStr = endDate ? ` ${fmtShort(g.date)} ~ ${fmtShort(endDate)}` : '';
           txt = count > 1
-            ? `續班週(${dw}/${totalDays}) ×${count}: ${classNames}`
-            : `${classNames} 續班週 (${dw}/${totalDays})`;
+            ? `續班週${rangeStr} ×${count}: ${classNames}`
+            : `${classNames} 續班週${rangeStr}`;
         } else if (g.type === 'fee-day') {
           cls = 'fee';
           const total = g.events.reduce((sum, e) => sum + (e.cls.fee || 0) * (e.cls.studentCount || 0), 0);
