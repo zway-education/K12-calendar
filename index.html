@@ -474,7 +474,7 @@
     display: inline-flex; align-items: center; gap: 4px;
     padding: 2px 7px;
     border: 1px solid currentColor;
-    border-radius: 4px;
+    border-radius: 999px;
     font-size: 10.5px; line-height: 1.5;
     background: var(--bg);
     font-size: 11px; letter-spacing: 0.3px;
@@ -482,6 +482,27 @@
   .hw-chip strong { font-weight: 600; }
   .hw-chip .range { color: var(--ink-2); font-feature-settings: "tnum"; }
   .hw-chip .countdown { color: var(--ink-3); font-size: 10px; margin-left: 4px; }
+  /* 收闔模式: summary 顯示 日期區間 + 倒數, 隱藏日期 input/refresh/del */
+  .hw-chip .hw-summary {
+    font-feature-settings: "tnum";
+    font-size: 10.5px;
+    color: currentColor;
+    opacity: 0.9;
+    cursor: pointer;
+    padding: 0 2px;
+  }
+  .hw-chip .hw-summary:hover { text-decoration: underline; }
+  .hw-chip .hw-toggle {
+    background: transparent; border: none; color: currentColor;
+    cursor: pointer; padding: 0 3px; font-size: 11px; opacity: 0.7;
+    line-height: 1;
+  }
+  .hw-chip .hw-toggle:hover { opacity: 1; }
+  /* 收闔狀態: 隱藏 edit area */
+  .hw-chip:not(.expanded) .hw-edit-area { display: none; }
+  /* 展開狀態: 隱藏 summary, 顯示 edit area */
+  .hw-chip.expanded .hw-summary { display: none; }
+  .hw-chip.expanded .hw-edit-area { display: inline-flex; align-items: center; gap: 4px; }
   .hw-add { color: var(--ink-3); font-size: 10px; padding: 3px 8px; background: transparent; border: 1px dashed var(--line); cursor: pointer; }
   .hw-add:hover { border-color: var(--ink-2); color: var(--ink-2); }
   /* + 加重點週 下拉選種類 */
@@ -2478,14 +2499,21 @@ function renderHighlightWeeks() {
     } else {
       countdown = '(已過)';
     }
-    return `<span class="hw-chip" data-hw-idx="${i}" style="color:${w.color}">
+    // 收闔狀態用 dataset 控, 預設收闔
+    const expanded = window.__hwExpanded && window.__hwExpanded[i] ? 'expanded' : '';
+    const shortDates = `${fmtShort(w.start)}–${fmtShort(w.end)}`;
+    return `<span class="hw-chip ${expanded}" data-hw-idx="${i}" style="color:${w.color}">
       <strong contenteditable="true" spellcheck="false" data-hw-field="label" data-hw-idx="${i}" title="點擊改名">${escapeHtml(w.label)}</strong>
-      <button class="hw-refresh" data-hw-idx="${i}" title="🎯 依名稱自動算下次日期 (收費/插班/開課/續班)">🎯</button>
-      <input type="date" class="hw-date" data-hw-field="start" data-hw-idx="${i}" value="${w.start}" title="開始日">
-      -
-      <input type="date" class="hw-date" data-hw-field="end" data-hw-idx="${i}" value="${w.end}" title="結束日">
+      <span class="hw-summary" data-hw-toggle="${i}" title="點擊展開編輯日期">${shortDates}</span>
       <span class="countdown">${countdown}</span>
-      <button class="hw-del" data-hw-idx="${i}" title="刪除這個">×</button>
+      <button class="hw-toggle" data-hw-toggle="${i}" title="展開/收闔">${expanded ? '▾' : '▸'}</button>
+      <span class="hw-edit-area">
+        <button class="hw-refresh" data-hw-idx="${i}" title="🎯 依名稱自動算下次日期">🎯</button>
+        <input type="date" class="hw-date" data-hw-field="start" data-hw-idx="${i}" value="${w.start}" title="開始日">
+        -
+        <input type="date" class="hw-date" data-hw-field="end" data-hw-idx="${i}" value="${w.end}" title="結束日">
+        <button class="hw-del" data-hw-idx="${i}" title="刪除這個">×</button>
+      </span>
     </span>`;
   }).join('');
   // + 按鈕改為下拉, 顯示種類選單
@@ -2887,6 +2915,15 @@ document.getElementById('highlight-weeks').addEventListener('click', e => {
   if (e.target.id === 'hw-add-btn') {
     e.stopPropagation();
     document.getElementById('hw-add-menu')?.classList.toggle('open');
+    return;
+  }
+  // ▸/▾ 收闔切換 (或點 summary 文字也切換)
+  const toggle = e.target.closest('[data-hw-toggle]');
+  if (toggle) {
+    const idx = parseInt(toggle.dataset.hwToggle);
+    if (!window.__hwExpanded) window.__hwExpanded = {};
+    window.__hwExpanded[idx] = !window.__hwExpanded[idx];
+    renderHighlightWeeks();
     return;
   }
   // 點種類 → 自動算日期加 chip
