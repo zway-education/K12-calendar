@@ -550,6 +550,24 @@
     font-feature-settings: "tnum";
   }
   .month-card .m-events { flex: 1; overflow: hidden; min-height: 0; }
+  /* 月格內: 上半月 (1-15) / 下半月 (16-31) 分隔線 + label */
+  .month-card .m-half-divider {
+    border-top: 1px dashed var(--ink-3);
+    opacity: 0.45;
+    margin: 6px -8px 2px;
+    height: 0;
+  }
+  .month-card .m-half-label {
+    font-size: 9px;
+    color: var(--ink-3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 1px 0 3px;
+    font-weight: 500;
+  }
+  .month-card .m-half-label.m-half-label-h2-only {
+    margin-top: 0;
+  }
   .month-card .m-evt {
     display: flex;
     gap: 10px;
@@ -1924,11 +1942,33 @@ function renderAnnualGrid() {
         grouped[k].events.push(e);
       }
       const groupKeys = Object.keys(grouped).sort();
+      let prevHalf = 0; // 0=未開始, 1=上半月 (1-15), 2=下半月 (16-31)
+      let h1Count = 0, h2Count = 0;
+      // 預統計上下半月各幾筆 (decide 是否顯示 label)
+      for (const gk of groupKeys) {
+        const d = parseInt(grouped[gk].date.split('-')[2]);
+        if (d <= 15) h1Count++; else h2Count++;
+      }
       for (const gk of groupKeys) {
         const g = grouped[gk];
         const day = parseInt(g.date.split('-')[2]);
         const wd = getWeekdayChar(parseYmd(g.date).getDay());
         const wkNum = isoWeekOfYmd(g.date);
+        const curHalf = day <= 15 ? 1 : 2;
+        // 切到下半月時, 插入分隔線
+        if (curHalf !== prevHalf) {
+          if (prevHalf === 0 && curHalf === 1 && h1Count > 0 && h2Count > 0) {
+            // 月初, 有上下半月 → 顯示 H1 label
+            html += `<div class="m-half-label">上半月 (1-15)</div>`;
+          } else if (curHalf === 2 && prevHalf === 1) {
+            // 跨到下半月: 畫分隔線 + label
+            html += `<div class="m-half-divider"></div><div class="m-half-label">下半月 (16-31)</div>`;
+          } else if (prevHalf === 0 && curHalf === 2 && h2Count > 0) {
+            // 月初沒有上半月事件, 直接到下半月
+            html += `<div class="m-half-label m-half-label-h2-only">下半月 (16-31)</div>`;
+          }
+          prevHalf = curHalf;
+        }
         const count = g.events.length;
         const classNames = g.events.map(e => escapeHtml(e.cls.name)).join('、');
         let cls = '', txt = '';
