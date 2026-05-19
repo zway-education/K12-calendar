@@ -2087,6 +2087,7 @@ function addHighlightWeekByType(typeKey) {
   state.highlightWeeks.push({ label: t.label, start: dates.start, end: dates.end, color: t.color });
   saveState();
   renderHighlightWeeks();
+  autoSyncIfCloud('saveHighlights');
 }
 
 // 根據 chip label 推測類型, 重算日期 (🎯 按鈕)
@@ -2104,6 +2105,7 @@ function refreshHighlightWeekDates(idx) {
   w.end = dates.end;
   saveState();
   renderHighlightWeeks();
+  autoSyncIfCloud('saveHighlights');
 }
 
 function renderHighlightWeeks() {
@@ -2141,17 +2143,20 @@ function addHighlightWeek() {
   state.highlightWeeks.push({ label: '新週', start: '2026-01-01', end: '2026-01-07', color: '#888' });
   saveState();
   renderHighlightWeeks();
+  autoSyncIfCloud('saveHighlights');
 }
 function deleteHighlightWeek(i) {
   state.highlightWeeks.splice(i, 1);
   saveState();
   renderHighlightWeeks();
+  autoSyncIfCloud('saveHighlights');
 }
 function updateHighlightWeek(i, field, value) {
   if (!state.highlightWeeks[i]) return;
   state.highlightWeeks[i][field] = value;
   saveState();
   renderHighlightWeeks();
+  autoSyncIfCloud('saveHighlights');
 }
 
 function renderAnnual() {
