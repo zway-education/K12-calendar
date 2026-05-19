@@ -371,6 +371,30 @@
   .hw-chip .countdown { color: var(--ink-3); font-size: 10px; margin-left: 4px; }
   .hw-add { color: var(--ink-3); font-size: 10px; padding: 3px 8px; background: transparent; border: 1px dashed var(--line); cursor: pointer; }
   .hw-add:hover { border-color: var(--ink-2); color: var(--ink-2); }
+  /* + 加重點週 下拉選種類 */
+  .hw-add-wrap { position: relative; display: inline-block; }
+  .hw-add-menu {
+    position: absolute; top: 100%; left: 0; margin-top: 4px;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: 4px 0; min-width: 140px;
+    box-shadow: 0 6px 18px rgba(13, 46, 79, 0.12);
+    z-index: 30; display: none;
+  }
+  .hw-add-wrap .hw-add-menu.open { display: block; }
+  .hw-add-menu-item {
+    display: block; width: 100%; text-align: left;
+    background: transparent; border: none;
+    padding: 6px 14px; font-size: 12px; cursor: pointer;
+    font-family: inherit; letter-spacing: 0.3px;
+  }
+  .hw-add-menu-item:hover { background: var(--bg-2); }
+  /* 🎯 智能算日期按鈕 */
+  .hw-chip .hw-refresh {
+    background: transparent; border: none; cursor: pointer;
+    font-size: 11px; padding: 0 3px; line-height: 1; opacity: 0.55;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .hw-chip .hw-refresh:hover { opacity: 1; transform: scale(1.15); }
   .hw-chip strong[contenteditable="true"] {
     outline: none;
     cursor: text;
@@ -826,7 +850,15 @@
         <button class="nav-btn" data-nav-target="year-picker" data-nav-dir="1" title="下一年 (→)">▶</button>
       </span>
     </label>
-    <label>篩選班別：
+    <label>狀態：
+      <select id="filter-status">
+        <option value="all">全部</option>
+        <option value="ongoing">進行中</option>
+        <option value="upcoming">即將開班</option>
+        <option value="ended">已結束</option>
+      </select>
+    </label>
+    <label>班別：
       <select id="filter-class"><option value="all">全部班別</option></select>
     </label>
     <span class="view-toggle">
@@ -1461,14 +1493,16 @@ function renderClasses() {
 }
 
 function collectYearEvents(year, classFilter) {
-  let classes;
-  if (classFilter === 'all') {
-    classes = state.classes;
-  } else if (classFilter && classFilter.startsWith('status:')) {
-    const status = classFilter.slice(7);
-    classes = state.classes.filter(c => getClassStatus(c) === status);
-  } else {
-    classes = state.classes.filter(c => c.id === classFilter);
+  // classFilter 為 'all' 或 個別 class id
+  // 狀態 filter 另外從 #filter-status 讀, 再做交集
+  const statusSel = document.getElementById('filter-status');
+  const statusFilter = statusSel ? statusSel.value : 'all';
+  let classes = state.classes;
+  if (statusFilter !== 'all') {
+    classes = classes.filter(c => getClassStatus(c) === statusFilter);
+  }
+  if (classFilter !== 'all') {
+    classes = classes.filter(c => c.id === classFilter);
   }
   const events = [];
   for (const cls of classes) {
@@ -1713,13 +1747,31 @@ function renderAnnualList() {
     return;
   }
 
-  let html = `<div style="padding: 6px 12px; font-size: 11px; color: var(--ink-3); letter-spacing: 0.3px;">由近到遠 ・ 過去事件已隱藏 ・ 共 ${events.length} 筆</div>`;
+  // 套用事件類型篩選 (與方格 view 一致)
+  const F = state.eventFilters;
+  const typeToFilter = {
+    'period-start': 'start',
+    'regular-class': 'class',
+    'renewal-day': 'renewal',
+    'fee-day': 'fee',
+  };
+  const filteredByType = events.filter(e => {
+    const k = typeToFilter[e.type];
+    if (!k) return true; // last-intake / intake-cutoff 等不在 toggle 內, 永遠顯示
+    return F[k];
+  });
+
+  let html = `<div style="padding: 6px 12px; font-size: 11px; color: var(--ink-3); letter-spacing: 0.3px;">由近到遠 ・ 過去事件已隱藏 ・ 共 ${filteredByType.length} 筆 (含篩選後)</div>`;
+  if (filteredByType.length === 0) {
+    target.innerHTML = html + '<div class="empty">本年度從今天起無事件 (檢查上方事件類型勾選)</div>';
+    return;
+  }
   html += `<table>
     <thead><tr>
       <th>日期</th><th>週幾</th><th>班別</th><th>第 N 堂</th><th>期數</th><th>事件</th><th>金額/說明</th>
     </tr></thead><tbody>`;
 
-  for (const e of events) {
+  for (const e of filteredByType) {
     const d = parseYmd(e.date);
     const wd = getWeekdayChar(d.getDay());
     const eYear = d.getFullYear();
@@ -1766,6 +1818,114 @@ function renderAnnualList() {
   target.innerHTML = html;
 }
 
+// 重點週「類型」: 點 + 開啟下拉選此類型, 自動算下次出現的日期範圍
+const HIGHLIGHT_TYPES = [
+  { key: 'fee',     label: '收費週', color: '#ff6d00' },
+  { key: 'intake',  label: '插班週', color: '#1976d2' },
+  { key: 'start',   label: '開課週', color: '#0d47a1' },
+  { key: 'renewal', label: '續班週', color: '#5b8db5' },
+  { key: 'custom',  label: '自訂',   color: '#888888' },
+];
+
+// 從現有班別計算下一次「收費週/插班週/開課週/續班週」的日期範圍 (yyyy-mm-dd)
+function suggestHighlightDates(typeKey) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().substring(0, 10);
+  const allClasses = state.classes.filter(c => getClassStatus(c) !== 'ended');
+  const addDays = (ymd, days) => {
+    const d = parseYmd(ymd); d.setDate(d.getDate() + days);
+    return d.toISOString().substring(0, 10);
+  };
+  if (typeKey === 'fee') {
+    // 找最早未來的 學費繳清日, 範圍 = [該日 -7 天, 該日]
+    let earliest = null;
+    for (const cls of allClasses) {
+      const sch = expandClassSchedule(cls);
+      for (const s of sch) {
+        if (s.isFeeDay && s.date >= todayStr) { if (!earliest || s.date < earliest) earliest = s.date; break; }
+      }
+    }
+    if (!earliest) return null;
+    return { start: addDays(earliest, -7), end: earliest };
+  }
+  if (typeKey === 'intake') {
+    // 找最早未來的 第 1 堂, 範圍 = [第 1 堂, 第 3 堂] (插班最終日前)
+    let best = null;
+    for (const cls of allClasses) {
+      const sch = expandClassSchedule(cls);
+      for (const s of sch) {
+        if (s.isPeriodStart && s.date >= todayStr) {
+          const lastIntakeIdx = state.rules.lastIntakeIndex || 3;
+          const endSch = sch[s.idx - 1 + (lastIntakeIdx - 1)];
+          const end = endSch ? endSch.date : s.date;
+          if (!best || s.date < best.start) best = { start: s.date, end };
+          break;
+        }
+      }
+    }
+    return best;
+  }
+  if (typeKey === 'start') {
+    // 開課週 = 第 1 堂 ± 3 天
+    let earliest = null;
+    for (const cls of allClasses) {
+      const sch = expandClassSchedule(cls);
+      for (const s of sch) {
+        if (s.isPeriodStart && s.date >= todayStr) { if (!earliest || s.date < earliest) earliest = s.date; break; }
+      }
+    }
+    if (!earliest) return null;
+    return { start: addDays(earliest, -3), end: addDays(earliest, 3) };
+  }
+  if (typeKey === 'renewal') {
+    // 續班週 = 第 8-10 堂 (renewalEndDate 已算好)
+    let best = null;
+    for (const cls of allClasses) {
+      const sch = expandClassSchedule(cls);
+      for (const s of sch) {
+        if (s.isRenewalDay && s.date >= todayStr) {
+          const end = s.renewalEndDate || s.date;
+          if (!best || s.date < best.start) best = { start: s.date, end };
+          break;
+        }
+      }
+    }
+    return best;
+  }
+  // custom: 一週區間預設
+  return { start: todayStr, end: addDays(todayStr, 7) };
+}
+
+function addHighlightWeekByType(typeKey) {
+  const t = HIGHLIGHT_TYPES.find(x => x.key === typeKey);
+  if (!t) return;
+  let dates = suggestHighlightDates(typeKey);
+  if (!dates) {
+    const today = new Date().toISOString().substring(0, 10);
+    dates = { start: today, end: today };
+  }
+  state.highlightWeeks.push({ label: t.label, start: dates.start, end: dates.end, color: t.color });
+  saveState();
+  renderHighlightWeeks();
+}
+
+// 根據 chip label 推測類型, 重算日期 (🎯 按鈕)
+function refreshHighlightWeekDates(idx) {
+  const w = state.highlightWeeks[idx];
+  if (!w) return;
+  let typeKey = 'custom';
+  if (w.label.includes('收費')) typeKey = 'fee';
+  else if (w.label.includes('插班')) typeKey = 'intake';
+  else if (w.label.includes('開課')) typeKey = 'start';
+  else if (w.label.includes('續班')) typeKey = 'renewal';
+  const dates = suggestHighlightDates(typeKey);
+  if (!dates) { alert('找不到對應的未來事件 (可能所有班別都已結束?)'); return; }
+  w.start = dates.start;
+  w.end = dates.end;
+  saveState();
+  renderHighlightWeeks();
+}
+
 function renderHighlightWeeks() {
   const target = document.getElementById('highlight-weeks');
   if (!target) return;
@@ -1784,6 +1944,7 @@ function renderHighlightWeeks() {
     }
     return `<span class="hw-chip" data-hw-idx="${i}" style="color:${w.color}">
       <strong contenteditable="true" spellcheck="false" data-hw-field="label" data-hw-idx="${i}" title="點擊改名">${escapeHtml(w.label)}</strong>
+      <button class="hw-refresh" data-hw-idx="${i}" title="🎯 依名稱自動算下次日期 (收費/插班/開課/續班)">🎯</button>
       <input type="date" class="hw-date" data-hw-field="start" data-hw-idx="${i}" value="${w.start}" title="開始日">
       -
       <input type="date" class="hw-date" data-hw-field="end" data-hw-idx="${i}" value="${w.end}" title="結束日">
@@ -1791,7 +1952,9 @@ function renderHighlightWeeks() {
       <button class="hw-del" data-hw-idx="${i}" title="刪除這個">×</button>
     </span>`;
   }).join('');
-  target.innerHTML = `<div class="hw-banner">${chips}<button class="hw-add" id="hw-add-btn">＋ 加重點週</button></div>`;
+  // + 按鈕改為下拉, 顯示種類選單
+  const addMenu = HIGHLIGHT_TYPES.map(t => `<button class="hw-add-menu-item" data-hw-type="${t.key}" style="color:${t.color}">${t.label}</button>`).join('');
+  target.innerHTML = `<div class="hw-banner">${chips}<div class="hw-add-wrap"><button class="hw-add" id="hw-add-btn" title="加重點週 (選種類, 自動算日期)">＋ 加重點週</button><div class="hw-add-menu" id="hw-add-menu">${addMenu}</div></div></div>`;
 }
 
 function addHighlightWeek() {
@@ -2024,24 +2187,48 @@ function renderRules() {
 }
 
 function renderFilters() {
-  const sel = document.getElementById('filter-class');
-  const cur = sel.value;
-  // 依狀態分組顯示班別 (進行中/即將開班/已結束)
+  // 兩層篩選: 狀態 → 班別 (班別下拉依狀態動態縮減)
+  const statusSel = document.getElementById('filter-status');
+  const classSel = document.getElementById('filter-class');
+  const curStatus = statusSel ? statusSel.value : 'all';
+  const curClass = classSel ? classSel.value : 'all';
+
+  // 依狀態分組
   const groups = { ongoing: [], upcoming: [], ended: [] };
   for (const c of state.classes) groups[getClassStatus(c)].push(c);
   const sortByTime = (a, b) => a.weekday !== b.weekday ? a.weekday - b.weekday : a.time.localeCompare(b.time);
   groups.ongoing.sort(sortByTime);
   groups.upcoming.sort(sortByTime);
   groups.ended.sort((a, b) => b.startDate.localeCompare(a.startDate));
+
+  // 班別下拉依當前狀態縮減
+  const filteredClasses = curStatus === 'all'
+    ? [...groups.ongoing, ...groups.upcoming, ...groups.ended]
+    : groups[curStatus] || [];
   const optHtml = c => `<option value="${c.id}">${escapeHtml(c.name)} W${getWeekdayChar(c.weekday)} ${escapeHtml(c.time)}</option>`;
-  sel.innerHTML =
-    '<option value="all">全部班別</option>' +
-    '<option value="status:ongoing">— 全部進行中 (' + groups.ongoing.length + ') —</option>' +
-    '<option value="status:upcoming">— 全部即將開班 (' + groups.upcoming.length + ') —</option>' +
-    (groups.ongoing.length ? `<optgroup label="進行中">${groups.ongoing.map(optHtml).join('')}</optgroup>` : '') +
-    (groups.upcoming.length ? `<optgroup label="即將開班">${groups.upcoming.map(optHtml).join('')}</optgroup>` : '') +
-    (groups.ended.length ? `<optgroup label="已結束">${groups.ended.map(optHtml).join('')}</optgroup>` : '');
-  if (cur && [...sel.options].some(o => o.value === cur)) sel.value = cur;
+  // 若狀態 = all, 班別仍分組顯示 (optgroup); 否則平鋪
+  let classHtml = '<option value="all">全部班別 (' + filteredClasses.length + ')</option>';
+  if (curStatus === 'all') {
+    if (groups.ongoing.length) classHtml += `<optgroup label="進行中 (${groups.ongoing.length})">${groups.ongoing.map(optHtml).join('')}</optgroup>`;
+    if (groups.upcoming.length) classHtml += `<optgroup label="即將開班 (${groups.upcoming.length})">${groups.upcoming.map(optHtml).join('')}</optgroup>`;
+    if (groups.ended.length) classHtml += `<optgroup label="已結束 (${groups.ended.length})">${groups.ended.map(optHtml).join('')}</optgroup>`;
+  } else {
+    classHtml += filteredClasses.map(optHtml).join('');
+  }
+  classSel.innerHTML = classHtml;
+  // 若先前選的 班別 仍在縮減後的清單裡, 保留; 否則回到 all
+  if (curClass && [...classSel.options].some(o => o.value === curClass)) classSel.value = curClass;
+  else classSel.value = 'all';
+
+  // 狀態下拉加數量
+  if (statusSel) {
+    statusSel.innerHTML = `
+      <option value="all">全部 (${state.classes.length})</option>
+      <option value="ongoing">進行中 (${groups.ongoing.length})</option>
+      <option value="upcoming">即將開班 (${groups.upcoming.length})</option>
+      <option value="ended">已結束 (${groups.ended.length})</option>`;
+    statusSel.value = curStatus;
+  }
 }
 
 function renderAll() {
@@ -2116,6 +2303,11 @@ document.getElementById('form-cancel').addEventListener('click', e => {
 });
 
 document.getElementById('filter-class').addEventListener('change', renderAnnual);
+document.getElementById('filter-status').addEventListener('change', () => {
+  // 狀態變更 → 重 render 班別下拉, 並重 render annual
+  renderFilters();
+  renderAnnual();
+});
 document.getElementById('year-picker').addEventListener('change', () => { renderAnnual(); updateNavBtnState(); });
 document.getElementById('month-picker').addEventListener('change', () => { renderMonthly(); updateNavBtnState(); });
 document.getElementById('single-class-picker').addEventListener('change', () => { renderSingle(); updateNavBtnState(); });
@@ -2133,8 +2325,28 @@ document.querySelectorAll('.view-toggle button').forEach(btn => {
 });
 
 // 重點週 chip 編輯/刪除/新增
+// 點外部關閉 + 加重點週的選種類選單
+document.addEventListener('click', e => {
+  const menu = document.getElementById('hw-add-menu');
+  if (!menu) return;
+  if (!e.target.closest('.hw-add-wrap')) menu.classList.remove('open');
+});
 document.getElementById('highlight-weeks').addEventListener('click', e => {
-  if (e.target.id === 'hw-add-btn') return addHighlightWeek();
+  // + 按鈕 → 顯示種類選單
+  if (e.target.id === 'hw-add-btn') {
+    e.stopPropagation();
+    document.getElementById('hw-add-menu')?.classList.toggle('open');
+    return;
+  }
+  // 點種類 → 自動算日期加 chip
+  const menuItem = e.target.closest('.hw-add-menu-item');
+  if (menuItem) {
+    document.getElementById('hw-add-menu')?.classList.remove('open');
+    return addHighlightWeekByType(menuItem.dataset.hwType);
+  }
+  // 🎯 按鈕 → 重算日期
+  const refresh = e.target.closest('.hw-refresh');
+  if (refresh) return refreshHighlightWeekDates(parseInt(refresh.dataset.hwIdx));
   const del = e.target.closest('.hw-del');
   if (del) return deleteHighlightWeek(parseInt(del.dataset.hwIdx));
 });
