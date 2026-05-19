@@ -810,6 +810,17 @@
   </div>
   <div id="rule-preview" style="margin-top: 8px; padding: 10px 14px; background: var(--bg-2); font-size: 12px; color: var(--ink-2); line-height: 1.7; letter-spacing: 0.3px;"></div>
 
+  <div class="rules-box" style="margin-top: 18px;">
+    <strong>③ 備份本地編輯</strong>　・　所有本機 localStorage 編輯(班別/規則/連假/重點週/事件覆寫)可一鍵匯出 JSON, 貼給 Claude 即可 merge 到 GitHub 永久保存。
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0;">
+    <button class="btn" id="export-all-btn">📤 匯出全部設定 (下載 JSON)</button>
+    <button class="btn ghost" id="export-copy-btn">📋 複製到剪貼簿</button>
+    <button class="btn ghost" id="import-all-btn">📥 從 JSON 匯入</button>
+  </div>
+  <textarea id="export-area" rows="6" placeholder="匯出的 JSON 會出現在這(可複製);或貼上 JSON 後按「從 JSON 匯入」" style="margin-top: 6px; font-family: ui-monospace, monospace; font-size: 11px; display: none;"></textarea>
+  <div id="export-msg" style="margin-top: 6px; font-size: 11px; color: var(--ink-3);"></div>
+
   <h3 style="font-size: 14px; color: var(--ink); margin: 24px 0 8px; letter-spacing: 0.5px;">跳過日期（國定假日/校內定假日）</h3>
   <p style="font-size: 11.5px; color: var(--ink-3); margin: 0 0 8px;">點 ✗ 移除某天(該天上課恢復);用 + 加日期。預設為 2026 行政院公告連假。</p>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0;">
@@ -1876,6 +1887,76 @@ document.getElementById('save-holidays').addEventListener('click', () => {
   renderAll();
   autoSyncIfCloud('saveHolidays');
   if (!localStorage.getItem(CLOUD_URL_KEY)) alert('已儲存跳過日期');
+});
+
+// 完整匯出 JSON (所有本機編輯一次打包)
+function buildExportJSON() {
+  return {
+    classes: state.classes,
+    holidays: state.holidays,
+    rules: state.rules,
+    eventFilters: state.eventFilters,
+    highlightWeeks: state.highlightWeeks,
+    eventOverrides: eventOverrides,
+    editableRules: (function() { try { return JSON.parse(localStorage.getItem(EDITABLE_RULES_KEY) || '{}'); } catch(e) { return {}; } })(),
+    exportedAt: new Date().toISOString(),
+    exportedFrom: location.href,
+  };
+}
+function setExportMsg(msg, type) {
+  const el = document.getElementById('export-msg');
+  if (!el) return;
+  el.style.color = type === 'ok' ? 'var(--ok)' : type === 'err' ? 'var(--warn)' : 'var(--ink-3)';
+  el.textContent = msg;
+}
+document.getElementById('export-all-btn')?.addEventListener('click', () => {
+  const data = buildExportJSON();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `K12-calendar-backup-${today}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  setExportMsg('✓ 已下載 K12-calendar-backup-' + today + '.json', 'ok');
+});
+document.getElementById('export-copy-btn')?.addEventListener('click', async () => {
+  const json = JSON.stringify(buildExportJSON(), null, 2);
+  const ta = document.getElementById('export-area');
+  ta.style.display = 'block';
+  ta.value = json;
+  try {
+    await navigator.clipboard.writeText(json);
+    setExportMsg('✓ 已複製到剪貼簿 (' + (json.length / 1024).toFixed(1) + ' KB) - 直接貼給 Claude', 'ok');
+  } catch (e) {
+    ta.select();
+    setExportMsg('✗ 自動複製失敗,請手動全選 textarea 的內容: Ctrl+A → Ctrl+C', 'err');
+  }
+});
+document.getElementById('import-all-btn')?.addEventListener('click', () => {
+  const ta = document.getElementById('export-area');
+  ta.style.display = 'block';
+  if (!ta.value.trim()) {
+    ta.placeholder = '請先貼上 JSON 到這個方框, 然後再按一次「從 JSON 匯入」';
+    setExportMsg('請先貼上 JSON', 'info');
+    return;
+  }
+  try {
+    const data = JSON.parse(ta.value);
+    if (Array.isArray(data.classes) && data.classes.length > 0) state.classes = data.classes;
+    if (Array.isArray(data.holidays)) state.holidays = data.holidays;
+    if (data.rules && typeof data.rules === 'object') state.rules = {...DEFAULT_RULES, ...data.rules};
+    if (data.eventFilters) state.eventFilters = {...DEFAULT_EVENT_FILTERS, ...data.eventFilters};
+    if (Array.isArray(data.highlightWeeks)) state.highlightWeeks = data.highlightWeeks;
+    if (data.eventOverrides) { eventOverrides = data.eventOverrides; saveEventOverrides(); }
+    if (data.editableRules) localStorage.setItem(EDITABLE_RULES_KEY, JSON.stringify(data.editableRules));
+    saveState();
+    renderAll();
+    loadEditableRules();
+    setExportMsg('✓ 匯入成功! 來源: ' + (data.exportedAt || '未知時間'), 'ok');
+  } catch (e) {
+    setExportMsg('✗ JSON 格式錯誤: ' + e.message, 'err');
+  }
 });
 
 // 加日期 (date input + 加按鈕)
