@@ -261,6 +261,31 @@
   .class-card .name { font-weight: 600; color: var(--ink); margin-bottom: 4px; letter-spacing: 0.3px; }
   .class-card .sub { font-size: 11.5px; color: var(--ink-3); }
   .class-card .actions button { font-size: 11px; padding: 5px 12px; }
+  /* 班別管理: 進行中 / 即將開班 / 已結束 分組 */
+  .class-section { margin-bottom: 20px; }
+  .class-section-head {
+    font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: 0.5px;
+    margin: 16px 0 8px; padding: 6px 0; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 8px; cursor: default;
+  }
+  .ended-section > .class-section-head { cursor: pointer; }
+  .ended-section .class-section-head:hover { color: var(--ink-2); }
+  .class-section-head .status-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  }
+  .class-section-head .status-dot.ongoing { background: var(--accent); box-shadow: 0 0 0 2px rgba(212,54,26,0.18); }
+  .class-section-head .status-dot.upcoming { background: var(--ink); }
+  .class-section-head .status-dot.ended { background: var(--ink-3); }
+  .class-section-head .status-count {
+    font-size: 11px; font-weight: 400; color: var(--ink-3); letter-spacing: 0.3px; margin-left: 4px;
+  }
+  .status-empty { font-size: 12px; color: var(--ink-3); padding: 8px 4px; }
+  details.ended-section > summary { list-style: none; }
+  details.ended-section > summary::-webkit-details-marker { display: none; }
+  details.ended-section > summary::before {
+    content: "▶"; font-size: 9px; color: var(--ink-3); margin-right: 4px; transition: transform 0.15s;
+  }
+  details.ended-section[open] > summary::before { content: "▼"; }
   .month-block {
     background: var(--bg);
     border: 1px solid var(--line);
@@ -963,6 +988,18 @@ const BASELINE_CLASSES = [
   {id: 'kaizhi_l2_wed19', name: '開智 L2', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-04-15', fee: 3750, studentCount: 6, periodCount: 3, textbookFee: 600, memo: 'W三 ・ 對照表未列'},
   {id: 'steam_l2_sat15', name: 'STEAM-R L2', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-04-11', fee: 3750, studentCount: 7, periodCount: 3, textbookFee: 600, memo: '對照表未列'},
   {id: 'parents_sun13', name: '家長班', weekday: 0, time: '13:00-17:00', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-22', fee: 3750, studentCount: 10, periodCount: 3, textbookFee: 600, memo: 'W日 4 小時 ・ 對照表未列'},
+  // 前 10 堂班別 (對應每個現有班的「上一期」) — startDate = 現有班 startDate − 70 天 (10 週), periodCount = 1
+  // 名稱規則: L#-下 → L#上-1, L#-上 → L(#-1)下-1, 無期 → 加 "-1" 後綴
+  {id: 'jiazhi_l2_fri19_prev', name: '啟蒙 L1上-1', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-03-27', fee: 3750, studentCount: 6, periodCount: 1, textbookFee: 600, memo: 'W五 19:00 ・ 前 10 堂'},
+  {id: 'jiazhi_l1_sat10_prev', name: '啟蒙 L1下-1', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-04-04', fee: 3750, studentCount: 7, periodCount: 1, textbookFee: 600, memo: 'W六 10:00 ・ 前 10 堂'},
+  {id: 'jiazhi_l1_sat11_prev', name: '啟蒙 L1上-1', weekday: 6, time: '11:00-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-03-28', fee: 3750, studentCount: 5, periodCount: 1, textbookFee: 600, memo: 'W六 11:00 ・ 前 10 堂'},
+  {id: 'kaizhi_l1_fri20_prev', name: '開智 L1下-1', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-27', fee: 3750, studentCount: 10, periodCount: 1, textbookFee: 600, memo: 'W五 20:00 ・ 前 10 堂'},
+  {id: 'kaizhi_l1_sat10_prev', name: '開智 L1下-1', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-03-28', fee: 3750, studentCount: 14, periodCount: 1, textbookFee: 600, memo: 'W六 10:00 ・ 前 10 堂'},
+  {id: 'kaizhi_l2_sat11_prev', name: '開智 L1下-1', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-03-28', fee: 3750, studentCount: 7, periodCount: 1, textbookFee: 600, memo: 'W六 11:00 ・ 前 10 堂'},
+  {id: 'zhiyou_l2_sat19_prev', name: '智優 L1上-1', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-04-11', fee: 3750, studentCount: 14, periodCount: 1, textbookFee: 600, memo: 'W六 19:00 ・ 90 分鐘 ・ 前 10 堂'},
+  {id: 'kaizhi_l2_wed19_prev', name: '開智 L2-1', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-02-04', fee: 3750, studentCount: 6, periodCount: 1, textbookFee: 600, memo: 'W三 ・ 前 10 堂'},
+  {id: 'steam_l2_sat15_prev', name: 'STEAM-R L2-1', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-01-31', fee: 3750, studentCount: 7, periodCount: 1, textbookFee: 600, memo: '前 10 堂'},
+  {id: 'parents_sun13_prev', name: '家長班-1', weekday: 0, time: '13:00-17:00', teacher: '李守蕾', campus: '高美館校', startDate: '2026-01-11', fee: 3750, studentCount: 10, periodCount: 1, textbookFee: 600, memo: 'W日 4 小時 ・ 前 10 堂'},
 ];
 
 let state = {
@@ -1014,7 +1051,33 @@ function loadState() {
       migrated = true;
     }
   }
+  // 遷移: 加入「前 10 堂」班別 (對應每個現有 baseline 班的 _prev 版本)
+  // 只在使用者尚未自行刪除 prev 班時補進來 (用 id 結尾 _prev 判斷)
+  const existingPrevIds = new Set(state.classes.filter(c => c.id.endsWith('_prev')).map(c => c.id));
+  for (const baselinePrev of BASELINE_CLASSES.filter(b => b.id.endsWith('_prev'))) {
+    if (!existingPrevIds.has(baselinePrev.id)) {
+      // 只在對應的「本期」班還存在時才補 (使用者刪了本期 → prev 也不需要)
+      const baseId = baselinePrev.id.replace(/_prev$/, '');
+      if (state.classes.some(c => c.id === baseId)) {
+        state.classes.push({...baselinePrev});
+        migrated = true;
+      }
+    }
+  }
   if (migrated) saveState();
+}
+
+// 班別狀態: ongoing(進行中) / upcoming(即將開班) / ended(已結束)
+function getClassStatus(cls) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const start = parseYmd(cls.startDate);
+  if (today < start) return 'upcoming';
+  // 用 expandClassSchedule 算最後一堂
+  const sch = expandClassSchedule(cls);
+  if (sch.length === 0) return 'upcoming';
+  const lastLessonDate = parseYmd(sch[sch.length - 1].date);
+  if (today > lastLessonDate) return 'ended';
+  return 'ongoing';
 }
 
 // JSONP loader: 用 <script> tag 載入 (繞過 CORS, 適用教育版組織內限定 URL)
@@ -1239,7 +1302,13 @@ function renderClasses() {
     list.innerHTML = '<div class="empty">尚無班別,請新增</div>';
     return;
   }
-  list.innerHTML = state.classes.map(c => `
+  // 按狀態分組
+  const groups = { ongoing: [], upcoming: [], ended: [] };
+  for (const c of state.classes) {
+    const s = getClassStatus(c);
+    groups[s].push(c);
+  }
+  const renderCard = c => `
     <div class="class-card">
       <div class="info">
         <div class="name">${escapeHtml(c.name)} ・ W${getWeekdayChar(c.weekday)} ${escapeHtml(c.time)}</div>
@@ -1251,7 +1320,33 @@ function renderClasses() {
         <button class="btn danger" data-delete="${c.id}">刪除</button>
       </div>
     </div>
-  `).join('');
+  `;
+  const sortByTime = (a, b) => {
+    if (a.weekday !== b.weekday) return a.weekday - b.weekday;
+    return a.time.localeCompare(b.time);
+  };
+  groups.ongoing.sort(sortByTime);
+  groups.upcoming.sort(sortByTime);
+  groups.ended.sort((a, b) => b.startDate.localeCompare(a.startDate));
+  let html = '';
+  // 進行中
+  html += `<div class="class-section">
+    <h3 class="class-section-head"><span class="status-dot ongoing"></span>進行中 <span class="status-count">${groups.ongoing.length} 個班</span></h3>
+    ${groups.ongoing.length === 0 ? '<div class="empty status-empty">— 目前沒有進行中的班別 —</div>' : groups.ongoing.map(renderCard).join('')}
+  </div>`;
+  // 即將開班
+  html += `<div class="class-section">
+    <h3 class="class-section-head"><span class="status-dot upcoming"></span>即將開班 <span class="status-count">${groups.upcoming.length} 個班</span></h3>
+    ${groups.upcoming.length === 0 ? '<div class="empty status-empty">— 目前沒有即將開班的班別 —</div>' : groups.upcoming.map(renderCard).join('')}
+  </div>`;
+  // 已結束 (有資料時才顯示, 預設折疊)
+  if (groups.ended.length > 0) {
+    html += `<details class="class-section ended-section">
+      <summary class="class-section-head"><span class="status-dot ended"></span>已結束 <span class="status-count">${groups.ended.length} 個班</span> <span style="font-size:11px;color:var(--ink-3);font-weight:400;letter-spacing:0.3px;">(點開展開)</span></summary>
+      <div style="padding-top:8px;">${groups.ended.map(renderCard).join('')}</div>
+    </details>`;
+  }
+  list.innerHTML = html;
   list.querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', e => {
     const id = e.target.dataset.delete;
     if (confirm(`確定刪除「${state.classes.find(c => c.id === id)?.name}」?`)) {
