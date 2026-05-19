@@ -543,9 +543,9 @@
 </header>
 
 <nav class="tabs">
-  <button class="tab-btn active" data-tab="classes">① 班別管理</button>
-  <button class="tab-btn" data-tab="annual">② 年度行事曆總表</button>
-  <button class="tab-btn" data-tab="monthly">③ 每月收費總表</button>
+  <button class="tab-btn active" data-tab="annual">① 年度行事曆總表</button>
+  <button class="tab-btn" data-tab="monthly">② 每月收費總表</button>
+  <button class="tab-btn" data-tab="classes">③ 班別管理</button>
   <button class="tab-btn" data-tab="single">④ 單班分表預覽</button>
   <button class="tab-btn" data-tab="rules">⑤ 規則與設定</button>
 </nav>
@@ -553,7 +553,7 @@
 <main>
 
 <!-- ========== Tab 1: 班別管理 ========== -->
-<section class="panel active" id="panel-classes">
+<section class="panel" id="panel-classes">
   <details class="rules-box">
     <summary><span class="rule-summary-text">使用方式 — 點開展開,文字可直接編輯</span></summary>
     <div class="rule-body" contenteditable="true" data-rules-key="rules.classes" data-placeholder="（輸入使用說明…）">在這裡新增/編輯/刪除班別。每新增一個班,系統會根據開課日、星期、跳過的連假,自動排出上課日。</div>
@@ -608,7 +608,7 @@
 </section>
 
 <!-- ========== Tab 2: 年度行事曆總表 ========== -->
-<section class="panel" id="panel-annual">
+<section class="panel active" id="panel-annual">
   <details class="rules-box">
     <summary><span class="rule-summary-text">收費規則 — 點開展開,文字可直接編輯</span></summary>
     <div class="rule-body" contenteditable="true" data-rules-key="rules.annual" data-placeholder="（輸入收費規則…）">每期 10 堂;第 7 堂 = 續班收費日;第 4 堂起不接受插班,插班必須在第 3 堂前完成;逢國定連假/校內定假日自動跳過順延。</div>
@@ -758,8 +758,8 @@ function saveEventOverrides() { try { localStorage.setItem(EVT_OVERRIDE_KEY, JSO
 
 const DEFAULT_HOLIDAYS = [
   '2026-04-04', // 清明
-  '2026-05-02', // 端午連假補
-  '2026-07-04', // 7月初連假(原檔有跳)
+  '2026-05-02',
+  // 7/4 已移除 (依使用者對照表沒跳過)
 ];
 
 const DEFAULT_RULES = {
@@ -775,21 +775,21 @@ const DEFAULT_EVENT_FILTERS = { start: true, class: false, renewal: true, fee: t
 const EVT_FILTER_KEY = 'k12_fee_evt_filters_v1';
 
 const BASELINE_CLASSES = [
-  // 幼兒啟蒙班
-  {id: 'jiazhi_l1_sat10', name: '幼兒啟蒙班 L1', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-03-07', fee: 3750, studentCount: 7, periodCount: 4, memo: '小班/中班/大班混齡'},
-  {id: 'jiazhi_l1_sat11', name: '幼兒啟蒙班 L1', weekday: 6, time: '11:10-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-03-14', fee: 3750, studentCount: 5, periodCount: 4, memo: ''},
-  {id: 'jiazhi_l2_fri19', name: '幼兒啟蒙班 L2', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-11-14', fee: 3750, studentCount: 6, periodCount: 4, memo: '秋季開課'},
-  // 國小開智班
-  {id: 'kaizhi_l1_fri20', name: '國小開智班 L1', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-06', fee: 3750, studentCount: 10, periodCount: 4, memo: ''},
-  {id: 'kaizhi_l1_sat10', name: '國小開智班 L1', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-03-07', fee: 3750, studentCount: 14, periodCount: 4, memo: ''},
-  {id: 'kaizhi_l2_wed19', name: '國小開智班 L2', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-04-15', fee: 3750, studentCount: 6, periodCount: 4, memo: ''},
-  {id: 'kaizhi_l2_sat11', name: '國小開智班 L2', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-03-14', fee: 3750, studentCount: 7, periodCount: 4, memo: ''},
-  // 國小混齡 STEAM-R
-  {id: 'steam_l2_sat15', name: '國小混齡 STEAM-R L2', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-04-11', fee: 3750, studentCount: 7, periodCount: 4, memo: ''},
-  // 青少年智優班
-  {id: 'zhiyou_l2_sat19', name: '青少年智優班 L2', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-03-21', fee: 3750, studentCount: 14, periodCount: 4, memo: '90 分鐘'},
-  // 家長教養增能班
-  {id: 'parents_sun13', name: '家長教養增能班', weekday: 0, time: '13:00-17:00', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-22', fee: 3750, studentCount: 10, periodCount: 4, memo: 'W日 4 小時'},
+  // 依使用者 2026-05-19 對照表校正:startDate = 該班「下階段第 1 堂」
+  // 幼兒啟蒙班 (對照表稱「啟蒙班」)
+  {id: 'jiazhi_l2_fri19', name: '啟蒙班 1下', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 6, periodCount: 3, memo: 'W五 19:00 ・ 對照表第 1 列'},
+  {id: 'jiazhi_l1_sat10', name: '啟蒙班 2上', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-13', fee: 3750, studentCount: 7, periodCount: 3, memo: 'W六 10:00 ・ 小班/中班/大班混齡'},
+  {id: 'jiazhi_l1_sat11', name: '啟蒙班 1下', weekday: 6, time: '11:00-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 5, periodCount: 3, memo: 'W六 11:00'},
+  // 國小開智班 (對照表稱「開智班」)
+  {id: 'kaizhi_l1_fri20', name: '開智班 2上', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-06-05', fee: 3750, studentCount: 10, periodCount: 3, memo: 'W五 20:00'},
+  {id: 'kaizhi_l1_sat10', name: '開智班 2上', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 14, periodCount: 3, memo: 'W六 10:00'},
+  {id: 'kaizhi_l2_sat11', name: '開智班 2上', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-06-06', fee: 3750, studentCount: 7, periodCount: 3, memo: 'W六 11:00'},
+  // 青少年智優班 (對照表稱「智優班」)
+  {id: 'zhiyou_l2_sat19', name: '智優班 1下', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-06-20', fee: 3750, studentCount: 14, periodCount: 3, memo: 'W六 19:00 ・ 90 分鐘'},
+  // 對照表未列 (保留原資料)
+  {id: 'kaizhi_l2_wed19', name: '國小開智班 L2', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-04-15', fee: 3750, studentCount: 6, periodCount: 3, memo: 'W三 ・ 對照表未列'},
+  {id: 'steam_l2_sat15', name: '國小混齡 STEAM-R L2', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-04-11', fee: 3750, studentCount: 7, periodCount: 3, memo: '對照表未列'},
+  {id: 'parents_sun13', name: '家長教養增能班', weekday: 0, time: '13:00-17:00', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-22', fee: 3750, studentCount: 10, periodCount: 3, memo: 'W日 4 小時 ・ 對照表未列'},
 ];
 
 let state = {
@@ -1783,6 +1783,12 @@ loadState();
 loadEventOverrides();
 renderAll();
 loadEditableRules();
+// 預設打開年度行事曆 → body 套 compact-grid 鎖滾動
+const initActive = document.querySelector('.tab-btn.active');
+if (initActive && initActive.dataset.tab === 'annual') {
+  document.body.classList.toggle('compact-grid',
+    document.querySelector('.view-toggle button.active')?.dataset.view === 'grid');
+}
 
 // 開啟時若已設雲端網址,自動從雲端拉一次
 (async () => {
