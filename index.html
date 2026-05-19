@@ -508,6 +508,18 @@
   .evt-tog input { margin: 0 4px 0 0; }
   .evt-tog:has(input:not(:checked)) { background: var(--bg-2); color: var(--ink-3); opacity: 0.55; }
   .year-selector { font-weight: 600; color: var(--ink); }
+  /* 上一步下一步按鈕 */
+  .nav-group { display: inline-flex; align-items: stretch; gap: 0; }
+  .nav-group select { border-radius: 0; border-left: none; border-right: none; }
+  .nav-btn {
+    background: var(--bg); border: 1px solid var(--line);
+    padding: 4px 10px; cursor: pointer; font-family: inherit;
+    font-size: 12px; color: var(--ink); transition: background 0.12s, border-color 0.12s;
+    user-select: none;
+  }
+  .nav-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .nav-btn:disabled { background: var(--bg-2); color: var(--ink-3); cursor: not-allowed; border-color: var(--line); }
+  .nav-btn:disabled:hover { background: var(--bg-2); color: var(--ink-3); }
   /* 工具列在年度行事曆更緊湊 */
   #panel-annual .toolbar { padding: 8px 0; margin-bottom: 12px; background: transparent; border: none; border-bottom: 1px solid var(--line); }
   #panel-annual .toolbar label { font-size: 11px; color: var(--ink-3); letter-spacing: 0.5px; }
@@ -603,7 +615,11 @@
   </details>
   <div class="toolbar">
     <label>年度：
-      <select id="year-picker" class="year-selector"></select>
+      <span class="nav-group">
+        <button class="nav-btn" data-nav-target="year-picker" data-nav-dir="-1" title="上一年 (←)">◀</button>
+        <select id="year-picker" class="year-selector"></select>
+        <button class="nav-btn" data-nav-target="year-picker" data-nav-dir="1" title="下一年 (→)">▶</button>
+      </span>
     </label>
     <label>篩選班別：
       <select id="filter-class"><option value="all">全部班別</option></select>
@@ -632,8 +648,13 @@
   </details>
   <div class="toolbar">
     <label>選擇月份：
-      <select id="month-picker"></select>
+      <span class="nav-group">
+        <button class="nav-btn" data-nav-target="month-picker" data-nav-dir="-1" title="上一月 (←)">◀</button>
+        <select id="month-picker"></select>
+        <button class="nav-btn" data-nav-target="month-picker" data-nav-dir="1" title="下一月 (→)">▶</button>
+      </span>
     </label>
+    <span style="margin-left:auto;color:var(--ink-3);font-size:11px;">← → 鍵盤切換</span>
   </div>
   <div id="monthly-table"></div>
 </section>
@@ -646,8 +667,13 @@
   </details>
   <div class="toolbar">
     <label>選擇班別：
-      <select id="single-class-picker"></select>
+      <span class="nav-group">
+        <button class="nav-btn" data-nav-target="single-class-picker" data-nav-dir="-1" title="上一班 (←)">◀</button>
+        <select id="single-class-picker"></select>
+        <button class="nav-btn" data-nav-target="single-class-picker" data-nav-dir="1" title="下一班 (→)">▶</button>
+      </span>
     </label>
+    <span style="margin-left:auto;color:var(--ink-3);font-size:11px;">← → 鍵盤切換</span>
   </div>
   <div id="single-table"></div>
 </section>
@@ -1440,6 +1466,7 @@ function renderAll() {
   renderSingle();
   renderHolidays();
   renderRules();
+  if (typeof updateNavBtnState === 'function') updateNavBtnState();
 }
 
 // ====== Helpers ======
@@ -1500,9 +1527,9 @@ document.getElementById('form-cancel').addEventListener('click', e => {
 });
 
 document.getElementById('filter-class').addEventListener('change', renderAnnual);
-document.getElementById('year-picker').addEventListener('change', renderAnnual);
-document.getElementById('month-picker').addEventListener('change', renderMonthly);
-document.getElementById('single-class-picker').addEventListener('change', renderSingle);
+document.getElementById('year-picker').addEventListener('change', () => { renderAnnual(); updateNavBtnState(); });
+document.getElementById('month-picker').addEventListener('change', () => { renderMonthly(); updateNavBtnState(); });
+document.getElementById('single-class-picker').addEventListener('change', () => { renderSingle(); updateNavBtnState(); });
 
 // View toggle (grid/list) for annual tab
 document.querySelectorAll('.view-toggle button').forEach(btn => {
@@ -1633,6 +1660,52 @@ document.getElementById('cloud-push').addEventListener('click', async () => {
   if (!localStorage.getItem(CLOUD_URL_KEY)) { setCloudMsg('請先儲存雲端網址', 'err'); return; }
   if (!confirm('將本機目前的班別/連假/規則「全部覆蓋」寫回 Sheet?')) return;
   await pushToCloud('saveAll');
+});
+
+// ====== 上一步下一步 navigation (年/月/班) ======
+function navStep(selectId, dir) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const opts = [...sel.options];
+  if (opts.length === 0) return;
+  const curIdx = opts.findIndex(o => o.value === sel.value);
+  const newIdx = Math.max(0, Math.min(opts.length - 1, curIdx + dir));
+  if (newIdx === curIdx) return;
+  sel.value = opts[newIdx].value;
+  sel.dispatchEvent(new Event('change', { bubbles: true }));
+  updateNavBtnState();
+}
+function updateNavBtnState() {
+  document.querySelectorAll('.nav-btn[data-nav-target]').forEach(btn => {
+    const sel = document.getElementById(btn.dataset.navTarget);
+    if (!sel) return;
+    const opts = [...sel.options];
+    const curIdx = opts.findIndex(o => o.value === sel.value);
+    const dir = parseInt(btn.dataset.navDir);
+    btn.disabled = (dir < 0 && curIdx <= 0) || (dir > 0 && curIdx >= opts.length - 1);
+  });
+}
+document.querySelectorAll('.nav-btn[data-nav-target]').forEach(btn => {
+  btn.addEventListener('click', () => navStep(btn.dataset.navTarget, parseInt(btn.dataset.navDir)));
+});
+// 鍵盤左右切換 (在年/月/單班分頁啟用,不擋編輯彈窗)
+document.addEventListener('keydown', e => {
+  // 編輯彈窗開著時,讓 ESC/Enter 自己處理
+  if (document.getElementById('evtEditModal')?.classList.contains('show')) return;
+  // 在 input/textarea/contenteditable 內時不擋
+  const t = e.target;
+  if (t.matches('input, textarea, [contenteditable="true"]')) return;
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  // 判斷目前哪一分頁
+  const activePanel = document.querySelector('.panel.active');
+  if (!activePanel) return;
+  let targetSelId = null;
+  if (activePanel.id === 'panel-annual') targetSelId = 'year-picker';
+  else if (activePanel.id === 'panel-monthly') targetSelId = 'month-picker';
+  else if (activePanel.id === 'panel-single') targetSelId = 'single-class-picker';
+  if (!targetSelId) return;
+  e.preventDefault();
+  navStep(targetSelId, e.key === 'ArrowLeft' ? -1 : 1);
 });
 
 // ====== 行事曆事件編輯 (點月格事件即彈窗修改) ======
