@@ -88,7 +88,7 @@
   .header-cloud-actions { display: inline-flex; gap: 6px; margin-left: 12px; }
   .header-btn {
     background: var(--bg); border: 1px solid var(--accent);
-    color: var(--accent); padding: 3px 12px;
+    color: var(--accent); padding: 3px 10px;
     border-radius: 999px; font-size: 11px; cursor: pointer;
     font-family: inherit; letter-spacing: 0.3px;
     transition: background 0.15s, color 0.15s, box-shadow 0.15s;
@@ -99,6 +99,13 @@
     box-shadow: 0 1px 3px rgba(25, 118, 210, 0.20);
   }
   .header-btn.header-btn-primary:hover { background: var(--grad-primary-deep); box-shadow: 0 2px 6px rgba(25, 118, 210, 0.30); }
+  .header-btn.header-btn-icon {
+    padding: 3px 8px; border-color: var(--line); color: var(--ink-2); min-width: 26px;
+  }
+  .header-btn.header-btn-icon:hover { background: var(--bg-2); color: var(--ink); border-color: var(--ink-3); }
+  .header-btn.header-btn-icon:disabled { color: var(--ink-3); cursor: not-allowed; opacity: 0.4; }
+  .header-btn.header-btn-icon:disabled:hover { background: var(--bg); border-color: var(--line); }
+  .header-divider { display: inline-block; width: 1px; height: 14px; background: var(--line); margin: 0 4px; }
   nav.tabs {
     background: var(--bg);
     border-bottom: 1px solid var(--line);
@@ -961,9 +968,10 @@
   .evt-tog {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: 2px;
     font-size: 10.5px;
-    padding: 2px 6px 2px 4px;
+    padding: 2px 5px 2px 3px;
+    border-radius: 999px;
     cursor: pointer;
     user-select: none;
     padding: 3px 8px;
@@ -972,7 +980,7 @@
     transition: border-color 0.15s, background 0.15s;
   }
   .evt-tog:hover { border-color: var(--ink-2); }
-  .evt-tog input { margin: 0 4px 0 0; }
+  .evt-tog input { margin: 0 2px 0 0; }
   .evt-tog:has(input:not(:checked)) { background: var(--bg-2); color: var(--ink-3); opacity: 0.55; }
   .year-selector { font-weight: 600; color: var(--ink); }
   /* 上一步下一步按鈕 */
@@ -1011,8 +1019,12 @@
 <header>
   <h1>K12 收費行事曆<small>高美館校</small></h1>
   <div class="header-cloud-actions">
-    <button class="header-btn" id="cloud-fetch-top" title="從雲端拉最新資料">⬇ 從雲端拉</button>
-    <button class="header-btn header-btn-primary" id="cloud-push-top" title="把當前所有資料推到雲端 (Ctrl+S)">⬆ 全部推上去</button>
+    <button class="header-btn" id="cloud-fetch-top" title="從雲端拉最新資料">⬇ 拉</button>
+    <button class="header-btn header-btn-primary" id="cloud-push-top" title="把當前所有資料推到雲端 (Ctrl+S)">⬆ 推</button>
+    <span class="header-divider"></span>
+    <button class="header-btn header-btn-icon" id="undo-btn" title="上一步 (Ctrl+Z)" disabled>↶</button>
+    <button class="header-btn header-btn-icon" id="redo-btn" title="下一步 (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷</button>
+    <button class="header-btn header-btn-icon" id="save-btn" title="儲存到雲端 (Ctrl+S)">💾</button>
   </div>
   <div class="meta" id="cloud-status"><span style="color: var(--warn);">● 雲端讀取中…</span></div>
 </header>
@@ -1141,16 +1153,11 @@
       <button data-half="h1">上半年</button>
       <button data-half="h2">下半年</button>
     </span>
-    <span class="history-group" style="margin-left:auto;">
-      <button class="nav-btn" id="undo-btn" title="上一步 (Ctrl+Z)" disabled>↶</button>
-      <button class="nav-btn" id="redo-btn" title="下一步 (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷</button>
-      <button class="nav-btn" id="save-btn" title="儲存到雲端 (Ctrl+S)">💾</button>
-    </span>
-    <span class="event-toggles">
-      <label class="evt-tog"><input type="checkbox" data-evt="start" checked> <span class="lg-start">●</span> 開課</label>
-      <label class="evt-tog"><input type="checkbox" data-evt="class"> <span style="color:var(--ink-3);">●</span> 上課</label>
-      <label class="evt-tog"><input type="checkbox" data-evt="renewal" checked> <span class="lg-renewal">●</span> 續班</label>
-      <label class="evt-tog"><input type="checkbox" data-evt="fee" checked> <span class="lg-fee">●</span> 學費繳清</label>
+    <span class="event-toggles" style="margin-left:auto;">
+      <label class="evt-tog" title="顯示「開課」事件"><input type="checkbox" data-evt="start" checked><span class="lg-start">●</span>開課</label>
+      <label class="evt-tog" title="顯示「上課」事件"><input type="checkbox" data-evt="class"><span style="color:var(--ink-3);">●</span>上課</label>
+      <label class="evt-tog" title="顯示「續班」事件"><input type="checkbox" data-evt="renewal" checked><span class="lg-renewal">●</span>續班</label>
+      <label class="evt-tog" title="顯示「學費繳清」事件"><input type="checkbox" data-evt="fee" checked><span class="lg-fee">●</span>學費</label>
     </span>
   </div>
   <div id="highlight-weeks"></div>
