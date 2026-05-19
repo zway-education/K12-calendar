@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K12 收費行事曆原型 v1</title>
+<style>
+  :root {
+    --ink: #111;            /* 主文字 - 近黑 */
+    --ink-2: #4a4a4a;       /* 次文字 */
+    --ink-3: #8a8a8a;       /* 輔助文字 */
+    --line: #e5e5e5;        /* 細邊框 */
+    --line-2: #1a1a1a;      /* 強邊框(分隔) */
+    --bg: #ffffff;          /* 單色背景 純白 */
+    --bg-2: #f7f7f5;        /* 卡片極淺底 */
+    --accent: #b8860b;      /* 金色 - 只用在收費金額文字 */
+    --warn: #a33;           /* 暗紅 - 只用在禁插警示文字 */
+    --ok: #2a6c4a;          /* 暗綠 - 只用在期初文字 */
+
+    /* alias */
+    --navy: var(--ink);
+    --gold: var(--accent);
+    --soft: var(--bg-2);
+    --text: var(--ink);
+    --hl: transparent;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 0;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* 整合 header + tabs 到單列,大幅壓縮空間 */
+  header {
+    background: var(--bg);
+    color: var(--ink);
+    padding: 4px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    gap: 16px;
+    flex-wrap: wrap;
+    min-height: 28px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  header h1 small {
+    font-weight: 400;
+    color: var(--ink-3);
+    font-size: 10px;
+    margin-left: 6px;
+    letter-spacing: 0;
+  }
+  header .meta { font-size: 10px; color: var(--ink-3); letter-spacing: 0.2px; margin-left: auto; }
+  nav.tabs {
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 0 20px;
+    display: flex;
+    gap: 0;
+  }
+  nav.tabs button {
+    background: transparent;
+    border: none;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: var(--ink-3);
+    font-family: inherit;
+    letter-spacing: 0.5px;
+  }
+  nav.tabs button.active {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+    font-weight: 600;
+  }
+  nav.tabs button:hover { background: transparent; color: var(--ink-2); }
+  nav.tabs button:hover { background: var(--soft); }
+  main { padding: 10px 20px 20px; max-width: 1600px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  /* 規則框:預設摺疊成一行小字,點開才展開 */
+  details.rules-box {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 0;
+    margin-bottom: 8px;
+    border-radius: 0;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    letter-spacing: 0.3px;
+  }
+  details.rules-box > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 4px 0 4px 16px;
+    font-size: 11px;
+    color: var(--ink-3);
+    user-select: none;
+    position: relative;
+  }
+  details.rules-box > summary::-webkit-details-marker { display: none; }
+  details.rules-box > summary::before {
+    content: "▸";
+    position: absolute;
+    left: 4px;
+    color: var(--ink-3);
+    transition: transform 0.15s;
+    display: inline-block;
+  }
+  details.rules-box[open] > summary::before { transform: rotate(90deg); }
+  details.rules-box > summary > .rule-summary-text {
+    color: var(--ink-2);
+    margin-left: 4px;
+  }
+  details.rules-box > .rule-body {
+    padding: 4px 16px 8px;
+    border-left: 2px solid var(--gold);
+    margin: 2px 0 4px 8px;
+    color: var(--ink-2);
+  }
+  details.rules-box .rule-body strong { color: var(--ink); font-weight: 600; }
+  /* 可編輯區塊樣式 */
+  [contenteditable="true"] {
+    outline: none;
+    border-radius: 2px;
+    padding: 1px 4px;
+    transition: background 0.12s, box-shadow 0.12s;
+  }
+  [contenteditable="true"]:hover { background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line); }
+  [contenteditable="true"]:focus { background: var(--bg); box-shadow: inset 0 0 0 1px var(--ink); }
+  [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: var(--ink-3); font-style: italic; }
+  /* 舊 .rules-box (非 details) 也壓縮 */
+  div.rules-box, section.rules-box {
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 6px 0;
+    margin-bottom: 10px;
+    border-radius: 0;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    letter-spacing: 0.3px;
+  }
+  div.rules-box strong, section.rules-box strong { color: var(--ink); font-weight: 600; }
+  .rules-box strong { color: var(--navy); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg);
+    font-size: 12.5px;
+    margin-bottom: 16px;
+  }
+  th, td {
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 9px 12px;
+    text-align: left;
+  }
+  th {
+    background: transparent;
+    color: var(--ink-3);
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line-2);
+    position: sticky;
+    top: 0;
+  }
+  tbody tr:hover { background: var(--bg-2); }
+  tbody tr.fee-row td { color: var(--accent); font-weight: 600; }
+  tbody tr.intake-cutoff td { color: var(--warn); }
+  .controls { margin-bottom: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  button.btn {
+    background: var(--ink);
+    color: var(--bg);
+    border: 1px solid var(--ink);
+    padding: 7px 16px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+  button.btn:hover { background: var(--ink-2); border-color: var(--ink-2); }
+  button.btn.ghost {
+    background: var(--bg);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+  }
+  button.btn.ghost:hover { background: var(--bg-2); }
+  button.btn.danger { background: var(--bg); border-color: var(--warn); color: var(--warn); }
+  button.btn.danger:hover { background: var(--warn); color: var(--bg); }
+  .input, select, input[type="date"], input[type="text"], input[type="number"] {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    padding: 6px 10px;
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 12px;
+  }
+  select:focus, input:focus { outline: none; border-color: var(--ink); }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    padding: 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    margin-bottom: 14px;
+  }
+  .form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.3px;
+  }
+  .form-grid label span { font-weight: 500; color: var(--ink); }
+  .form-grid label input, .form-grid label select { width: 100%; background: var(--bg); }
+  .form-grid .full { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end; }
+  .class-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--ink);
+    border-radius: 0;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+  }
+  .class-card .info { flex: 1; }
+  .class-card .name { font-weight: 600; color: var(--ink); margin-bottom: 4px; letter-spacing: 0.3px; }
+  .class-card .sub { font-size: 11.5px; color: var(--ink-3); }
+  .class-card .actions button { font-size: 11px; padding: 5px 12px; }
+  .month-block {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 0;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .month-block h3 {
+    background: transparent;
+    margin: 0;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .month-block h3 .sum { font-size: 11px; font-weight: 400; color: var(--ink-3); letter-spacing: 0.3px; }
+  .empty { color: var(--ink-3); font-style: normal; padding: 24px; text-align: center; font-size: 12px; letter-spacing: 0.3px; }
+  .badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 0;
+    border: 1px solid currentColor;
+    font-size: 10px;
+    margin-right: 4px;
+    background: transparent;
+    letter-spacing: 0.3px;
+  }
+  .badge.fee { color: var(--accent); }
+  .badge.start { color: var(--ok); }
+  .badge.renew { color: var(--ink-2); }
+  .badge.cutoff { color: var(--warn); }
+  .badge.holiday { color: var(--ink-3); }
+
+  /* 12-month grid view - 設計成單一畫面顯示 12 格不用滾動 */
+  body.compact-grid { overflow: hidden; height: 100vh; }
+  body.compact-grid main { height: calc(100vh - 75px); overflow: hidden; padding-bottom: 6px; }
+  body.compact-grid #panel-annual { height: 100%; display: flex; flex-direction: column; }
+  body.compact-grid #panel-annual > .rules-box,
+  body.compact-grid #panel-annual > .toolbar { flex-shrink: 0; }
+  body.compact-grid #annual-grid { flex: 1; min-height: 0; }
+  .year-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 6px;
+    height: 100%;
+    min-height: 280px;
+  }
+  @media (max-width: 1000px) { .year-grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); } }
+  @media (max-width: 700px)  { .year-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(6, 1fr); } }
+  .month-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 0;
+    padding: 10px 12px 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    min-width: 0;
+    transition: border-color 0.15s;
+  }
+  .month-card:hover { border-color: var(--ink-3); }
+  .month-card .m-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--ink);
+    flex-shrink: 0;
+  }
+  .month-card .m-head .m-num {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  .month-card .m-head .m-num small {
+    font-size: 9px;
+    color: var(--ink-3);
+    font-weight: 400;
+    margin-left: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .month-card .m-head .m-sum {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    font-feature-settings: "tnum";
+  }
+  .month-card .m-events { flex: 1; overflow: hidden; min-height: 0; }
+  .month-card .m-evt {
+    display: flex;
+    gap: 8px;
+    padding: 3px 0;
+    font-size: 11px;
+    line-height: 1.4;
+    align-items: baseline;
+  }
+  .month-card .m-evt .d {
+    color: var(--ink);
+    font-weight: 600;
+    min-width: 38px;
+    flex-shrink: 0;
+    font-size: 10.5px;
+    font-feature-settings: "tnum";
+  }
+  .month-card .m-evt .ic {
+    display: none; /* 黑白版不用 emoji */
+  }
+  .month-card .m-evt .cn {
+    color: var(--ink-2);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.2px;
+  }
+  .month-card .m-evt.fee {
+    background: transparent;
+    margin: 0;
+    padding: 3px 0;
+  }
+  .month-card .m-evt.fee .d { color: var(--accent); }
+  .month-card .m-evt.fee .cn { color: var(--accent); font-weight: 600; }
+  .month-card .m-evt.start .d { color: var(--ok); }
+  .month-card .m-evt.start .cn { color: var(--ok); }
+  .month-card .m-evt.renewal .d { color: #3a72b0; }
+  .month-card .m-evt.renewal .cn { color: #3a72b0; }
+  .month-card .m-evt.class-evt .d { color: var(--ink-3); font-size: 9.5px; }
+  .month-card .m-evt.class-evt .cn { color: var(--ink-3); font-size: 10px; }
+  /* 可編輯事件 hover 提示 + 已編輯標記 */
+  .month-card .m-evt[data-evt-key] { cursor: pointer; transition: background 0.12s; }
+  .month-card .m-evt[data-evt-key]:hover { background: var(--bg-2); }
+  .month-card .m-evt.is-edited .cn { border-left: 2px solid var(--gold); padding-left: 4px; }
+  .month-card .m-evt .evt-edited { color: var(--gold); margin-left: 4px; font-size: 9px; }
+  /* 事件編輯彈窗 */
+  .evt-edit-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    display: none; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .evt-edit-modal.show { display: flex; }
+  .evt-edit-box {
+    background: var(--bg); border: 1px solid var(--ink); padding: 18px 22px;
+    width: 460px; max-width: 90vw; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  }
+  .evt-edit-box h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--ink); letter-spacing: 0.3px; }
+  .evt-edit-box .orig { font-size: 11px; color: var(--ink-3); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  .evt-edit-box label { display: block; margin-bottom: 12px; font-size: 11px; color: var(--ink-3); letter-spacing: 0.3px; }
+  .evt-edit-box label span { display: block; margin-bottom: 3px; font-weight: 500; color: var(--ink); }
+  .evt-edit-box label input { width: 100%; padding: 6px 8px; border: 1px solid var(--line); font-family: inherit; font-size: 12px; }
+  .evt-edit-box label input:focus { outline: none; border-color: var(--ink); }
+  .evt-edit-box .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+  .month-card .m-foot {
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px solid var(--line);
+    font-size: 10px;
+    color: var(--ink-3);
+    display: flex;
+    justify-content: space-between;
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+  }
+  .month-card .m-foot .warn { color: var(--warn); }
+  .month-card.empty-month {
+    background: var(--bg);
+    border-style: dashed;
+    border-color: var(--line);
+  }
+  .month-card.empty-month .m-num,
+  .month-card.empty-month .m-num small { color: var(--ink-3); }
+  .month-card.empty-month .m-head { border-bottom-color: var(--line); }
+  .month-card.empty-month .m-events {
+    color: var(--ink-3);
+    font-size: 10px;
+    font-style: normal;
+    text-align: center;
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 1px;
+  }
+  .view-toggle {
+    display: inline-flex;
+    background: var(--bg);
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    overflow: hidden;
+  }
+  .view-toggle button {
+    background: transparent;
+    border: none;
+    padding: 5px 14px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--ink-2);
+    letter-spacing: 0.5px;
+  }
+  .view-toggle button.active { background: var(--ink); color: var(--bg); }
+  .legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    margin-left: auto;
+    letter-spacing: 0.5px;
+  }
+  .legend .lg-item { display: inline-flex; align-items: center; gap: 4px; }
+  .lg-fee { color: var(--accent); font-weight: 600; }
+  .lg-start { color: var(--ok); font-weight: 600; }
+  .lg-cutoff { color: var(--warn); font-weight: 600; }
+  .lg-renewal { color: #3a72b0; font-weight: 600; }
+  /* Event toggles (年度行事曆顯示哪幾類事件) */
+  .event-toggles {
+    display: inline-flex;
+    gap: 6px;
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-2);
+    letter-spacing: 0.5px;
+    flex-wrap: wrap;
+  }
+  .evt-tog {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .evt-tog:hover { border-color: var(--ink-2); }
+  .evt-tog input { margin: 0 4px 0 0; }
+  .evt-tog:has(input:not(:checked)) { background: var(--bg-2); color: var(--ink-3); opacity: 0.55; }
+  .year-selector { font-weight: 600; color: var(--ink); }
+  /* 工具列在年度行事曆更緊湊 */
+  #panel-annual .toolbar { padding: 8px 0; margin-bottom: 12px; background: transparent; border: none; border-bottom: 1px solid var(--line); }
+  #panel-annual .toolbar label { font-size: 11px; color: var(--ink-3); letter-spacing: 0.5px; }
+  #panel-annual .toolbar select { padding: 4px 8px; font-size: 11.5px; }
+  details { background: var(--bg); border: 1px solid var(--line); border-radius: 0; padding: 10px 14px; margin-bottom: 8px; }
+  details summary { cursor: pointer; font-weight: 500; color: var(--ink); font-size: 12px; letter-spacing: 0.5px; }
+  details[open] summary { margin-bottom: 8px; }
+  .toolbar { margin-bottom: 14px; padding: 10px 14px; background: var(--bg); border-radius: 0; border: 1px solid var(--line); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toolbar label { font-size: 12px; color: var(--ink-2); }
+  .holiday-list { font-size: 11px; color: var(--ink-3); padding: 8px 0; letter-spacing: 0.3px; }
+  .holiday-list .tag { background: transparent; border: 1px solid var(--line); padding: 2px 8px; border-radius: 0; margin-right: 4px; display: inline-block; margin-bottom: 4px; color: var(--ink-2); font-feature-settings: "tnum"; }
+  textarea { font-family: inherit; font-size: 12px; padding: 8px; border: 1px solid var(--line); border-radius: 0; width: 100%; background: var(--bg); color: var(--ink); }
+  textarea:focus { outline: none; border-color: var(--ink); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>K12 收費行事曆<small>高美館校</small></h1>
+  <div class="meta" id="cloud-status">本機 localStorage</div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="classes">① 班別管理</button>
+  <button class="tab-btn" data-tab="annual">② 年度行事曆總表</button>
+  <button class="tab-btn" data-tab="monthly">③ 每月收費總表</button>
+  <button class="tab-btn" data-tab="single">④ 單班分表預覽</button>
+  <button class="tab-btn" data-tab="rules">⑤ 規則與設定</button>
+</nav>
+
+<main>
+
+<!-- ========== Tab 1: 班別管理 ========== -->
+<section class="panel active" id="panel-classes">
+  <details class="rules-box">
+    <summary><span class="rule-summary-text">使用方式 — 點開展開,文字可直接編輯</span></summary>
+    <div class="rule-body" contenteditable="true" data-rules-key="rules.classes" data-placeholder="（輸入使用說明…）">在這裡新增/編輯/刪除班別。每新增一個班,系統會根據開課日、星期、跳過的連假,自動排出上課日。</div>
+  </details>
+
+  <details>
+    <summary>＋ 新增班別</summary>
+    <form id="class-form" class="form-grid">
+      <label><span>班別名稱</span><input type="text" name="name" placeholder="例：幼兒啟蒙班 L1" required></label>
+      <label><span>上課星期</span>
+        <select name="weekday" required>
+          <option value="1">週一</option>
+          <option value="2">週二</option>
+          <option value="3">週三</option>
+          <option value="4">週四</option>
+          <option value="5">週五</option>
+          <option value="6" selected>週六</option>
+          <option value="0">週日</option>
+        </select>
+      </label>
+      <label><span>上課時段</span><input type="text" name="time" placeholder="10:00-10:50" value="10:00-10:50" required></label>
+      <label><span>授課老師</span><input type="text" name="teacher" placeholder="漂漂" required></label>
+      <label><span>校區</span><input type="text" name="campus" value="高美館校" required></label>
+      <label><span>第 1 堂日期</span><input type="date" name="startDate" required></label>
+      <label><span>每 10 堂學費</span><input type="number" name="fee" value="3750" min="0" step="50" required></label>
+      <label><span>學生人數</span><input type="number" name="studentCount" value="0" min="0" step="1"></label>
+      <label><span>期數</span>
+        <select name="periodCount">
+          <option value="1">僅 1 期</option>
+          <option value="2">2 期</option>
+          <option value="3">3 期</option>
+          <option value="4" selected>4 期(全年)</option>
+        </select>
+      </label>
+      <label><span>備註</span><input type="text" name="memo" placeholder="可空白"></label>
+      <div class="full">
+        <button type="button" class="btn ghost" id="form-cancel">取消</button>
+        <button type="submit" class="btn">新增班別</button>
+      </div>
+    </form>
+  </details>
+
+  <div id="class-list"></div>
+
+  <div class="controls" style="margin-top: 20px;">
+    <button class="btn ghost" id="export-json">匯出 JSON</button>
+    <button class="btn ghost" id="import-json">匯入 JSON</button>
+    <button class="btn danger" id="reset-data">重置(清空所有資料)</button>
+    <button class="btn ghost" id="load-baseline">載入基準資料(幼兒啟蒙班 L1)</button>
+  </div>
+  <textarea id="json-area" rows="6" placeholder="匯出的 JSON 會出現在這裡,或貼上 JSON 後按「匯入 JSON」" style="display:none;"></textarea>
+</section>
+
+<!-- ========== Tab 2: 年度行事曆總表 ========== -->
+<section class="panel" id="panel-annual">
+  <details class="rules-box">
+    <summary><span class="rule-summary-text">收費規則 — 點開展開,文字可直接編輯</span></summary>
+    <div class="rule-body" contenteditable="true" data-rules-key="rules.annual" data-placeholder="（輸入收費規則…）">每期 10 堂;第 7 堂 = 續班收費日;第 4 堂起不接受插班,插班必須在第 3 堂前完成;逢國定連假/校內定假日自動跳過順延。</div>
+  </details>
+  <div class="toolbar">
+    <label>年度：
+      <select id="year-picker" class="year-selector"></select>
+    </label>
+    <label>篩選班別：
+      <select id="filter-class"><option value="all">全部班別</option></select>
+    </label>
+    <span class="view-toggle">
+      <button data-view="grid" class="active">12 月方格</button>
+      <button data-view="list">列表</button>
+    </span>
+    <span class="event-toggles">
+      <label class="evt-tog"><input type="checkbox" data-evt="start" checked> <span class="lg-start">●</span> 開課</label>
+      <label class="evt-tog"><input type="checkbox" data-evt="class"> <span style="color:var(--ink-3);">●</span> 上課</label>
+      <label class="evt-tog"><input type="checkbox" data-evt="renewal" checked> <span style="color:#3a72b0;">●</span> 續班</label>
+      <label class="evt-tog"><input type="checkbox" data-evt="fee" checked> <span class="lg-fee">●</span> 收費</label>
+    </span>
+  </div>
+  <div id="annual-grid"></div>
+  <div id="annual-table" style="display:none;"></div>
+</section>
+
+<!-- ========== Tab 3: 每月收費總表 ========== -->
+<section class="panel" id="panel-monthly">
+  <details class="rules-box">
+    <summary><span class="rule-summary-text">用途與規則 — 點開展開,文字可直接編輯</span></summary>
+    <div class="rule-body" contenteditable="true" data-rules-key="rules.monthly" data-placeholder="（輸入用途說明…）">用途:每期開課第一堂課之後產出當月收費清單,送會計與執行長。
+規則重申:第 7 堂為續班收費日;插班限制第 3 堂前。</div>
+  </details>
+  <div class="toolbar">
+    <label>選擇月份：
+      <select id="month-picker"></select>
+    </label>
+  </div>
+  <div id="monthly-table"></div>
+</section>
+
+<!-- ========== Tab 4: 單班分表預覽 ========== -->
+<section class="panel" id="panel-single">
+  <details class="rules-box">
+    <summary><span class="rule-summary-text">用途 — 點開展開,文字可直接編輯</span></summary>
+    <div class="rule-body" contenteditable="true" data-rules-key="rules.single" data-placeholder="（輸入用途說明…）">對齊現有「行政點名費表」格式。選一個班看它的 20 堂日期 + 收費點 + 插班禁止點。</div>
+  </details>
+  <div class="toolbar">
+    <label>選擇班別：
+      <select id="single-class-picker"></select>
+    </label>
+  </div>
+  <div id="single-table"></div>
+</section>
+
+<!-- ========== Tab 5: 規則與設定 ========== -->
+<section class="panel" id="panel-rules">
+  <div class="rules-box">
+    <strong>① 雲端資料來源(雙向同步)</strong>　・　設定後:打開原型自動從 Sheet 讀取最新資料,且在 HTML 改完班別/規則/連假會自動寫回 Sheet。設定方式見 _雲端設定包/README_設定步驟.md。
+  </div>
+  <div style="display: flex; gap: 8px; align-items: end; flex-wrap: wrap; padding: 14px; background: var(--bg-2); border: 1px solid var(--line);">
+    <label style="flex: 1 1 380px; display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--ink-3); letter-spacing: 0.3px;">
+      <span style="font-weight: 500; color: var(--ink);">雲端 API 網址 (Apps Script Web App URL)</span>
+      <input type="text" id="cloud-url" placeholder="https://script.google.com/macros/s/.../exec" style="font-family: ui-monospace, monospace; font-size: 11px; background: var(--bg);">
+    </label>
+    <button type="button" class="btn ghost" id="cloud-test">測試連線</button>
+    <button type="button" class="btn" id="cloud-save">儲存網址</button>
+    <button type="button" class="btn ghost" id="cloud-fetch">⬇ 從雲端拉</button>
+    <button type="button" class="btn ghost" id="cloud-push">⬆ 全部推上去</button>
+  </div>
+  <div id="cloud-msg" style="margin-top: 6px; font-size: 12px; color: var(--ink-3); letter-spacing: 0.3px;"></div>
+
+  <div class="rules-box" style="margin-top: 18px;">
+    <strong>② 收費期程規則</strong>　・　全部班別共用一組規則。改完按「儲存」,所有班別、年度行事曆、每月收費總表會即時重算。
+    <span style="color: var(--ink-3); font-size: 11px;">（若有設雲端,請改 Sheet 的「規則」分頁,本地修改下次重新讀取會被覆蓋）</span>
+  </div>
+
+  <h3 style="font-size: 14px; color: var(--ink); margin: 18px 0 8px; letter-spacing: 0.5px;">收費期程</h3>
+  <div class="form-grid">
+    <label><span>每期幾堂</span><input type="number" id="rule-period" min="1" max="50" step="1"></label>
+    <label><span>第幾堂為續班觸發堂</span><input type="number" id="rule-renewal" min="1" max="50" step="1"></label>
+    <label><span>第幾堂收下一期費</span><input type="number" id="rule-fee" min="1" max="50" step="1"></label>
+    <label><span>第幾堂為插班最終日</span><input type="number" id="rule-last" min="1" max="50" step="1"></label>
+    <label><span>第幾堂起禁止插班</span><input type="number" id="rule-cutoff" min="1" max="50" step="1"></label>
+    <div class="full">
+      <button type="button" class="btn ghost" id="rule-reset">回預設值</button>
+      <button type="button" class="btn" id="rule-save">儲存收費期程</button>
+    </div>
+  </div>
+  <div id="rule-preview" style="margin-top: 8px; padding: 10px 14px; background: var(--bg-2); font-size: 12px; color: var(--ink-2); line-height: 1.7; letter-spacing: 0.3px;"></div>
+
+  <h3 style="font-size: 14px; color: var(--ink); margin: 24px 0 8px; letter-spacing: 0.5px;">跳過日期（國定假日/校內定假日）</h3>
+  <p style="font-size: 11.5px; color: var(--ink-3); margin: 0 0 8px;">每行一個日期,格式 YYYY-MM-DD。例如清明連假 2026-04-04。</p>
+  <textarea id="holidays-area" rows="10" placeholder="2026-04-04&#10;2026-05-02&#10;2026-07-04"></textarea>
+  <div style="margin-top: 8px;">
+    <button class="btn" id="save-holidays">儲存跳過日期</button>
+  </div>
+
+  <h3 style="font-size: 14px; color: var(--ink); margin: 24px 0 8px; letter-spacing: 0.5px;">當前跳過日期</h3>
+  <div id="holiday-display" class="holiday-list"></div>
+</section>
+
+</main>
+
+<!-- 行事曆事件編輯彈窗 -->
+<div class="evt-edit-modal" id="evtEditModal">
+  <div class="evt-edit-box">
+    <h3>編輯行事曆事件</h3>
+    <div class="orig" id="evtOrig"></div>
+    <label><span>顯示文字(留空 = 用預設)</span><input type="text" id="evtText" placeholder="例:幼兒啟蒙班 L1 第1期 開課"></label>
+    <label><span>備註(會顯示在事件後方)</span><input type="text" id="evtNote" placeholder="例:改至下週六、需通知家長"></label>
+    <div class="actions">
+      <button type="button" class="btn danger" id="evtClear">清除編輯</button>
+      <button type="button" class="btn ghost" id="evtCancel">取消</button>
+      <button type="button" class="btn" id="evtSave">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== Data Model ======
+const STORAGE_KEY = 'k12_fee_calendar_v1';
+const HOLIDAYS_KEY = 'k12_fee_holidays_v1';
+const RULES_KEY = 'k12_fee_rules_v1';
+const CLOUD_URL_KEY = 'k12_fee_cloud_url_v1';
+const CLOUD_FETCHED_KEY = 'k12_fee_cloud_fetched_v1';
+const EVT_OVERRIDE_KEY = 'k12_fee_evt_overrides_v1';
+// 行事曆事件覆寫 {key: {text?, note?}}, key = classId__idx__type
+let eventOverrides = {};
+function evtOverrideKey(classId, idx, type) { return `${classId}__${idx}__${type}`; }
+function loadEventOverrides() { try { eventOverrides = JSON.parse(localStorage.getItem(EVT_OVERRIDE_KEY) || '{}'); } catch(e) { eventOverrides = {}; } }
+function saveEventOverrides() { try { localStorage.setItem(EVT_OVERRIDE_KEY, JSON.stringify(eventOverrides)); } catch(e) {} }
+
+const DEFAULT_HOLIDAYS = [
+  '2026-04-04', // 清明
+  '2026-05-02', // 端午連假補
+  '2026-07-04', // 7月初連假(原檔有跳)
+];
+
+const DEFAULT_RULES = {
+  periodLength: 10,     // 一期幾堂
+  feeDayIndex: 7,       // 第幾堂收下一期費
+  renewalDayIndex: 7,   // 第幾堂為續班觸發堂 (預設等於收費堂)
+  lastIntakeIndex: 3,   // 第幾堂為插班最終日
+  cutoffIndex: 4,       // 第幾堂起禁止插班
+};
+
+// 預設顯示哪幾類事件 (年度行事曆 12 月方格用)
+const DEFAULT_EVENT_FILTERS = { start: true, class: false, renewal: true, fee: true };
+const EVT_FILTER_KEY = 'k12_fee_evt_filters_v1';
+
+const BASELINE_CLASSES = [
+  // 幼兒啟蒙班
+  {id: 'jiazhi_l1_sat10', name: '幼兒啟蒙班 L1', weekday: 6, time: '10:00-10:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-03-07', fee: 3750, studentCount: 7, periodCount: 4, memo: '小班/中班/大班混齡'},
+  {id: 'jiazhi_l1_sat11', name: '幼兒啟蒙班 L1', weekday: 6, time: '11:10-12:00', teacher: '漂漂', campus: '高美館校', startDate: '2026-03-14', fee: 3750, studentCount: 5, periodCount: 4, memo: ''},
+  {id: 'jiazhi_l2_fri19', name: '幼兒啟蒙班 L2', weekday: 5, time: '19:00-19:50', teacher: '漂漂', campus: '高美館校', startDate: '2026-11-14', fee: 3750, studentCount: 6, periodCount: 4, memo: '秋季開課'},
+  // 國小開智班
+  {id: 'kaizhi_l1_fri20', name: '國小開智班 L1', weekday: 5, time: '20:00-20:50', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-06', fee: 3750, studentCount: 10, periodCount: 4, memo: ''},
+  {id: 'kaizhi_l1_sat10', name: '國小開智班 L1', weekday: 6, time: '10:00-10:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-03-07', fee: 3750, studentCount: 14, periodCount: 4, memo: ''},
+  {id: 'kaizhi_l2_wed19', name: '國小開智班 L2', weekday: 3, time: '19:00-19:50', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-04-15', fee: 3750, studentCount: 6, periodCount: 4, memo: ''},
+  {id: 'kaizhi_l2_sat11', name: '國小開智班 L2', weekday: 6, time: '11:00-12:00', teacher: '郭瑋詰', campus: '高美館校', startDate: '2026-03-14', fee: 3750, studentCount: 7, periodCount: 4, memo: ''},
+  // 國小混齡 STEAM-R
+  {id: 'steam_l2_sat15', name: '國小混齡 STEAM-R L2', weekday: 6, time: '15:30-17:00', teacher: '石業', campus: '高美館校', startDate: '2026-04-11', fee: 3750, studentCount: 7, periodCount: 4, memo: ''},
+  // 青少年智優班
+  {id: 'zhiyou_l2_sat19', name: '青少年智優班 L2', weekday: 6, time: '19:00-20:30', teacher: '蕭崴仁', campus: '高美館校', startDate: '2026-03-21', fee: 3750, studentCount: 14, periodCount: 4, memo: '90 分鐘'},
+  // 家長教養增能班
+  {id: 'parents_sun13', name: '家長教養增能班', weekday: 0, time: '13:00-17:00', teacher: '李守蕾', campus: '高美館校', startDate: '2026-03-22', fee: 3750, studentCount: 10, periodCount: 4, memo: 'W日 4 小時'},
+];
+
+let state = {
+  classes: [],
+  holidays: [...DEFAULT_HOLIDAYS],
+  rules: {...DEFAULT_RULES},
+  eventFilters: {...DEFAULT_EVENT_FILTERS}
+};
+
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  const rawH = localStorage.getItem(HOLIDAYS_KEY);
+  const rawR = localStorage.getItem(RULES_KEY);
+  const rawF = localStorage.getItem(EVT_FILTER_KEY);
+  if (raw) {
+    try { state.classes = JSON.parse(raw); } catch(e) { state.classes = []; }
+  }
+  if (rawH) {
+    try { state.holidays = JSON.parse(rawH); } catch(e) { state.holidays = [...DEFAULT_HOLIDAYS]; }
+  }
+  if (rawR) {
+    try { state.rules = {...DEFAULT_RULES, ...JSON.parse(rawR)}; } catch(e) { state.rules = {...DEFAULT_RULES}; }
+  }
+  if (rawF) {
+    try { state.eventFilters = {...DEFAULT_EVENT_FILTERS, ...JSON.parse(rawF)}; } catch(e) { state.eventFilters = {...DEFAULT_EVENT_FILTERS}; }
+  }
+  if (state.classes.length === 0) {
+    state.classes = [...BASELINE_CLASSES];
+    saveState();
+  }
+  // 遷移:舊資料沒有 studentCount 欄位,補上預設值(從 baseline 取或設 0)
+  let migrated = false;
+  for (const c of state.classes) {
+    if (c.studentCount === undefined) {
+      const baseline = BASELINE_CLASSES.find(b => b.id === c.id);
+      c.studentCount = baseline?.studentCount ?? 0;
+      migrated = true;
+    }
+  }
+  if (migrated) saveState();
+}
+
+async function fetchFromCloud(showMsg = true) {
+  const url = localStorage.getItem(CLOUD_URL_KEY);
+  if (!url) return false;
+  try {
+    if (showMsg) setCloudMsg('讀取中…', 'info');
+    const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    if (Array.isArray(data.classes) && data.classes.length > 0) state.classes = data.classes;
+    if (Array.isArray(data.holidays)) state.holidays = data.holidays;
+    if (data.rules && typeof data.rules === 'object') state.rules = {...DEFAULT_RULES, ...data.rules};
+    saveState();
+    localStorage.setItem(CLOUD_FETCHED_KEY, new Date().toISOString());
+    if (showMsg) setCloudMsg(`✓ 已從雲端讀取 ${data.classes?.length || 0} 個班別 ・ ${new Date().toLocaleString('zh-TW')}`, 'ok');
+    updateCloudStatusBar();
+    return true;
+  } catch (err) {
+    if (showMsg) setCloudMsg('✗ 讀取失敗:' + err.message + ' (CORS / 部署設定 / 網址錯誤都可能)', 'err');
+    return false;
+  }
+}
+
+// 用 text/plain 避開 CORS 預檢
+async function pushToCloud(action) {
+  const url = localStorage.getItem(CLOUD_URL_KEY);
+  if (!url) return { ok: false, reason: '未設雲端網址' };
+  const payload = {
+    action,
+    data: { classes: state.classes, holidays: state.holidays, rules: state.rules }
+  };
+  try {
+    setCloudMsg(`寫入雲端中 (${action})…`, 'info');
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+      redirect: 'follow'
+    });
+    const text = await resp.text();
+    let data;
+    try { data = JSON.parse(text); } catch { throw new Error('回應非 JSON: ' + text.substring(0, 100)); }
+    if (data.error) throw new Error(data.error);
+    localStorage.setItem(CLOUD_FETCHED_KEY, new Date().toISOString());
+    setCloudMsg(`✓ 已寫回 Sheet (${action}) ・ ${new Date().toLocaleString('zh-TW')}`, 'ok');
+    updateCloudStatusBar();
+    return { ok: true, data };
+  } catch (err) {
+    setCloudMsg('✗ 寫入失敗:' + err.message, 'err');
+    return { ok: false, reason: err.message };
+  }
+}
+
+// 班別/規則/連假改完後若有設雲端,自動推上去
+async function autoSyncIfCloud(action = 'saveAll') {
+  if (localStorage.getItem(CLOUD_URL_KEY)) {
+    await pushToCloud(action);
+  }
+}
+
+function setCloudMsg(msg, type) {
+  const el = document.getElementById('cloud-msg');
+  if (!el) return;
+  const colors = { ok: 'var(--ok)', err: 'var(--warn)', info: 'var(--ink-2)' };
+  el.style.color = colors[type] || colors.info;
+  el.textContent = msg;
+}
+
+function updateCloudStatusBar() {
+  const url = localStorage.getItem(CLOUD_URL_KEY);
+  const fetched = localStorage.getItem(CLOUD_FETCHED_KEY);
+  const el = document.getElementById('cloud-status');
+  if (!el) return;
+  if (url && fetched) {
+    el.textContent = `雲端同步 ・ 最後讀取 ${new Date(fetched).toLocaleString('zh-TW')}`;
+  } else if (url) {
+    el.textContent = '雲端網址已設,尚未讀取';
+  } else {
+    el.textContent = '資料來源:本機 localStorage(尚未連雲端)';
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.classes));
+  localStorage.setItem(HOLIDAYS_KEY, JSON.stringify(state.holidays));
+  localStorage.setItem(RULES_KEY, JSON.stringify(state.rules));
+  localStorage.setItem(EVT_FILTER_KEY, JSON.stringify(state.eventFilters));
+}
+
+// ====== Date Helpers ======
+function ymd(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+
+function parseYmd(s) {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function fmtShort(s) {
+  const [y, m, d] = s.split('-');
+  return `${parseInt(m)}/${parseInt(d)}`;
+}
+
+function getWeekdayChar(wd) {
+  return ['日','一','二','三','四','五','六'][wd];
+}
+
+// Generate N class dates starting from startDate, on given weekday, skipping holidays
+function generateClassDates(startDate, weekday, count, holidays) {
+  const dates = [];
+  let d = parseYmd(startDate);
+  // Walk forward to find first matching weekday >= startDate
+  while (d.getDay() !== weekday) {
+    d.setDate(d.getDate() + 1);
+  }
+  while (dates.length < count) {
+    const s = ymd(d);
+    if (!holidays.includes(s)) {
+      dates.push(s);
+    }
+    d.setDate(d.getDate() + 7);
+  }
+  return dates;
+}
+
+// For one class, generate full schedule based on periodLength * periodCount
+// Returns array of {idx (1-based), date, isFeeDay, isIntakeCutoff, isPeriodStart, isRenewalDay, period}
+function expandClassSchedule(cls, periodCountOverride) {
+  const P = state.rules.periodLength || 10;
+  const FEE = state.rules.feeDayIndex || 7;
+  const REN = state.rules.renewalDayIndex || state.rules.feeDayIndex || 7;
+  const CUT = state.rules.cutoffIndex || 4;
+  const LAST = state.rules.lastIntakeIndex || 3;
+  // 每班自己的期數 (1~4), 預設 4 期
+  const periodCount = periodCountOverride || cls.periodCount || 4;
+  const allDates = generateClassDates(cls.startDate, cls.weekday, P * periodCount, state.holidays);
+  return allDates.map((date, i) => {
+    const idx = i + 1;
+    const period = Math.floor(i / P) + 1;
+    const idxInPeriod = (i % P) + 1;
+    return {
+      idx,
+      date,
+      period,
+      idxInPeriod,
+      isPeriodStart: idxInPeriod === 1,
+      isRenewalDay: idxInPeriod === REN,
+      isFeeDay: idxInPeriod === FEE,
+      isIntakeCutoff: idxInPeriod === CUT,
+      isLastIntake: idxInPeriod === LAST,
+    };
+  });
+}
+
+// ====== Rendering ======
+function renderClasses() {
+  const list = document.getElementById('class-list');
+  if (state.classes.length === 0) {
+    list.innerHTML = '<div class="empty">尚無班別,請新增</div>';
+    return;
+  }
+  list.innerHTML = state.classes.map(c => `
+    <div class="class-card">
+      <div class="info">
+        <div class="name">${escapeHtml(c.name)} ・ W${getWeekdayChar(c.weekday)} ${escapeHtml(c.time)}</div>
+        <div class="sub">老師：${escapeHtml(c.teacher)} ｜ 校區：${escapeHtml(c.campus)} ｜ 開課：${c.startDate} ｜ 每 10 堂 $${c.fee.toLocaleString()} ｜ 人數 ${c.studentCount || 0} 位 ｜ 期數 ${c.periodCount || 4} 期</div>
+        ${c.memo ? `<div class="sub" style="margin-top:4px; color:#888;">${escapeHtml(c.memo)}</div>` : ''}
+      </div>
+      <div class="actions">
+        <button class="btn ghost" data-edit="${c.id}">編輯</button>
+        <button class="btn danger" data-delete="${c.id}">刪除</button>
+      </div>
+    </div>
+  `).join('');
+  list.querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', e => {
+    const id = e.target.dataset.delete;
+    if (confirm(`確定刪除「${state.classes.find(c => c.id === id)?.name}」?`)) {
+      state.classes = state.classes.filter(c => c.id !== id);
+      saveState();
+      renderAll();
+      autoSyncIfCloud('saveClasses');
+    }
+  }));
+  list.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', e => {
+    const id = e.target.dataset.edit;
+    const c = state.classes.find(x => x.id === id);
+    if (!c) return;
+    const form = document.getElementById('class-form');
+    form.name.value = c.name;
+    form.weekday.value = c.weekday;
+    form.time.value = c.time;
+    form.teacher.value = c.teacher;
+    form.campus.value = c.campus;
+    form.startDate.value = c.startDate;
+    form.fee.value = c.fee;
+    form.studentCount.value = c.studentCount || 0;
+    form.periodCount.value = c.periodCount || 4;
+    form.memo.value = c.memo || '';
+    form.dataset.editingId = id;
+    form.closest('details').open = true;
+    form.scrollIntoView({behavior: 'smooth'});
+  }));
+}
+
+function collectYearEvents(year, classFilter) {
+  const classes = classFilter === 'all' ? state.classes : state.classes.filter(c => c.id === classFilter);
+  const events = [];
+  for (const cls of classes) {
+    const sch = expandClassSchedule(cls);
+    for (const s of sch) {
+      const d = parseYmd(s.date);
+      if (d.getFullYear() !== year) continue;
+      // 一堂課可能同時是「開課」「續班」「收費」(若三者同一堂)
+      if (s.isPeriodStart) events.push({...s, cls, type: 'period-start'});
+      if (s.isLastIntake) events.push({...s, cls, type: 'last-intake'});
+      if (s.isIntakeCutoff) events.push({...s, cls, type: 'intake-cutoff'});
+      if (s.isRenewalDay) events.push({...s, cls, type: 'renewal-day'});
+      if (s.isFeeDay) events.push({...s, cls, type: 'fee-day'});
+      // 一般上課堂 (非開課/續班/收費)
+      if (!s.isPeriodStart && !s.isRenewalDay && !s.isFeeDay) {
+        events.push({...s, cls, type: 'regular-class'});
+      }
+    }
+  }
+  return events;
+}
+
+function renderYearPicker() {
+  const sel = document.getElementById('year-picker');
+  if (!sel) return;
+  // Find year range from current state
+  const years = new Set();
+  for (const cls of state.classes) {
+    const sch = expandClassSchedule(cls);
+    for (const s of sch) years.add(parseYmd(s.date).getFullYear());
+  }
+  if (years.size === 0) {
+    const y = new Date().getFullYear();
+    years.add(y);
+  }
+  const sorted = [...years].sort();
+  const cur = sel.value;
+  sel.innerHTML = sorted.map(y => `<option value="${y}">${y} 年</option>`).join('');
+  if (cur && sorted.includes(parseInt(cur))) sel.value = cur;
+  else sel.value = sorted[0];
+}
+
+function renderAnnualGrid() {
+  const target = document.getElementById('annual-grid');
+  if (state.classes.length === 0) {
+    target.innerHTML = '<div class="empty">尚無班別,請先到「班別管理」新增</div>';
+    return;
+  }
+  const year = parseInt(document.getElementById('year-picker').value);
+  const classFilter = document.getElementById('filter-class').value;
+  const events = collectYearEvents(year, classFilter);
+  const F = state.eventFilters;
+
+  // 4 類事件對應 type
+  const typeToFilter = {
+    'period-start': 'start',
+    'regular-class': 'class',
+    'renewal-day': 'renewal',
+    'fee-day': 'fee',
+  };
+
+  // Bucket events by month
+  const byMonth = {};
+  for (let m = 1; m <= 12; m++) byMonth[m] = [];
+  for (const e of events) {
+    const m = parseInt(e.date.split('-')[1]);
+    byMonth[m].push(e);
+  }
+
+  let html = '<div class="year-grid">';
+  for (let m = 1; m <= 12; m++) {
+    const monthEvents = byMonth[m].sort((a, b) => a.date.localeCompare(b.date));
+    // 按 toggle 篩出要顯示的事件
+    const showEvents = monthEvents.filter(e => {
+      const t = typeToFilter[e.type];
+      return t && F[t];
+    });
+    const feeEvents = monthEvents.filter(e => e.type === 'fee-day');
+    const totalFee = feeEvents.reduce((sum, e) => sum + e.cls.fee, 0);
+    const totalStudents = feeEvents.reduce((sum, e) => sum + (e.cls.studentCount || 0), 0);
+    const totalIncome = feeEvents.reduce((sum, e) => sum + (e.cls.fee || 0) * (e.cls.studentCount || 0), 0);
+
+    if (monthEvents.length === 0) {
+      html += `<div class="month-card empty-month">
+        <div class="m-head"><div class="m-num">${m}<small>MON</small></div></div>
+        <div class="m-events">無排程</div>
+      </div>`;
+      continue;
+    }
+
+    html += `<div class="month-card">
+      <div class="m-head">
+        <div class="m-num">${m}<small>MON</small></div>
+        ${F.fee && totalIncome > 0 ? `<div class="m-sum">NT$${totalIncome.toLocaleString()}</div>` : ''}
+      </div>
+      <div class="m-events">`;
+
+    if (showEvents.length === 0) {
+      html += `<div class="m-evt"><span class="cn" style="color:var(--ink-3);">— 本月勾選類別無事件 —</span></div>`;
+    } else {
+      // 「上課」太多,聚合顯示
+      const classEvents = showEvents.filter(e => e.type === 'regular-class');
+      const otherEvents = showEvents.filter(e => e.type !== 'regular-class');
+
+      // 先顯示其他重要事件(按日期)
+      for (const e of otherEvents) {
+        const day = parseInt(e.date.split('-')[2]);
+        const wd = getWeekdayChar(parseYmd(e.date).getDay());
+        let cls = '', txt = '';
+        if (e.type === 'period-start') {
+          cls = 'start';
+          txt = `${escapeHtml(e.cls.name)} 第${e.period}期 開課`;
+        } else if (e.type === 'renewal-day') {
+          cls = 'renewal';
+          txt = `${escapeHtml(e.cls.name)} 第${e.period}期 續班`;
+        } else if (e.type === 'fee-day') {
+          cls = 'fee';
+          const subtotal = (e.cls.fee || 0) * (e.cls.studentCount || 0);
+          txt = `${escapeHtml(e.cls.name)} 收第${e.period + 1}期 ${subtotal > 0 ? '$' + subtotal.toLocaleString() : ''}`;
+        }
+        // 套用使用者覆寫 (若有)
+        const ovKey = evtOverrideKey(e.cls.id, e.idx, e.type);
+        const ov = eventOverrides[ovKey];
+        const displayText = (ov && ov.text != null) ? escapeHtml(ov.text) : txt;
+        const noteText = (ov && ov.note) ? `　<small style="color:var(--ink-3);font-style:italic;">${escapeHtml(ov.note)}</small>` : '';
+        const editedMark = (ov && (ov.text != null || ov.note)) ? '<span class="evt-edited" title="已編輯">✎</span>' : '';
+        html += `<div class="m-evt ${cls}${(ov && (ov.text!=null||ov.note)) ? ' is-edited' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}" title="點擊編輯文字/加備註">
+          <span class="d">${String(day).padStart(2,'0')}・${wd}</span>
+          <span class="cn">${displayText}${noteText}${editedMark}</span>
+        </div>`;
+      }
+
+      // 上課堂:聚合顯示
+      if (F.class && classEvents.length > 0) {
+        // 按班別 group
+        const byCls = {};
+        for (const e of classEvents) {
+          const k = e.cls.id;
+          if (!byCls[k]) byCls[k] = { cls: e.cls, days: [] };
+          byCls[k].days.push(parseInt(e.date.split('-')[2]));
+        }
+        for (const k of Object.keys(byCls)) {
+          const g = byCls[k];
+          html += `<div class="m-evt class-evt">
+            <span class="d">上課</span>
+            <span class="cn" title="${escapeHtml(g.cls.name)}">${escapeHtml(g.cls.name)} ${g.days.length} 堂 (${g.days.map(d => String(d).padStart(2,'0')).join('/')})</span>
+          </div>`;
+        }
+      }
+    }
+
+    html += '</div>';
+    // Footer: 收費月顯示人數+收入,或插班限制聚合
+    const footerParts = [];
+    if (F.fee && feeEvents.length > 0) {
+      footerParts.push(`<span>本月收 ${feeEvents.length} 班 ・ ${totalStudents} 位</span>`);
+    }
+    if (footerParts.length > 0) {
+      html += `<div class="m-foot">${footerParts.join('')}</div>`;
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  target.innerHTML = html;
+}
+
+function renderAnnualList() {
+  const target = document.getElementById('annual-table');
+  if (state.classes.length === 0) {
+    target.innerHTML = '<div class="empty">尚無班別</div>';
+    return;
+  }
+  const year = parseInt(document.getElementById('year-picker').value);
+  const classFilter = document.getElementById('filter-class').value;
+  const events = collectYearEvents(year, classFilter);
+  events.sort((a, b) => a.date.localeCompare(b.date));
+
+  if (events.length === 0) {
+    target.innerHTML = '<div class="empty">本年度無事件</div>';
+    return;
+  }
+
+  let html = `<table>
+    <thead><tr>
+      <th>日期</th><th>週幾</th><th>班別</th><th>第 N 堂</th><th>期數</th><th>事件</th><th>金額/說明</th>
+    </tr></thead><tbody>`;
+
+  for (const e of events) {
+    const wd = getWeekdayChar(parseYmd(e.date).getDay());
+    let rowClass = '';
+    let badge = '';
+    let desc = '';
+    if (e.type === 'period-start') {
+      badge = '<span class="badge start">期初開課</span>';
+      desc = `第 ${e.period} 期第 1 堂`;
+    } else if (e.type === 'last-intake') {
+      badge = '<span class="badge renew">插班最終日</span>';
+      desc = `第 ${state.rules.lastIntakeIndex} 堂,本期最後可插班`;
+    } else if (e.type === 'intake-cutoff') {
+      rowClass = 'intake-cutoff';
+      badge = '<span class="badge cutoff">禁止插班</span>';
+      desc = `第 ${state.rules.cutoffIndex} 堂起禁止插班`;
+    } else if (e.type === 'fee-day') {
+      rowClass = 'fee-row';
+      badge = '<span class="badge fee">續班收費日</span>';
+      desc = `收第 ${e.period + 1} 期學費 NT$${e.cls.fee.toLocaleString()}`;
+    }
+    html += `<tr class="${rowClass}">
+      <td>${e.date}</td>
+      <td>${wd}</td>
+      <td>${escapeHtml(e.cls.name)} ${escapeHtml(e.cls.time)}</td>
+      <td>第 ${e.idx} 堂</td>
+      <td>第 ${e.period} 期</td>
+      <td>${badge}</td>
+      <td>${desc}</td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  target.innerHTML = html;
+}
+
+function renderAnnual() {
+  renderYearPicker();
+  renderAnnualGrid();
+  renderAnnualList();
+}
+
+function renderMonthPicker() {
+  const sel = document.getElementById('month-picker');
+  if (state.classes.length === 0) { sel.innerHTML = ''; return; }
+  // Collect all months that have at least one fee-day
+  const months = new Set();
+  for (const cls of state.classes) {
+    const sch = expandClassSchedule(cls);
+    for (const s of sch) {
+      if (s.isFeeDay) months.add(s.date.substring(0, 7));
+    }
+  }
+  const sorted = [...months].sort();
+  sel.innerHTML = sorted.map(m => `<option value="${m}">${m}</option>`).join('');
+  if (!sel.value && sorted.length) sel.value = sorted[0];
+}
+
+function renderMonthly() {
+  const target = document.getElementById('monthly-table');
+  const month = document.getElementById('month-picker').value;
+  if (!month || state.classes.length === 0) {
+    target.innerHTML = '<div class="empty">尚無資料</div>';
+    return;
+  }
+  // For chosen month, list all classes that have a fee-day in this month
+  const rows = [];
+  for (const cls of state.classes) {
+    const sch = expandClassSchedule(cls);
+    for (const s of sch) {
+      if (s.isFeeDay && s.date.startsWith(month)) {
+        const P = state.rules.periodLength || 10;
+        // 收費期限 = 本期最後一堂 = 0-based index s.period * P - 1
+        const deadlineDate = sch[s.period * P - 1]?.date || '?';
+        // 下一期第 1 堂 = 0-based index s.period * P
+        const nextStartDate = sch[s.period * P]?.date || '?';
+        const students = cls.studentCount || 0;
+        const subtotal = cls.fee * students;
+        rows.push({
+          feeDate: s.date,
+          deadline: deadlineDate,
+          cls,
+          period: s.period,
+          nextPeriod: s.period + 1,
+          nextStart: nextStartDate,
+          students,
+          unitFee: cls.fee,
+          subtotal
+        });
+      }
+    }
+  }
+  if (rows.length === 0) {
+    target.innerHTML = '<div class="empty">本月無收費事件</div>';
+    return;
+  }
+  rows.sort((a, b) => a.feeDate.localeCompare(b.feeDate));
+  const totalAmount = rows.reduce((sum, r) => sum + r.subtotal, 0);
+  const totalStudents = rows.reduce((sum, r) => sum + r.students, 0);
+  const [yy, mm] = month.split('-');
+
+  let html = `<div class="month-block">
+    <h3>${yy}年 ${parseInt(mm)} 月 ・ 收費總表
+      <span class="sum">合計 ${rows.length} 班 ／ ${totalStudents} 位學生 ／ 預計收入 <span style="color:var(--accent);font-weight:600;">NT$${totalAmount.toLocaleString()}</span></span>
+    </h3>
+    <table>
+      <thead><tr>
+        <th>收費日</th>
+        <th>班別／時段</th>
+        <th>老師</th>
+        <th style="text-align:right;">人數</th>
+        <th style="text-align:right;">每 ${state.rules.periodLength} 堂</th>
+        <th style="text-align:right;">該班總金額</th>
+        <th>繳費期限</th>
+        <th>下期第 1 堂</th>
+      </tr></thead><tbody>`;
+  for (const r of rows) {
+    const feeWd = getWeekdayChar(parseYmd(r.feeDate).getDay());
+    const deadlineWd = getWeekdayChar(parseYmd(r.deadline).getDay());
+    const studentWarn = r.students === 0;
+    html += `<tr class="fee-row">
+      <td>${r.feeDate} (${feeWd})<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;letter-spacing:0.3px;">第 ${r.period} 期 第 ${state.rules.feeDayIndex} 堂</span></td>
+      <td><strong>${escapeHtml(r.cls.name)}</strong><br><span style="font-size:10px;color:var(--ink-3);font-weight:400;">W${getWeekdayChar(r.cls.weekday)} ${escapeHtml(r.cls.time)} ・ ${escapeHtml(r.cls.campus)}</span></td>
+      <td>${escapeHtml(r.cls.teacher)}</td>
+      <td style="text-align:right;font-feature-settings:'tnum';">${studentWarn ? '<span style="color:var(--warn);">未填</span>' : r.students + ' 位'}</td>
+      <td style="text-align:right;font-feature-settings:'tnum';">NT$${r.unitFee.toLocaleString()}</td>
+      <td style="text-align:right;font-feature-settings:'tnum';font-weight:600;">${studentWarn ? '—' : 'NT$' + r.subtotal.toLocaleString()}</td>
+      <td>${r.deadline} (${deadlineWd})<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;">第 ${r.period} 期 第 ${state.rules.periodLength} 堂</span></td>
+      <td>${r.nextStart}<br><span style="font-size:10px;color:var(--ink-3);font-weight:400;">第 ${r.nextPeriod} 期 第 1 堂</span></td>
+    </tr>`;
+  }
+  // Total row
+  html += `<tr style="background:var(--bg-2);border-top:2px solid var(--ink);">
+    <td colspan="3" style="font-weight:600;letter-spacing:0.5px;">本月合計</td>
+    <td style="text-align:right;font-weight:600;font-feature-settings:'tnum';">${totalStudents} 位</td>
+    <td></td>
+    <td style="text-align:right;font-weight:700;color:var(--accent);font-feature-settings:'tnum';font-size:14px;">NT$${totalAmount.toLocaleString()}</td>
+    <td colspan="2"></td>
+  </tr>`;
+  html += '</tbody></table>';
+  html += `<div style="padding: 10px 18px; font-size: 11.5px; color: var(--ink-2); letter-spacing: 0.3px; border-top: 1px solid var(--line); line-height: 1.6;">
+    <strong style="color: var(--ink);">收費規則 ・</strong>每期第 ${state.rules.feeDayIndex} 堂為收費日；第 ${state.rules.periodLength} 堂為繳費期限（家長須在期限前完成繳費才能續上下一期）。<br>
+    <strong style="color: var(--ink);">插班規則 ・</strong>每期第 ${state.rules.cutoffIndex} 堂起不接受插班；插班必須在第 ${state.rules.lastIntakeIndex} 堂前完成。
+  </div></div>`;
+  target.innerHTML = html;
+}
+
+function renderSinglePicker() {
+  const sel = document.getElementById('single-class-picker');
+  sel.innerHTML = state.classes.map(c => `<option value="${c.id}">${escapeHtml(c.name)} W${getWeekdayChar(c.weekday)} ${escapeHtml(c.time)}</option>`).join('');
+}
+
+function renderSingle() {
+  const target = document.getElementById('single-table');
+  const id = document.getElementById('single-class-picker').value;
+  const cls = state.classes.find(c => c.id === id);
+  if (!cls) { target.innerHTML = '<div class="empty">請選班別</div>'; return; }
+  const sch = expandClassSchedule(cls); // 用該班的 periodCount
+
+  let html = `<h2 style="color: var(--navy); margin-bottom: 8px;">
+    K12 覺知素養教育學苑 - ${escapeHtml(cls.campus)}<br>
+    <span style="font-size: 16px;">${escapeHtml(cls.name)} ・ W${getWeekdayChar(cls.weekday)} ${escapeHtml(cls.time)} ・ 課程老師:${escapeHtml(cls.teacher)}</span>
+  </h2>`;
+  html += `<table><thead><tr>
+    <th>第 N 堂</th><th>日期</th><th>週幾</th><th>期數</th><th>本期第 N 堂</th><th>事件</th>
+  </tr></thead><tbody>`;
+  for (const s of sch) {
+    const wd = getWeekdayChar(parseYmd(s.date).getDay());
+    let rowClass = '';
+    let badges = [];
+    if (s.isPeriodStart) badges.push('<span class="badge start">期初</span>');
+    if (s.isLastIntake) badges.push('<span class="badge renew">插班最終日</span>');
+    if (s.isIntakeCutoff) { rowClass = 'intake-cutoff'; badges.push('<span class="badge cutoff">禁止插班</span>'); }
+    if (s.isFeeDay) { rowClass = 'fee-row'; badges.push(`<span class="badge fee">續班收費 NT$${cls.fee.toLocaleString()}</span>`); }
+    html += `<tr class="${rowClass}">
+      <td>第 ${s.idx} 堂</td>
+      <td>${s.date}</td>
+      <td>${wd}</td>
+      <td>第 ${s.period} 期</td>
+      <td>第 ${s.idxInPeriod} 堂</td>
+      <td>${badges.join(' ')}</td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  html += `<div style="padding: 12px 18px; background: var(--soft); font-size: 13px; margin-top: 10px;">
+    <strong>規則:</strong>每期 ${state.rules.periodLength} 堂｜第 ${state.rules.feeDayIndex} 堂收下一期費｜第 ${state.rules.cutoffIndex} 堂起不接受插班｜插班最晚第 ${state.rules.lastIntakeIndex} 堂前完成
+  </div>`;
+  target.innerHTML = html;
+}
+
+function renderHolidays() {
+  document.getElementById('holidays-area').value = state.holidays.join('\n');
+  document.getElementById('holiday-display').innerHTML = state.holidays.length
+    ? state.holidays.map(h => `<span class="tag">${h}</span>`).join('')
+    : '<i>(無)</i>';
+}
+
+function renderRules() {
+  const r = state.rules;
+  document.getElementById('rule-period').value = r.periodLength;
+  const renewalInput = document.getElementById('rule-renewal');
+  if (renewalInput) renewalInput.value = r.renewalDayIndex || r.feeDayIndex;
+  document.getElementById('rule-fee').value = r.feeDayIndex;
+  document.getElementById('rule-last').value = r.lastIntakeIndex;
+  document.getElementById('rule-cutoff').value = r.cutoffIndex;
+  // 同步年度行事曆 toggle 勾選狀態
+  document.querySelectorAll('.evt-tog input[data-evt]').forEach(inp => {
+    inp.checked = !!state.eventFilters[inp.dataset.evt];
+  });
+  // 預覽當前規則
+  const preview = `
+    <strong>目前規則摘要：</strong><br>
+    一期 <b>${r.periodLength}</b> 堂　・
+    第 <b>${r.renewalDayIndex || r.feeDayIndex}</b> 堂續班觸發　・
+    第 <b>${r.feeDayIndex}</b> 堂收下一期費　・
+    插班最終日：第 <b>${r.lastIntakeIndex}</b> 堂　・
+    第 <b>${r.cutoffIndex}</b> 堂起禁止插班<br>
+    <span style="color:var(--ink-3);">範例：第 1 期續班為第 ${r.renewalDayIndex || r.feeDayIndex} 堂；收費為第 ${r.feeDayIndex} 堂；繳費期限為第 ${r.periodLength} 堂；第 ${r.periodLength + 1} 堂即第 2 期第 1 堂。</span>
+  `;
+  document.getElementById('rule-preview').innerHTML = preview;
+}
+
+function renderFilters() {
+  const sel = document.getElementById('filter-class');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="all">全部班別</option>' +
+    state.classes.map(c => `<option value="${c.id}">${escapeHtml(c.name)} W${getWeekdayChar(c.weekday)} ${escapeHtml(c.time)}</option>`).join('');
+  if (cur && [...sel.options].some(o => o.value === cur)) sel.value = cur;
+}
+
+function renderAll() {
+  renderClasses();
+  renderFilters();
+  renderAnnual();
+  renderMonthPicker();
+  renderMonthly();
+  renderSinglePicker();
+  renderSingle();
+  renderHolidays();
+  renderRules();
+}
+
+// ====== Helpers ======
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+// ====== Event Handlers ======
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    // 年度行事曆 tab 切到方格時鎖 body 不滾動
+    document.body.classList.toggle('compact-grid',
+      btn.dataset.tab === 'annual' &&
+      document.querySelector('.view-toggle button.active')?.dataset.view === 'grid');
+  });
+});
+
+document.getElementById('class-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const form = e.target;
+  const data = {
+    name: form.name.value.trim(),
+    weekday: parseInt(form.weekday.value),
+    time: form.time.value.trim(),
+    teacher: form.teacher.value.trim(),
+    campus: form.campus.value.trim(),
+    startDate: form.startDate.value,
+    fee: parseInt(form.fee.value) || 0,
+    studentCount: parseInt(form.studentCount.value) || 0,
+    periodCount: parseInt(form.periodCount.value) || 4,
+    memo: form.memo.value.trim()
+  };
+  const editingId = form.dataset.editingId;
+  if (editingId) {
+    const idx = state.classes.findIndex(c => c.id === editingId);
+    state.classes[idx] = {...state.classes[idx], ...data};
+    delete form.dataset.editingId;
+  } else {
+    data.id = 'cls_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    state.classes.push(data);
+  }
+  saveState();
+  form.reset();
+  form.closest('details').open = false;
+  renderAll();
+  autoSyncIfCloud('saveClasses');
+});
+
+document.getElementById('form-cancel').addEventListener('click', e => {
+  const form = document.getElementById('class-form');
+  form.reset();
+  delete form.dataset.editingId;
+  form.closest('details').open = false;
+});
+
+document.getElementById('filter-class').addEventListener('change', renderAnnual);
+document.getElementById('year-picker').addEventListener('change', renderAnnual);
+document.getElementById('month-picker').addEventListener('change', renderMonthly);
+document.getElementById('single-class-picker').addEventListener('change', renderSingle);
+
+// View toggle (grid/list) for annual tab
+document.querySelectorAll('.view-toggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const v = btn.dataset.view;
+    document.getElementById('annual-grid').style.display = (v === 'grid') ? '' : 'none';
+    document.getElementById('annual-table').style.display = (v === 'list') ? '' : 'none';
+    // 切到列表時解鎖 body 滾動
+    document.body.classList.toggle('compact-grid', v === 'grid');
+  });
+});
+
+document.getElementById('rule-save').addEventListener('click', () => {
+  const period = Math.max(1, parseInt(document.getElementById('rule-period').value) || 10);
+  const renewal = Math.max(1, Math.min(period, parseInt(document.getElementById('rule-renewal').value) || 7));
+  const fee = Math.max(1, Math.min(period, parseInt(document.getElementById('rule-fee').value) || 7));
+  const last = Math.max(1, Math.min(period, parseInt(document.getElementById('rule-last').value) || 3));
+  const cutoff = Math.max(1, Math.min(period, parseInt(document.getElementById('rule-cutoff').value) || 4));
+  if (cutoff <= last) {
+    alert('「禁止插班」的堂數必須大於「插班最終日」的堂數');
+    return;
+  }
+  if (fee > period) {
+    alert('「收費堂」不能超過「每期堂數」');
+    return;
+  }
+  state.rules = {periodLength: period, renewalDayIndex: renewal, feeDayIndex: fee, lastIntakeIndex: last, cutoffIndex: cutoff};
+  saveState();
+  renderAll();
+  autoSyncIfCloud('saveRules');
+  if (!localStorage.getItem(CLOUD_URL_KEY)) alert('收費期程已更新,所有班別已重新計算');
+});
+
+// 年度行事曆 4 類事件 toggle
+document.querySelectorAll('.evt-tog input[data-evt]').forEach(inp => {
+  inp.addEventListener('change', () => {
+    state.eventFilters[inp.dataset.evt] = inp.checked;
+    saveState();
+    renderAnnualGrid();
+  });
+});
+document.getElementById('rule-reset').addEventListener('click', () => {
+  if (!confirm('回復預設值(10/7/3/4)?')) return;
+  state.rules = {...DEFAULT_RULES};
+  saveState();
+  renderAll();
+});
+
+document.getElementById('save-holidays').addEventListener('click', () => {
+  const lines = document.getElementById('holidays-area').value.split('\n').map(s => s.trim()).filter(Boolean);
+  state.holidays = lines;
+  saveState();
+  renderAll();
+  autoSyncIfCloud('saveHolidays');
+  if (!localStorage.getItem(CLOUD_URL_KEY)) alert('已儲存跳過日期');
+});
+
+document.getElementById('export-json').addEventListener('click', () => {
+  const area = document.getElementById('json-area');
+  area.style.display = 'block';
+  area.value = JSON.stringify({classes: state.classes, holidays: state.holidays}, null, 2);
+  area.select();
+});
+document.getElementById('import-json').addEventListener('click', () => {
+  const area = document.getElementById('json-area');
+  if (!area.value.trim()) { area.style.display = 'block'; area.placeholder = '請貼上 JSON 後再按一次此鈕'; return; }
+  try {
+    const data = JSON.parse(area.value);
+    if (data.classes) state.classes = data.classes;
+    if (data.holidays) state.holidays = data.holidays;
+    saveState();
+    renderAll();
+    alert('匯入成功');
+  } catch(e) { alert('JSON 格式錯誤:' + e.message); }
+});
+document.getElementById('reset-data').addEventListener('click', () => {
+  if (!confirm('確定清空所有資料?無法復原')) return;
+  state.classes = [];
+  state.holidays = [...DEFAULT_HOLIDAYS];
+  saveState();
+  renderAll();
+});
+document.getElementById('load-baseline').addEventListener('click', () => {
+  if (!confirm('將載入基準資料(幼兒啟蒙班 L1),會合併到目前班別清單')) return;
+  for (const b of BASELINE_CLASSES) {
+    if (!state.classes.find(c => c.id === b.id)) state.classes.push({...b});
+  }
+  saveState();
+  renderAll();
+});
+
+// ====== Cloud sync handlers ======
+document.getElementById('cloud-save').addEventListener('click', () => {
+  const url = document.getElementById('cloud-url').value.trim();
+  if (!url) { setCloudMsg('請貼上 Apps Script Web App 網址', 'err'); return; }
+  if (!url.startsWith('https://')) { setCloudMsg('網址必須以 https:// 開頭', 'err'); return; }
+  localStorage.setItem(CLOUD_URL_KEY, url);
+  setCloudMsg('✓ 雲端網址已儲存。按「從雲端重新讀取」開始同步。', 'ok');
+  updateCloudStatusBar();
+});
+
+document.getElementById('cloud-test').addEventListener('click', async () => {
+  const url = document.getElementById('cloud-url').value.trim() || localStorage.getItem(CLOUD_URL_KEY);
+  if (!url) { setCloudMsg('請先貼上網址', 'err'); return; }
+  setCloudMsg('測試中…', 'info');
+  try {
+    const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
+    const text = await resp.text();
+    let data;
+    try { data = JSON.parse(text); } catch { throw new Error('回應不是 JSON: ' + text.substring(0, 100)); }
+    if (data.error) throw new Error(data.error);
+    const cnt = (data.classes || []).length;
+    const hcnt = (data.holidays || []).length;
+    setCloudMsg(`✓ 連線成功!讀到 ${cnt} 個班別、${hcnt} 個跳過日期、規則 ${JSON.stringify(data.rules || {})}`, 'ok');
+  } catch (err) {
+    setCloudMsg('✗ 連線失敗:' + err.message, 'err');
+  }
+});
+
+document.getElementById('cloud-fetch').addEventListener('click', async () => {
+  const ok = await fetchFromCloud(true);
+  if (ok) renderAll();
+});
+
+document.getElementById('cloud-push').addEventListener('click', async () => {
+  if (!localStorage.getItem(CLOUD_URL_KEY)) { setCloudMsg('請先儲存雲端網址', 'err'); return; }
+  if (!confirm('將本機目前的班別/連假/規則「全部覆蓋」寫回 Sheet?')) return;
+  await pushToCloud('saveAll');
+});
+
+// ====== 行事曆事件編輯 (點月格事件即彈窗修改) ======
+let currentEvtKey = null;
+function openEvtEdit(key, origText) {
+  currentEvtKey = key;
+  document.getElementById('evtOrig').textContent = '預設文字: ' + origText;
+  const ov = eventOverrides[key] || {};
+  document.getElementById('evtText').value = ov.text || '';
+  document.getElementById('evtNote').value = ov.note || '';
+  document.getElementById('evtEditModal').classList.add('show');
+  setTimeout(() => document.getElementById('evtText').focus(), 50);
+}
+function closeEvtEdit() {
+  document.getElementById('evtEditModal').classList.remove('show');
+  currentEvtKey = null;
+}
+function saveEvtEdit() {
+  if (!currentEvtKey) return;
+  const text = document.getElementById('evtText').value.trim();
+  const note = document.getElementById('evtNote').value.trim();
+  if (!text && !note) {
+    delete eventOverrides[currentEvtKey];
+  } else {
+    eventOverrides[currentEvtKey] = {};
+    if (text) eventOverrides[currentEvtKey].text = text;
+    if (note) eventOverrides[currentEvtKey].note = note;
+  }
+  saveEventOverrides();
+  closeEvtEdit();
+  renderAnnualGrid();
+}
+function clearEvtEdit() {
+  if (!currentEvtKey) return;
+  delete eventOverrides[currentEvtKey];
+  saveEventOverrides();
+  closeEvtEdit();
+  renderAnnualGrid();
+}
+// 點月格內事件(委派到 annual-grid 容器)
+document.getElementById('annual-grid').addEventListener('click', e => {
+  const evt = e.target.closest('.m-evt[data-evt-key]');
+  if (!evt) return;
+  openEvtEdit(evt.dataset.evtKey, evt.dataset.origText);
+});
+// Modal 按鈕
+document.getElementById('evtSave').addEventListener('click', saveEvtEdit);
+document.getElementById('evtClear').addEventListener('click', clearEvtEdit);
+document.getElementById('evtCancel').addEventListener('click', closeEvtEdit);
+document.getElementById('evtEditModal').addEventListener('click', e => {
+  if (e.target.id === 'evtEditModal') closeEvtEdit();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('evtEditModal').classList.contains('show')) closeEvtEdit();
+  if (e.key === 'Enter' && document.getElementById('evtEditModal').classList.contains('show') && document.activeElement?.tagName === 'INPUT') saveEvtEdit();
+});
+
+// ====== 可編輯規則文字 (localStorage 持久化) ======
+const EDITABLE_RULES_KEY = 'k12_editable_rules_v1';
+function loadEditableRules() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(EDITABLE_RULES_KEY) || '{}'); } catch(e) {}
+  document.querySelectorAll('[data-rules-key]').forEach(el => {
+    const k = el.dataset.rulesKey;
+    if (saved[k] != null) el.textContent = saved[k];
+    el.addEventListener('blur', () => {
+      saved[k] = el.textContent;
+      try { localStorage.setItem(EDITABLE_RULES_KEY, JSON.stringify(saved)); } catch(e) {}
+    });
+  });
+}
+
+// ====== Init ======
+loadState();
+loadEventOverrides();
+renderAll();
+loadEditableRules();
+
+// 開啟時若已設雲端網址,自動從雲端拉一次
+(async () => {
+  const url = localStorage.getItem(CLOUD_URL_KEY);
+  const cloudUrlInput = document.getElementById('cloud-url');
+  if (cloudUrlInput && url) cloudUrlInput.value = url;
+  updateCloudStatusBar();
+  if (url) {
+    const ok = await fetchFromCloud(false);
+    if (ok) renderAll();
+  }
+})();
+</script>
+
+</body>
+</html>

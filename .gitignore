@@ -1,0 +1,10 @@
+# 排除個資與系統檔
+.DS_Store
+Thumbs.db
+*.log
+
+# 排除原型版本檔 (deploy 用 index.html)
+K12_收費行事曆原型_v1.html
+
+# 排除學生名單基準資料 (含個資)
+_基準資料/
