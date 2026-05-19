@@ -440,6 +440,25 @@
   .month-card .m-evt.renewal .cn { color: #3a72b0; }
   .month-card .m-evt.class-evt .d { color: var(--ink-3); font-size: 9.5px; }
   .month-card .m-evt.class-evt .cn { color: var(--ink-3); font-size: 10px; }
+  /* 當週 row 底色 */
+  .month-card .m-evt.is-this-week {
+    background: #fff8d8;
+    margin: 0 -10px;
+    padding-left: 10px; padding-right: 10px;
+    border-left: 3px solid var(--gold);
+    position: relative;
+  }
+  .month-card .m-evt.is-this-week::after {
+    content: "本週";
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    font-size: 9px; color: var(--gold); font-weight: 600; letter-spacing: 1px;
+  }
+  /* 當月格邊框強調 */
+  .month-card.is-current-month {
+    border-color: var(--ink);
+    border-width: 2px;
+    box-shadow: 0 0 0 1px var(--ink);
+  }
   /* Inline-editable cn */
   .month-card .m-evt .cn[data-edit-text] {
     cursor: text;
@@ -1315,6 +1334,12 @@ function renderAnnualGrid() {
   // body.full-year: 全年模式才 fit viewport, 半年模式自然展開
   document.body.classList.toggle('full-year', half === 'all');
 
+  // 今天的 (year, month, week-of-month) — 用來標當週底色
+  const _today = new Date(); _today.setHours(0,0,0,0);
+  const todayYear = _today.getFullYear();
+  const todayMonth = _today.getMonth() + 1;
+  const todayWeek = Math.ceil(_today.getDate() / 7);
+
   let html = `<div class="${gridClass}">`;
   for (let m = mStart; m <= mEnd; m++) {
     const monthEvents = byMonth[m].sort((a, b) => a.date.localeCompare(b.date));
@@ -1329,16 +1354,17 @@ function renderAnnualGrid() {
     const totalIncome = feeEvents.reduce((sum, e) => sum + (e.cls.fee || 0) * (e.cls.studentCount || 0), 0);
 
     const wkRange = monthWeekRange(year, m);
+    const isCurrentMonth = (year === todayYear && m === todayMonth);
 
     if (monthEvents.length === 0) {
-      html += `<div class="month-card empty-month">
+      html += `<div class="month-card empty-month${isCurrentMonth ? ' is-current-month' : ''}">
         <div class="m-head"><div class="m-num">${m}<small>月 ${wkRange}</small></div></div>
         <div class="m-events">無排程</div>
       </div>`;
       continue;
     }
 
-    html += `<div class="month-card">
+    html += `<div class="month-card${isCurrentMonth ? ' is-current-month' : ''}">
       <div class="m-head">
         <div class="m-num">${m}<small>月 ${wkRange}</small></div>
         ${F.fee && totalIncome > 0 ? `<div class="m-sum">NT$${totalIncome.toLocaleString()}</div>` : ''}
@@ -1393,7 +1419,8 @@ function renderAnnualGrid() {
         const displayText = (ov && ov.text != null) ? escapeHtml(ov.text) : txt;
         const noteText = (ov && ov.note) ? `　<small style="color:var(--ink-3);font-style:italic;">${escapeHtml(ov.note)}</small>` : '';
         const isEdited = (ov && (ov.text != null || ov.note));
-        html += `<div class="m-evt ${cls}${isEdited ? ' is-edited' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}">
+        const isThisWeek = (year === todayYear && m === todayMonth && wkNum === todayWeek);
+        html += `<div class="m-evt ${cls}${isEdited ? ' is-edited' : ''}${isThisWeek ? ' is-this-week' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}">
           <span class="d">${String(day).padStart(2,'0')}・${wd}<small style="color:var(--ink-3);margin-left:3px;font-size:10px;">W${wkNum}</small></span>
           <span class="cn" contenteditable="true" spellcheck="false" data-edit-text="1" title="點擊直接編輯,Enter/點別處存,Esc 取消">${displayText}${noteText}</span>${isEdited ? `<span class="evt-revert" title="還原預設文字" data-revert-key="${ovKey}">↺</span>` : ''}
         </div>`;
