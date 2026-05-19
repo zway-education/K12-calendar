@@ -418,11 +418,29 @@
   .month-card .m-evt.renewal .cn { color: #3a72b0; }
   .month-card .m-evt.class-evt .d { color: var(--ink-3); font-size: 9.5px; }
   .month-card .m-evt.class-evt .cn { color: var(--ink-3); font-size: 10px; }
-  /* 可編輯事件 hover 提示 + 已編輯標記 */
-  .month-card .m-evt[data-evt-key] { cursor: pointer; transition: background 0.12s; }
-  .month-card .m-evt[data-evt-key]:hover { background: var(--bg-2); }
-  .month-card .m-evt.is-edited .cn { border-left: 2px solid var(--gold); padding-left: 4px; }
-  .month-card .m-evt .evt-edited { color: var(--gold); margin-left: 4px; font-size: 9px; }
+  /* Inline-editable cn */
+  .month-card .m-evt .cn[data-edit-text] {
+    cursor: text;
+    border-radius: 2px;
+    transition: background 0.12s, box-shadow 0.12s;
+    padding: 0 3px;
+    outline: none;
+  }
+  .month-card .m-evt .cn[data-edit-text]:hover {
+    background: var(--bg-2);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .month-card .m-evt .cn[data-edit-text]:focus {
+    background: #fffaf0;
+    box-shadow: inset 0 0 0 1px var(--gold);
+    overflow: visible; text-overflow: clip; white-space: normal;
+  }
+  .month-card .m-evt.is-edited .cn { border-left: 2px solid var(--gold); }
+  .month-card .m-evt .evt-revert {
+    color: var(--ink-3); margin-left: 4px; font-size: 11px;
+    cursor: pointer; flex-shrink: 0; padding: 0 3px;
+  }
+  .month-card .m-evt .evt-revert:hover { color: var(--warn); background: var(--bg-2); }
   /* 事件編輯彈窗 */
   .evt-edit-modal {
     position: fixed; inset: 0; background: rgba(0,0,0,0.35);
@@ -1222,9 +1240,10 @@ function renderAnnualGrid() {
         const noteText = (ov && ov.note) ? `　<small style="color:var(--ink-3);font-style:italic;">${escapeHtml(ov.note)}</small>` : '';
         const editedMark = (ov && (ov.text != null || ov.note)) ? '<span class="evt-edited" title="已編輯">✎</span>' : '';
         const wkNum = isoWeekOfYmd(e.date);
-        html += `<div class="m-evt ${cls}${(ov && (ov.text!=null||ov.note)) ? ' is-edited' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}" title="點擊編輯文字/加備註">
+        const isEdited = (ov && (ov.text != null || ov.note));
+        html += `<div class="m-evt ${cls}${isEdited ? ' is-edited' : ''}" data-evt-key="${ovKey}" data-orig-text="${escapeHtml(txt)}">
           <span class="d">${String(day).padStart(2,'0')}・${wd}<small style="color:var(--ink-3);margin-left:3px;font-size:9px;">W${wkNum}</small></span>
-          <span class="cn">${displayText}${noteText}${editedMark}</span>
+          <span class="cn" contenteditable="true" spellcheck="false" data-edit-text="1" title="點擊直接編輯,Enter/點別處存,Esc 取消">${displayText.replace(/<small[^>]*>.*?<\/small>/g, '')}</span>${isEdited ? `<span class="evt-revert" title="還原預設文字" data-revert-key="${ovKey}">↺</span>` : ''}
         </div>`;
       }
 
@@ -1845,11 +1864,47 @@ function clearEvtEdit() {
   closeEvtEdit();
   renderAnnualGrid();
 }
-// 點月格內事件(委派到 annual-grid 容器)
-document.getElementById('annual-grid').addEventListener('click', e => {
-  const evt = e.target.closest('.m-evt[data-evt-key]');
+// Inline edit on .cn (點直接改),blur 自動存
+document.getElementById('annual-grid').addEventListener('blur', e => {
+  const cn = e.target.closest('.cn[data-edit-text]');
+  if (!cn) return;
+  const evt = cn.closest('.m-evt[data-evt-key]');
   if (!evt) return;
-  openEvtEdit(evt.dataset.evtKey, evt.dataset.origText);
+  const key = evt.dataset.evtKey;
+  const newText = cn.textContent.trim();
+  const origText = evt.dataset.origText;
+  if (newText === origText || newText === '') {
+    // 還原預設
+    delete eventOverrides[key];
+  } else {
+    eventOverrides[key] = { ...(eventOverrides[key] || {}), text: newText };
+  }
+  saveEventOverrides();
+  renderAnnualGrid();
+}, true);
+
+// Enter 儲存 / Esc 取消
+document.getElementById('annual-grid').addEventListener('keydown', e => {
+  if (!e.target.closest('.cn[data-edit-text]')) return;
+  if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
+  if (e.key === 'Escape') {
+    const evt = e.target.closest('.m-evt[data-evt-key]');
+    const key = evt?.dataset.evtKey;
+    const ov = key && eventOverrides[key];
+    e.target.textContent = (ov && ov.text) ? ov.text : evt.dataset.origText;
+    e.target.blur();
+  }
+});
+
+// 點 ↺ 還原預設文字
+document.getElementById('annual-grid').addEventListener('click', e => {
+  const revert = e.target.closest('.evt-revert');
+  if (!revert) return;
+  e.stopPropagation();
+  const key = revert.dataset.revertKey;
+  delete eventOverrides[key];
+  saveEventOverrides();
+  renderAnnualGrid();
 });
 // Modal 按鈕
 document.getElementById('evtSave').addEventListener('click', saveEvtEdit);
