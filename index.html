@@ -956,6 +956,11 @@
       <button data-half="h1">上半年</button>
       <button data-half="h2">下半年</button>
     </span>
+    <span class="history-group" style="margin-left:auto;">
+      <button class="nav-btn" id="undo-btn" title="上一步 (Ctrl+Z)" disabled>↶</button>
+      <button class="nav-btn" id="redo-btn" title="下一步 (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷</button>
+      <button class="nav-btn" id="save-btn" title="儲存到雲端 (Ctrl+S)">💾</button>
+    </span>
     <span class="event-toggles">
       <label class="evt-tog"><input type="checkbox" data-evt="start" checked> <span class="lg-start">●</span> 開課</label>
       <label class="evt-tog"><input type="checkbox" data-evt="class"> <span style="color:var(--ink-3);">●</span> 上課</label>
@@ -1436,6 +1441,84 @@ function saveState() {
   localStorage.setItem(RULES_KEY, JSON.stringify(state.rules));
   localStorage.setItem(EVT_FILTER_KEY, JSON.stringify(state.eventFilters));
   localStorage.setItem(HIGHLIGHT_KEY, JSON.stringify(state.highlightWeeks));
+  // 自動 push history snapshot (undo/redo 用)
+  if (window.__historyReady && !window.__skipHistory) {
+    pushHistorySnapshot();
+    window.__redoStack = [];
+    updateHistoryBtnState();
+  }
+}
+
+// ====== Undo / Redo: 上一步 / 下一步 ======
+window.__historyStack = [];
+window.__redoStack = [];
+window.__historyReady = false;
+window.__skipHistory = false;
+const HISTORY_MAX = 50;
+
+function snapshotState() {
+  return JSON.stringify({
+    classes: state.classes,
+    holidays: state.holidays,
+    rules: state.rules,
+    highlightWeeks: state.highlightWeeks,
+    eventOverrides: eventOverrides || {}
+  });
+}
+function pushHistorySnapshot() {
+  const snap = snapshotState();
+  const stack = window.__historyStack;
+  if (stack.length > 0 && stack[stack.length - 1] === snap) return; // dedup
+  stack.push(snap);
+  if (stack.length > HISTORY_MAX) stack.shift();
+}
+function restoreSnapshot(snapStr) {
+  const data = JSON.parse(snapStr);
+  state.classes = data.classes || [];
+  state.holidays = data.holidays || [];
+  state.rules = data.rules || {...DEFAULT_RULES};
+  state.highlightWeeks = data.highlightWeeks || [];
+  if (data.eventOverrides) {
+    eventOverrides = data.eventOverrides;
+    localStorage.setItem(EVT_OVERRIDE_KEY, JSON.stringify(eventOverrides));
+  }
+  window.__skipHistory = true;
+  saveState();
+  window.__skipHistory = false;
+  renderAll();
+}
+function undo() {
+  if (window.__historyStack.length < 2) {
+    setCloudMsg('已是最早的狀態, 無法再上一步', 'info');
+    return false;
+  }
+  // 把當前狀態移到 redo
+  window.__redoStack.push(window.__historyStack.pop());
+  const prev = window.__historyStack[window.__historyStack.length - 1];
+  restoreSnapshot(prev);
+  autoSyncIfCloud('saveAll');
+  setCloudMsg(`↶ 上一步 (還可上一步 ${window.__historyStack.length - 1} 次)`, 'info');
+  updateHistoryBtnState();
+  return true;
+}
+function redo() {
+  if (window.__redoStack.length === 0) {
+    setCloudMsg('沒有可下一步的操作', 'info');
+    return false;
+  }
+  const next = window.__redoStack.pop();
+  window.__historyStack.push(next);
+  restoreSnapshot(next);
+  autoSyncIfCloud('saveAll');
+  setCloudMsg(`↷ 下一步 (還可下一步 ${window.__redoStack.length} 次)`, 'info');
+  updateHistoryBtnState();
+  return true;
+}
+function updateHistoryBtnState() {
+  const undoBtn = document.getElementById('undo-btn');
+  const redoBtn = document.getElementById('redo-btn');
+  if (undoBtn) undoBtn.disabled = window.__historyStack.length < 2;
+  if (redoBtn) redoBtn.disabled = window.__redoStack.length === 0;
 }
 
 // ====== Date Helpers ======
@@ -2979,6 +3062,41 @@ loadState();
 loadEventOverrides();
 renderAll();
 loadEditableRules();
+// 初始化 history (放在這, 第一個 snapshot 是當前狀態)
+window.__historyReady = true;
+pushHistorySnapshot();
+updateHistoryBtnState();
+
+// ====== Undo / Redo / Save 按鈕 + 鍵盤快捷鍵 ======
+document.getElementById('undo-btn')?.addEventListener('click', undo);
+document.getElementById('redo-btn')?.addEventListener('click', redo);
+document.getElementById('save-btn')?.addEventListener('click', async () => {
+  setCloudMsg('💾 儲存中…', 'info');
+  const r = await pushToCloud('saveAll');
+  if (r.ok) setCloudMsg('✓ 已儲存到雲端', 'ok');
+});
+
+// 全局快捷鍵: Ctrl+Z (上一步), Ctrl+Y / Ctrl+Shift+Z (下一步), Ctrl+S (儲存)
+window.addEventListener('keydown', e => {
+  // 在 contenteditable / input / select / textarea 內不攔截 Ctrl+Z (讓瀏覽器處理文字 undo)
+  const tag = (e.target?.tagName || '').toLowerCase();
+  const isEditing = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target?.isContentEditable;
+  const ctrl = e.ctrlKey || e.metaKey;
+  if (!ctrl) return;
+  if (e.key === 's' || e.key === 'S') {
+    e.preventDefault();
+    document.getElementById('save-btn')?.click();
+    return;
+  }
+  if (isEditing) return; // 編輯中不攔截 Ctrl+Z / Y
+  if ((e.key === 'z' || e.key === 'Z') && !e.shiftKey) {
+    e.preventDefault();
+    undo();
+  } else if ((e.key === 'y' || e.key === 'Y') || ((e.key === 'z' || e.key === 'Z') && e.shiftKey)) {
+    e.preventDefault();
+    redo();
+  }
+});
 // 預設打開年度行事曆 → body 套 compact-grid 鎖滾動
 const initActive = document.querySelector('.tab-btn.active');
 if (initActive && initActive.dataset.tab === 'annual') {
